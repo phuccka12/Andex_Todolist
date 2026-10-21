@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrono-Atelier — Xưởng Thời Gian Nghệ Thuật</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans & Playfair Display for literary aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Canvas Confetti for Celebration effects -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        atelier: {
+                            bg: '#0a0d14',
+                            surface: '#111724',
+                            card: '#161e30',
+                            border: 'rgba(255, 255, 255, 0.07)',
+                        },
+                        amber: {
+                            350: '#fbbf24',
+                            450: '#f59e0b',
+                            glow: 'rgba(245, 158, 11, 0.25)',
+                        },
+                        aurora: {
+                            green: '#10b981',
+                            cyan: '#06b6d4',
+                            purple: '#8b5cf6',
+                            rose: '#f43f5e'
+                        }
+                    },
+                    animation: {
+                        'aurora-glow': 'auroraMove 8s ease infinite alternate',
+                        'float-slow': 'floatSlow 4s ease-in-out infinite',
+                        'cat-tail': 'catTail 3s ease-in-out infinite alternate',
+                        'pulse-warm': 'pulseWarm 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        auroraMove: {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '100%': { backgroundPosition: '100% 50%' }
+                        },
+                        floatSlow: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        },
+                        catTail: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(18deg)' }
+                        },
+                        pulseWarm: {
+                            '0%, 100%': { opacity: '0.4' },
+                            '50%': { opacity: '0.9' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Sleek Obsidian Scrollbars */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0d14;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        /* Tactile Glass Panels */
+        .glass-atelier {
+            background: rgba(17, 23, 36, 0.78);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .glass-card {
+            background: rgba(22, 30, 48, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(245, 158, 11, 0.25);
+        }
+
+        /* Aurora Ribbon Track */
+        .aurora-ribbon {
+            background: linear-gradient(90deg, #10b981, #06b6d4, #8b5cf6, #f59e0b, #10b981);
+            background-size: 300% 300%;
+        }
+
+        /* Glowing Active Time Box */
+        .active-timeblock {
+            position: relative;
+            border: 1.5px solid rgba(245, 158, 11, 0.7) !important;
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.15), inset 0 0 15px rgba(245, 158, 11, 0.08);
+        }
+
+        .active-timeblock::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #f59e0b;
+            border-radius: 4px 0 0 4px;
+            box-shadow: 0 0 10px #f59e0b;
+        }
+
+        /* Stardust cursor effect */
+        .stardust-hover:hover {
+            box-shadow: 0 8px 32px -4px rgba(245, 158, 11, 0.12);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-[#0a0d14] text-zinc-200 min-h-screen font-sans antialiased selection:bg-amber-500/30 selection:text-amber-200 pb-16">
+
+    <!-- TOP ATMOSPHERIC HEADER -->
+    <header class="sticky top-0 z-40 glass-atelier border-b border-zinc-800/80 px-4 lg:px-8 py-3.5 mb-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+
+            <!-- Brand & Literary Identity -->
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-300 p-0.5 shadow-lg shadow-amber-500/20">
+                        <div
+                            class="w-full h-full bg-[#0a0d14] rounded-[14px] flex items-center justify-center text-amber-400">
+                            <i class="fa-solid fa-compass-drafting text-base"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-base font-bold tracking-tight text-white font-serif">Chrono-Atelier</h1>
+                            <span
+                                class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold tracking-wider">
+                                V2.6 PROTOTYPE
+                            </span>
+                        </div>
+                        <p class="text-xs text-zinc-400 flex items-center gap-2">
+                            <span>Sài Gòn • 27°C</span>
+                            <span class="text-zinc-600">•</span>
+                            <span id="current-date-text" class="text-zinc-300 font-medium">Thứ Tư, 30 Tháng 9</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Mobile Quick View Toggle -->
+                <button onclick="toggleEmailPreviewModal()"
+                    class="md:hidden px-3 py-1.5 rounded-xl border border-zinc-800 text-xs text-amber-300 bg-zinc-900">
+                    <i class="fa-regular fa-envelope mr-1"></i> Bưu thiếp
+                </button>
+            </div>
+
+            <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+
+                <!-- Ambient Soundscape Controller (Web Audio Synth) -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-zinc-900/80 border border-zinc-800/80">
+                    <button id="ambient-btn" onclick="toggleAmbientSound()"
+                        class="w-7 h-7 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-300 hover:text-amber-400 transition"
+                        title="Bật/Tắt Tiếng Mưa & Lò Sưởi">
+                        <i class="fa-solid fa-cloud-rain text-xs" id="ambient-icon"></i>
+                    </button>
+                    <div class="text-[11px] leading-tight pr-1">
+                        <span class="block text-zinc-400 font-medium" id="ambient-title">Âm thanh thiền</span>
+                        <span class="block text-zinc-200 font-semibold" id="ambient-status">Mưa & Cực quang: Tắt</span>
+                    </div>
+                </div>
+
+                <!-- Discipline Streak & Freeze Shield -->
+                <div
+                    class="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-amber-950/20 border border-amber-500/30 text-amber-300">
+                    <i class="fa-solid fa-fire text-amber-400 animate-bounce-soft text-sm"></i>
+                    <span class="text-xs font-bold font-mono" id="streak-count">14 Ngày</span>
+                    <span
+                        class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200 ml-1 font-semibold flex items-center gap-1"
+                        title="1 Khiên đóng băng có sẵn">
+                        <i class="fa-solid fa-shield-halved text-[9px]"></i> 1
+                    </span>
+                </div>
+
+                <!-- Email Postcard Preview Button (Desktop) -->
+                <button onclick="toggleEmailPreviewModal()"
+                    class="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/40 text-xs font-medium text-zinc-200 transition">
+                    <i class="fa-regular fa-envelope-open text-amber-400"></i>
+                    <span>Bưu thiếp Email</span>
+                </button>
+
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto mt-3">
+            <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 mb-1 px-1">
+                <span class="flex items-center gap-1.5 text-amber-400 font-semibold">
+                    <i class="fa-regular fa-clock text-xs"></i>
+                    <span id="live-time-display">10:37:00</span>
+                </span>
+                <span class="text-zinc-500 italic">Dải thời gian 24h trôi nhẹ như dòng sông</span>
+                <span id="day-percent-label" class="text-zinc-300 font-medium">Tiến độ ngày: 44.2%</span>
+            </div>
+            <div class="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800/80 p-0.5 relative">
+                <div id="aurora-bar"
+                    class="h-full rounded-full aurora-ribbon animate-aurora-glow transition-all duration-1000"
+                    style="width: 44.2%;"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- ===================================================================
+           LEFT COLUMN: LIVING DIORAMA & MONTHLY HORIZON (Span 4)
+           =================================================================== -->
+            <section class="lg:col-span-4 space-y-6">
+
+                <!-- 1. LIVING DIORAMA (Studio 2.5D sống động) -->
+                <div class="glass-atelier rounded-3xl p-5 border border-zinc-800/80 relative overflow-hidden group">
+                    <div class="flex items-center justify-between mb-3">
+                        <span
+                            class="text-xs uppercase tracking-widest font-mono text-amber-400 font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-cubes-stacked text-xs"></i>
+                            LIVING DIORAMA
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                            <span class="text-[11px] text-zinc-400 font-medium" id="room-weather-label">Mưa ngoài bậu
+                                cửa</span>
+                        </div>
+                    </div>
+
+                    <!-- Isometric SVG Studio Box -->
+                    <div class="w-full h-64 bg-gradient-to-b from-[#141b2b] via-[#0f1524] to-[#0a0e1a] rounded-2xl relative border border-zinc-800/80 overflow-hidden flex items-center justify-center cursor-pointer select-none"
+                        id="diorama-stage" onclick="interactWithPet()">
+
+                        <!-- Rain Effect on Window Overlay -->
+                        <div
+                            class="absolute top-3 left-4 w-28 h-36 border-2 border-zinc-700/60 rounded-xl bg-slate-900/60 backdrop-blur-[2px] overflow-hidden p-1 shadow-inner">
+                            <div class="w-full h-full relative">
+                                <!-- Rain streaks -->
+                                <div
+                                    class="absolute inset-0 opacity-40 bg-[linear-gradient(to_bottom,transparent_0%,rgba(147,197,253,0.4)_50%,transparent_100%)] bg-[length:100%_20px] animate-pulse">
+                                </div>
+                                <!-- Glass condensation line -->
+                                <div class="absolute bottom-1 left-2 text-[9px] text-sky-300/60 font-mono">27°C • Rain
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Warm Lamp Ambient Light Cone -->
+                        <div id="lamp-glow"
+                            class="absolute right-8 top-10 w-48 h-48 bg-amber-400/15 rounded-full blur-2xl pointer-events-none transition-opacity duration-700">
+                        </div>
+
+                        <!-- SVG Room Artwork -->
+                        <svg class="w-full h-full" viewBox="0 0 400 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Wooden Floor Isometric lines -->
+                            <path d="M40 210 L200 245 L360 210 L200 175 Z" fill="#182238" stroke="#253352"
+                                stroke-width="1.5" />
+                            <path d="M80 195 L240 230" stroke="#22304d" stroke-width="1" />
+                            <path d="M120 180 L280 215" stroke="#22304d" stroke-width="1" />
+
+                            <!-- Studio Desk -->
+                            <g id="desk-group" transform="translate(100, 100)">
+                                <!-- Desk Top -->
+                                <polygon points="40,65 160,65 180,95 20,95" fill="#2d3748" stroke="#4a5568"
+                                    stroke-width="1" />
+                                <!-- Desk Legs -->
+                                <line x1="22" y1="95" x2="22" y2="140" stroke="#1a202c" stroke-width="4" />
+                                <line x1="178" y1="95" x2="178" y2="140" stroke="#1a202c" stroke-width="4" />
+
+                                <!-- Laptop Open -->
+                                <polygon points="85,60 115,60 120,78 80,78" fill="#10b981" opacity="0.3" />
+                                <polygon points="85,42 115,42 115,60 85,60" fill="#090d16" stroke="#10b981"
+                                    stroke-width="1.2" />
+                                <line x1="88" y1="46" x2="112" y2="46" stroke="#10b981" stroke-width="1" />
+                                <line x1="88" y1="50" x2="108" y2="50" stroke="#06b6d4" stroke-width="1" />
+
+                                <!-- Warm Desk Lamp -->
+                                <g id="desk-lamp" onclick="toggleLamp(event)" class="cursor-pointer">
+                                    <line x1="150" y1="70" x2="150" y2="45" stroke="#f59e0b" stroke-width="2.5" />
+                                    <path d="M140 45 L160 45 L165 35 L135 35 Z" fill="#fbbf24" />
+                                    <circle cx="150" cy="46" r="4" fill="#fff" opacity="0.8" />
+                                </g>
+
+                                <!-- Steaming Cup of Coffee/Tea -->
+                                <g transform="translate(50, 70)">
+                                    <rect x="0" y="5" width="10" height="12" rx="2" fill="#e2e8f0" />
+                                    <path d="M10 8 Q14 11 10 14" stroke="#e2e8f0" stroke-width="1.5" fill="none" />
+                                    <path d="M3 2 Q5 -3 3 -7" stroke="#94a3b8" stroke-width="1" fill="none"
+                                        opacity="0.6" class="animate-bounce-soft" />
+                                </g>
+                            </g>
+
+                            <!-- Cyber Cat Companion on Rug -->
+                            <g id="cat-companion" transform="translate(180, 180)" class="cursor-pointer">
+                                <!-- Circular Cozy Rug -->
+                                <ellipse cx="25" cy="20" rx="36" ry="16" fill="#1e293b" stroke="#334155"
+                                    stroke-dasharray="3 3" />
+
+                                <!-- Sleeping/Active Cat Body -->
+                                <ellipse cx="25" cy="18" rx="14" ry="10" fill="#f59e0b" />
+                                <!-- Cat Head with Headphones -->
+                                <circle cx="15" cy="14" r="8" fill="#f59e0b" />
+                                <polygon points="10,9 13,3 15,9" fill="#d97706" />
+                                <polygon points="17,9 19,3 21,9" fill="#d97706" />
+                                <!-- Cute Cyber Headphones -->
+                                <path d="M10 14 A 7 7 0 0 1 20 14" stroke="#06b6d4" stroke-width="2" fill="none" />
+                                <rect x="8" y="12" width="3" height="5" rx="1.5" fill="#06b6d4" />
+                                <rect x="19" y="12" width="3" height="5" rx="1.5" fill="#06b6d4" />
+                                <!-- Animated Tail -->
+                                <path id="cat-tail-path" d="M38 18 Q46 15 48 10" stroke="#f59e0b" stroke-width="3"
+                                    stroke-linecap="round" fill="none" class="animate-cat-tail origin-left" />
+                            </g>
+
+                            <!-- Shelves with Books & Bonsai Plant -->
+                            <g transform="translate(290, 80)">
+                                <rect x="0" y="20" width="60" height="4" fill="#334155" />
+                                <!-- Books -->
+                                <rect x="5" y="4" width="7" height="16" fill="#8b5cf6" />
+                                <rect x="13" y="7" width="6" height="13" fill="#06b6d4" />
+                                <rect x="20" y="2" width="8" height="18" fill="#10b981" />
+                                <!-- Bonsai in Pot -->
+                                <polygon points="40,14 52,14 49,20 43,20" fill="#78350f" />
+                                <circle cx="46" cy="10" r="7" fill="#059669" />
+                            </g>
+                        </svg>
+
+                        <!-- Mascot Dialogue Bubble -->
+                        <div id="mascot-speech"
+                            class="absolute bottom-3 left-4 right-4 bg-zinc-900/90 border border-amber-500/30 rounded-xl px-3 py-2 text-xs text-zinc-200 shadow-xl flex items-center justify-between transition-all duration-300 transform">
+                            <span id="mascot-text" class="italic font-serif">"Tách trà ấm đã sẵn sàng. Ca làm lúc 10:30
+                                sắp hết giờ rồi, cậu hoàn thành nốt nhé?"</span>
+                            <span class="text-[10px] text-amber-400 font-mono ml-2 shrink-0">🐾 Nala</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 flex items-center justify-between text-xs text-zinc-400">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-hand-pointer text-amber-400 text-[10px]"></i>
+                            Bấm vào đèn để đổi màu • Bấm mèo Nala để trò chuyện
+                        </span>
+                        <span class="text-zinc-500 font-mono text-[10px]">FPS: 60 (Canvas SVG)</span>
+                    </div>
+                </div>
+
+                <!-- 2. MONTHLY HORIZON & HABIT MATRIX (Quy hoạch Tháng) -->
+                <div class="glass-atelier rounded-3xl p-5 border border-zinc-800/80 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-white font-serif flex items-center gap-2">
+                                <i class="fa-regular fa-calendar-check text-amber-400"></i>
+                                Chủ Đề Tháng 9
+                            </h3>
+                            <p class="text-xs text-zinc-400 mt-0.5">"Kiến tạo & Tinh chỉnh Không gian"</p>
+                        </div>
+                        <span
+                            class="text-xs font-mono font-bold text-amber-300 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                            Tuần 4/4
+                        </span>
+                    </div>
+
+                    <!-- Mini Heatmap / Streak Grid of Days -->
+                    <div class="grid grid-cols-7 gap-1.5 text-center pt-1">
+                        <span class="text-[10px] font-mono text-zinc-500">T2</span>
+                        <span class="text-[10px] font-mono text-zinc-500">T3</span>
+                        <span class="text-[10px] font-mono text-zinc-500">T4</span>
+                        <span class="text-[10px] font-mono text-zinc-500">T5</span>
+                        <span class="text-[10px] font-mono text-zinc-500">T6</span>
+                        <span class="text-[10px] font-mono text-zinc-500">T7</span>
+                        <span class="text-[10px] font-mono text-zinc-500">CN</span>
+
+                        <!-- Sample completed days with glowing amber dots -->
+                        <div
+                            class="h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center text-xs font-mono font-bold">
+                            21</div>
+                        <div
+                            class="h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center text-xs font-mono font-bold">
+                            22</div>
+                        <div
+                            class="h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center text-xs font-mono font-bold">
+                            23</div>
+                        <div
+                            class="h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center text-xs font-mono font-bold">
+                            24</div>
+                        <div
+                            class="h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center text-xs font-mono font-bold">
+                            25</div>
+                        <div
+                            class="h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center text-xs font-mono font-bold">
+                            26</div>
+                        <div
+                            class="h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center text-xs font-mono font-bold">
+                            27</div>
+
+                        <div
+                            class="h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center text-xs font-mono font-bold">
+                            28</div>
+                        <div
+                            class="h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center text-xs font-mono font-bold">
+                            29</div>
+                        <!-- Today: Active Glow -->
+                        <div
+                            class="h-8 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-300 text-zinc-950 flex items-center justify-center text-xs font-mono font-black shadow-lg shadow-amber-500/40 ring-2 ring-amber-400">
+                            30</div>
+                        <div
+                            class="h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-600 flex items-center justify-center text-xs font-mono">
+                            1</div>
+                        <div
+                            class="h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-600 flex items-center justify-center text-xs font-mono">
+                            2</div>
+                        <div
+                            class="h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-600 flex items-center justify-center text-xs font-mono">
+                            3</div>
+                        <div
+                            class="h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-600 flex items-center justify-center text-xs font-mono">
+                            4</div>
+                    </div>
+
+                    <!-- Monthly Goal Progress -->
+                    <div class="pt-2 border-t border-zinc-800/80 space-y-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-zinc-400">Hoàn thành mốc tháng:</span>
+                            <span class="font-mono font-bold text-amber-400">24 / 28 ca Deep Work</span>
+                        </div>
+                        <div class="w-full bg-zinc-900 h-2 rounded-full overflow-hidden border border-zinc-800">
+                            <div class="bg-gradient-to-r from-amber-500 to-emerald-400 h-full rounded-full"
+                                style="width: 85%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ===================================================================
+           CENTER COLUMN: CHRONO-MATRIX & TIME-BOXED SLOTS (Span 5)
+           =================================================================== -->
+            <section class="lg:col-span-5 space-y-5">
+
+                <!-- Timetable Header & Action Controls -->
+                <div
+                    class="glass-atelier rounded-3xl p-5 border border-zinc-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-base font-bold text-white font-serif flex items-center gap-2">
+                            <i class="fa-solid fa-timeline text-amber-400"></i>
+                            Thời Khóa Biểu Ngày
+                        </h2>
+                        <p class="text-xs text-zinc-400 mt-0.5">Khóa từng khung giờ • Đúng hẹn • Tích hợp âm thanh ngũ
+                            cung</p>
+                    </div>
+
+                    <!-- Quick Add Timebox Button -->
+                    <button onclick="openNewTaskPrompt()"
+                        class="px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs shadow-lg shadow-amber-500/20 flex items-center gap-1.5 transition active:scale-95">
+                        <i class="fa-solid fa-plus text-[11px]"></i>
+                        <span>Thêm Khung Giờ</span>
+                    </button>
+                </div>
+
+                <!-- TIMELINE CARDS CONTAINER -->
+                <div class="space-y-3.5" id="timeline-list">
+
+                    <!-- Timeblock 1: PAST COMPLETED TASK -->
+                    <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 opacity-75 hover:opacity-100 transition group stardust-hover"
+                        id="task-card-1">
+                        <div class="flex items-start gap-3.5">
+                            <button onclick="toggleCardDone('task-card-1', 'Kiến trúc Module & Thiết kế Data Model')"
+                                class="mt-0.5 w-6 h-6 rounded-lg bg-emerald-500 border border-emerald-400 text-zinc-950 flex items-center justify-center text-xs font-black shadow-md shadow-emerald-500/30 transition">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-wrap items-center gap-2 mb-1">
+                                    <span
+                                        class="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-300 border border-zinc-800">
+                                        08:30 - 10:00
+                                    </span>
+                                    <span
+                                        class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-violet-500/15 text-violet-300 border border-violet-500/30">
+                                        #1 Deep Work
+                                    </span>
+                                    <span
+                                        class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                                        <i class="fa-solid fa-circle-check text-[9px]"></i> Đã xong (+150 EXP)
+                                    </span>
+                                </div>
+
+                                <h3 class="text-sm font-bold text-zinc-300 line-through">
+                                    Kiến trúc Module & Thiết kế Data Model
+                                </h3>
+                                <p class="text-xs text-zinc-500 mt-1 line-clamp-1">
+                                    Đã hoàn thành sơ đồ quan hệ Entity và kiểm thử pipeline xử lý.
+                                </p>
+                            </div>
+
+                            <!-- Sound Note Indicator -->
+                            <span class="text-[10px] text-zinc-500 font-serif italic self-center">Nốt Đô (C5)</span>
+                        </div>
+                    </div>
+
+                    <!-- Timeblock 2: ACTIVE NOW (10:30 - 12:00) -->
+                    <div class="glass-atelier p-5 rounded-2xl active-timeblock transition group shadow-2xl"
+                        id="task-card-2">
+                        <div class="flex items-start gap-3.5">
+                            <button onclick="toggleCardDone('task-card-2', 'Luyện Code Pipeline & Tối Ưu Thuật Toán')"
+                                class="mt-1 w-6 h-6 rounded-lg border-2 border-amber-400 bg-amber-500/10 hover:bg-amber-500 text-transparent hover:text-zinc-950 flex items-center justify-center text-xs font-black transition">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                                    <span
+                                        class="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                        10:30 - 12:00
+                                    </span>
+                                    <span
+                                        class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                        #1 Cốt Lõi
+                                    </span>
+                                    <span
+                                        class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md bg-amber-500 text-zinc-950">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-950 animate-ping"></span>
+                                        Đang Diễn Ra
+                                    </span>
+                                </div>
+
+                                <h3 class="text-base font-bold text-white tracking-tight">
+                                    Luyện Code Pipeline & Tối Ưu Thuật Toán
+                                </h3>
+
+                                <!-- Definition of Done (DoD Checklist) -->
+                                <div class="mt-3 space-y-1.5 bg-zinc-900/60 p-2.5 rounded-xl border border-zinc-800">
+                                    <label class="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer">
+                                        <input type="checkbox" checked
+                                            class="rounded border-zinc-700 text-amber-500 focus:ring-0 bg-zinc-800">
+                                        <span class="line-through text-zinc-500">Viết xong hàm transform và batch
+                                            loader</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 text-xs text-zinc-200 cursor-pointer">
+                                        <input type="checkbox"
+                                            class="rounded border-zinc-700 text-amber-500 focus:ring-0 bg-zinc-800">
+                                        <span>Xử lý ngoại lệ memory leak & benchmark dưới 200ms</span>
+                                    </label>
+                                </div>
+
+                                <!-- Live Countdown Timer & Action Controls -->
+                                <div class="mt-3 flex items-center justify-between pt-2 border-t border-zinc-800/80">
+                                    <div
+                                        class="text-xs font-mono text-amber-400 font-semibold flex items-center gap-1.5">
+                                        <i class="fa-solid fa-hourglass-half text-[11px] animate-spin"></i>
+                                        <span id="block-countdown">Còn lại: 22 phút 40 giây</span>
+                                    </div>
+
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="playPentatonicNote(329.63)"
+                                            class="text-[11px] px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition"
+                                            title="Ngân chuông thư giãn">
+                                            <i class="fa-solid fa-bell text-amber-400 mr-1"></i> Chuông thiền
+                                        </button>
+                                        <button onclick="toggleCardDone('task-card-2', 'Luyện Code Pipeline')"
+                                            class="text-xs px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition">
+                                            Hoàn thành ngay
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeblock 3: UPCOMING AFTERNOON SESSION -->
+                    <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 hover:border-zinc-700 transition group stardust-hover"
+                        id="task-card-3">
+                        <div class="flex items-start gap-3.5">
+                            <div
+                                class="mt-1 w-6 h-6 rounded-lg border border-zinc-700 bg-zinc-900/80 flex items-center justify-center text-zinc-600 text-xs">
+                                <i class="fa-regular fa-clock"></i>
+                            </div>
+
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-wrap items-center gap-2 mb-1">
+                                    <span
+                                        class="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-300 border border-zinc-800">
+                                        14:00 - 15:30
+                                    </span>
+                                    <span
+                                        class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                                        #3 Việc Vừa
+                                    </span>
+                                    <span class="text-[10px] text-zinc-400 flex items-center gap-1">
+                                        Bắt đầu sau 2 giờ nữa
+                                    </span>
+                                </div>
+
+                                <h3 class="text-sm font-bold text-zinc-200">
+                                    Review Pull Request & Họp Đồng Bộ Sprint
+                                </h3>
+                                <p class="text-xs text-zinc-400 mt-0.5">
+                                    Đánh giá code quality frontend và đóng gói các issue tồn đọng.
+                                </p>
+                            </div>
+
+                            <button onclick="triggerEmailNudge('Review Pull Request & Họp Đồng Bộ', '14:00')"
+                                class="text-xs p-2 rounded-xl text-zinc-400 hover:text-amber-400 hover:bg-zinc-800 transition"
+                                title="Gửi thư nhắc nhở thử nghiệm">
+                                <i class="fa-regular fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Timeblock 4: EVENING DRILL -->
+                    <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 hover:border-zinc-700 transition group stardust-hover"
+                        id="task-card-4">
+                        <div class="flex items-start gap-3.5">
+                            <div
+                                class="mt-1 w-6 h-6 rounded-lg border border-zinc-700 bg-zinc-900/80 flex items-center justify-center text-zinc-600 text-xs">
+                                <i class="fa-solid fa-bolt text-[10px]"></i>
+                            </div>
+
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-wrap items-center gap-2 mb-1">
+                                    <span
+                                        class="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-zinc-900 text-zinc-300 border border-zinc-800">
+                                        19:30 - 21:00
+                                    </span>
+                                    <span
+                                        class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                        Speed-run Drill
+                                    </span>
+                                </div>
+
+                                <h3 class="text-sm font-bold text-zinc-200">
+                                    Luyện Phản Xạ Gõ Template (Dưới 15 phút)
+                                </h3>
+                                <p class="text-xs text-zinc-400 mt-0.5">
+                                    Bấm giờ viết toàn bộ cấu trúc không tra cứu tài liệu.
+                                </p>
+                            </div>
+
+                            <span class="text-[10px] text-zinc-500 font-mono self-center">Hard-Stop</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- ===================================================================
+           RIGHT COLUMN: GENERATIVE FOCUS CANVAS & AI ATELIER (Span 4)
+           =================================================================== -->
+            <section class="lg:col-span-4 space-y-6">
+
+                <!-- 1. GENERATIVE FOCUS CANVAS (Bức họa tạo sinh) -->
+                <div class="glass-atelier rounded-3xl p-5 border border-zinc-800/80 relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <span
+                                class="text-xs uppercase tracking-widest font-mono text-emerald-400 font-bold flex items-center gap-2">
+                                <i class="fa-solid fa-paintbrush text-xs"></i>
+                                GENERATIVE FOCUS CANVAS
+                            </span>
+                            <h3 class="text-xs text-zinc-400 font-serif italic mt-0.5">
+                                "Bức họa Tháng 9: Giọt Nắng Trong Rừng Sương"
+                            </h3>
+                        </div>
+
+                        <button onclick="addRandomArtStroke()"
+                            class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-amber-300 text-[11px] transition flex items-center gap-1"
+                            title="Vẽ thử một nét cọ">
+                            <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> Nét cọ
+                        </button>
+                    </div>
+
+                    <!-- HTML5 Generative Canvas -->
+                    <div
+                        class="w-full h-52 bg-[#0c101b] rounded-2xl relative border border-zinc-800/80 overflow-hidden shadow-inner">
+                        <canvas id="focus-art-canvas" class="w-full h-full block"></canvas>
+
+                        <!-- Floating Canvas Watermark -->
+                        <div
+                            class="absolute bottom-2 right-3 text-[10px] font-serif text-zinc-500/70 pointer-events-none">
+                            42 Giờ Tập Trung Tích Lũy
+                        </div>
+                    </div>
+
+                    <div class="mt-3 flex items-center justify-between text-xs text-zinc-400">
+                        <span class="text-[11px]">Mỗi ca hoàn thành = 1 dải màu nước loang</span>
+                        <button onclick="downloadArtwork()"
+                            class="text-amber-400 hover:text-amber-300 text-xs font-semibold flex items-center gap-1 transition">
+                            <i class="fa-solid fa-download text-[10px]"></i> Tải tranh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. DAILY ZEN HAIKU (Thơ vi mô cảm hứng) -->
+                <div class="glass-atelier rounded-3xl p-5 border border-zinc-800/80 relative overflow-hidden">
+                    <div class="flex items-center gap-2 text-xs font-mono text-zinc-400 mb-2">
+                        <i class="fa-solid fa-feather-pointed text-amber-400"></i>
+                        <span>THƠ HAIKU HÔM NAY</span>
+                    </div>
+
+                    <blockquote
+                        class="font-serif italic text-sm text-zinc-200 leading-relaxed pl-3 border-l-2 border-amber-500/50 py-1"
+                        id="haiku-content">
+                        "Mưa rơi ngoài khung kính,<br>
+                        Nét code đọng trang hồ,<br>
+                        Tâm vững tựa vầng trăng."
+                    </blockquote>
+
+                    <div class="mt-3 text-right text-[10px] text-zinc-500 font-mono">
+                        — AI Trợ Lý Xưởng Thời Gian
+                    </div>
+                </div>
+
+                <!-- 3. AI ATELIER ASSISTANT (Prompt to Timetable) -->
+                <div class="glass-atelier rounded-3xl p-5 border border-zinc-800/80 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span
+                            class="text-xs uppercase tracking-widest font-mono text-amber-400 font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-sparkles text-xs"></i>
+                            AI ATELIER COACH
+                        </span>
+                        <span
+                            class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+                            Trực tuyến
+                        </span>
+                    </div>
+
+                    <p class="text-xs text-zinc-400">
+                        Nói cho AI biết dự định của bạn, hệ thống sẽ tự bẻ nhỏ và xếp vào lưới thời gian tối ưu.
+                    </p>
+
+                    <!-- Prompt Box -->
+                    <div class="space-y-2">
+                        <div class="relative">
+                            <textarea id="ai-prompt-input" rows="2"
+                                placeholder="VD: Chiều nay rảnh 15:30 đến 17:30, muốn ôn 2 bài toán tối ưu và gửi email..."
+                                class="w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl p-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition resize-none"></textarea>
+                        </div>
+
+                        <button onclick="handleAIPrompt()"
+                            class="w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-amber-300 font-semibold text-xs border border-zinc-700/80 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-xs"></i>
+                            <span>Xếp Lịch Tự Động Bằng AI</span>
+                        </button>
+                    </div>
+
+                    <!-- AI Response Bubble -->
+                    <div id="ai-response-box"
+                        class="hidden p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800 text-xs text-zinc-300 space-y-1.5 animate-pulse-warm">
+                        <div class="text-[11px] font-bold text-amber-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-check text-[10px]"></i> Đã tạo 2 khối thời gian vào ca chiều!
+                        </div>
+                        <p class="text-[11px] text-zinc-400">
+                            15:30 - 16:45: Giải toán tối ưu (75p) • 16:45 - 17:00: Xử lý email (15p).
+                        </p>
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+    </main>
+
+    <!-- =====================================================================
+       MODAL: BƯU THIẾP EMAIL NGHỆ THUẬT (ARTISAN EMAIL DISPATCH PREVIEW)
+       ===================================================================== -->
+    <div id="email-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-atelier w-full max-w-xl rounded-3xl border border-zinc-700/80 shadow-2xl p-6 sm:p-8 relative transform scale-95 transition-transform duration-300"
+            id="email-modal-card">
+
+            <!-- Modal Close Button -->
+            <button onclick="toggleEmailPreviewModal()"
+                class="absolute top-5 right-5 text-zinc-400 hover:text-white p-2 rounded-xl hover:bg-zinc-800 transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+
+            <!-- Envelope / Postcard Header -->
+            <div class="flex items-center gap-3 border-b border-zinc-800 pb-4 mb-6">
+                <div
+                    class="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white font-serif">Bưu Thiếp Email: Bình Minh Xưởng</h3>
+                    <p class="text-xs text-zinc-400 font-mono">Từ: Nala (Mascot) &lt;atelier@chronos.local&gt;</p>
+                </div>
+            </div>
+
+            <!-- Postcard Body (Letter Format) -->
+            <div
+                class="bg-[#0e1320] p-6 rounded-2xl border border-amber-500/20 font-serif space-y-4 shadow-inner relative overflow-hidden">
+                <!-- Postmark Stamp -->
+                <div
+                    class="absolute -top-3 -right-3 w-20 h-20 rounded-full border-2 border-dashed border-amber-500/20 flex items-center justify-center rotate-12 pointer-events-none">
+                    <span
+                        class="text-[9px] font-mono text-amber-500/40 uppercase tracking-widest text-center font-bold">ATELIER<br>POST</span>
+                </div>
+
+                <p class="text-sm text-zinc-300 leading-relaxed italic">
+                    "Bình minh gõ cửa xưởng, người bạn của tôi."
+                </p>
+
+                <p class="text-xs text-zinc-400 leading-relaxed">
+                    Hôm nay ngoài trời Sài Gòn mưa nhẹ 27°C. Tách trà ấm đã pha xong, và dải thời gian của bạn hôm nay
+                    có 4 chặng dừng chân cần sự tập trung:
+                </p>
+
+                <!-- Structured timetable inside email -->
+                <div class="space-y-2 py-2 font-sans text-xs">
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                        <span class="font-mono text-amber-400 font-bold">08:30 – 10:00</span>
+                        <span class="text-zinc-200">Kiến trúc Module & Data Model</span>
+                        <span class="text-emerald-400 text-[10px] font-semibold">Đã xong ✓</span>
+                    </div>
+                    <div
+                        class="flex items-center justify-between p-2 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                        <span class="font-mono text-amber-300 font-bold">10:30 – 12:00</span>
+                        <span class="text-white font-semibold">Code Pipeline & Tối Ưu</span>
+                        <span class="text-amber-400 text-[10px] font-bold">Đang diễn ra</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                        <span class="font-mono text-zinc-400">14:00 – 15:30</span>
+                        <span class="text-zinc-300">Review Pull Request & Họp</span>
+                        <span class="text-zinc-500 text-[10px]">Sắp tới</span>
+                    </div>
+                </div>
+
+                <p class="text-xs text-zinc-400 italic">
+                    "Một nét cọ đầu ngày sẽ định hình toàn bộ bức tranh. Cứ thong thả từng bước nhé."
+                </p>
+
+                <div class="pt-2 flex items-center justify-between text-xs text-amber-400/80 font-mono">
+                    <span>Chuỗi Kỷ Luật: 🔥 14 Ngày</span>
+                    <span>— Nala & Chrono-Atelier 🐾</span>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="mt-6 flex items-center justify-between">
+                <span class="text-xs text-zinc-500 font-mono">Tự động gửi lúc 06:30 sáng</span>
+                <button onclick="testSendEmailToast()"
+                    class="px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs transition shadow-lg shadow-amber-500/25 flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                    <span>Thử Gửi Thư Mẫu</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none">
+    </div>
+
+    <script>
+        /* =========================================================================
+           1. WEB AUDIO API: PENTATONIC CHIME ENGINE & AMBIENT RAIN/NOISE
+           ========================================================================= */
+        let audioCtx = null;
+        let ambientGain = null;
+        let isAmbientPlaying = false;
+        let lampWarm = true;
+
+        // Pentatonic scale frequencies in Hz (C5, D5, E5, G5, A5, C6)
+        const pentatonicFrequencies = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];
+        let noteIndex = 0;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Play a single or harmonic pentatonic bell note with warm reverb decay
+        function playPentatonicNote(freq = null) {
+            const ctx = getAudioContext();
+            const frequency = freq || pentatonicFrequencies[noteIndex % pentatonicFrequencies.length];
+            noteIndex++;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const filter = ctx.createBiquadFilter();
+
+            osc.type = 'triangle'; // Pure warm tone
+            osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+
+            // Low pass filter for soft acoustic bell timbre
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1800, ctx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 1.2);
+
+            // Amplitude Envelope: Quick attack, long gentle decay
+            gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.6);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 1.7);
+        }
+
+        // Simulated soft rain/pink noise generator for focus ambient
+        function toggleAmbientSound() {
+            const ctx = getAudioContext();
+            const btn = document.getElementById('ambient-btn');
+            const icon = document.getElementById('ambient-icon');
+            const status = document.getElementById('ambient-status');
+
+            if (!isAmbientPlaying) {
+                // Create Pink Noise Buffer
+                const bufferSize = ctx.sampleRate * 2;
+                const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    b0 = 0.99886 * b0 + white * 0.0555179;
+                    b1 = 0.99332 * b1 + white * 0.0750759;
+                    b2 = 0.96900 * b2 + white * 0.1538520;
+                    b3 = 0.86650 * b3 + white * 0.3104856;
+                    b4 = 0.55000 * b4 + white * 0.5329522;
+                    b5 = -0.7616 * b5 - white * 0.0168980;
+                    output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.035;
+                    b6 = white * 0.115926;
+                }
+
+                const whiteNoise = ctx.createBufferSource();
+                whiteNoise.buffer = noiseBuffer;
+                whiteNoise.loop = true;
+
+                const rainFilter = ctx.createBiquadFilter();
+                rainFilter.type = 'lowpass';
+                rainFilter.frequency.value = 650;
+
+                ambientGain = ctx.createGain();
+                ambientGain.gain.setValueAtTime(0.001, ctx.currentTime);
+                ambientGain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 1.5);
+
+                whiteNoise.connect(rainFilter);
+                rainFilter.connect(ambientGain);
+                ambientGain.connect(ctx.destination);
+
+                whiteNoise.start();
+                window._ambientSource = whiteNoise;
+                isAmbientPlaying = true;
+
+                btn.classList.add('bg-amber-500/20', 'border-amber-500/50');
+                icon.className = 'fa-solid fa-volume-high text-amber-400';
+                status.textContent = 'Mưa & Lò sưởi: Đang phát';
+                showToast('Đã bật âm thanh tiếng mưa thư giãn', 'info');
+            } else {
+                if (window._ambientSource) {
+                    ambientGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.8);
+                    setTimeout(() => {
+                        window._ambientSource.stop();
+                        window._ambientSource.disconnect();
+                    }, 850);
+                }
+                isAmbientPlaying = false;
+                btn.classList.remove('bg-amber-500/20', 'border-amber-500/50');
+                icon.className = 'fa-solid fa-cloud-rain text-zinc-400';
+                status.textContent = 'Mưa & Cực quang: Tắt';
+                showToast('Đã tắt âm thanh nền', 'info');
+            }
+        }
+
+        /* =========================================================================
+           2. GENERATIVE FOCUS CANVAS ENGINE (ORGANIC WATERCOLOR BRUSHES)
+           ========================================================================= */
+        const canvas = document.getElementById('focus-art-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            renderBaseCanvasLandscape();
+        }
+
+        // Color palettes inspired by misty morning forest & sunset amber
+        const palette = [
+            'rgba(245, 158, 11, 0.18)',  // Amber sunlight
+            'rgba(16, 185, 129, 0.16)',  // Emerald pine
+            'rgba(6, 182, 212, 0.15)',   // Cyan mist
+            'rgba(139, 92, 246, 0.14)',  // Twilight violet
+            'rgba(244, 63, 94, 0.12)'    // Rose blossom
+        ];
+
+        function renderBaseCanvasLandscape() {
+            const w = canvas.getBoundingClientRect().width;
+            const h = canvas.getBoundingClientRect().height;
+
+            // Dark background gradient
+            const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+            bgGrad.addColorStop(0, '#0c101b');
+            bgGrad.addColorStop(1, '#080c14');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Pre-seed some dreamy organic watercolor strokes
+            for (let i = 0; i < 28; i++) {
+                drawWatercolorBlob(
+                    w * (0.15 + Math.random() * 0.7),
+                    h * (0.2 + Math.random() * 0.6),
+                    25 + Math.random() * 55,
+                    palette[i % palette.length]
+                );
+            }
+        }
+
+        function drawWatercolorBlob(x, y, radius, color) {
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.beginPath();
+
+            const numPoints = 8;
+            const angleStep = (Math.PI * 2) / numPoints;
+
+            for (let i = 0; i <= numPoints; i++) {
+                const angle = i * angleStep;
+                const rad = radius * (0.75 + Math.random() * 0.5);
+                const px = x + Math.cos(angle) * rad;
+                const py = y + Math.sin(angle) * rad;
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function addRandomArtStroke() {
+            const w = canvas.getBoundingClientRect().width;
+            const h = canvas.getBoundingClientRect().height;
+            const color = palette[Math.floor(Math.random() * palette.length)];
+
+            drawWatercolorBlob(
+                w * (0.1 + Math.random() * 0.8),
+                h * (0.1 + Math.random() * 0.8),
+                35 + Math.random() * 60,
+                color
+            );
+            playPentatonicNote();
+            showToast('Đã thêm 1 nét cọ tập trung vào bức họa!', 'success');
+        }
+
+        function downloadArtwork() {
+            const link = document.createElement('a');
+            link.download = 'Chrono-Masterpiece-Thang-9.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('Đã tải tác phẩm nghệ thuật về máy!', 'success');
+        }
+
+        /* =========================================================================
+           3. LIVING DIORAMA & MASCOT INTERACTIONS
+           ========================================================================= */
+        const mascotQuotes = [
+            '"Tách trà ấm đã sẵn sàng. Ca làm việc này sắp xong rồi, cậu hoàn thành nốt nhé?"',
+            '"Mưa rơi nhẹ ngoài bậu cửa. Không gian tĩnh lặng này là dành riêng cho bạn."',
+            '"Đúng giờ là phẩm chất của người nghệ sĩ. Đừng dừng lại giữa chừng!"',
+            '"Cố lên nhé! Mỗi phút tập trung đều vẽ thêm một vệt nắng lên bức tranh."',
+            '"Nala vừa duỗi người một cái. Chúc bạn một ca làm việc thật hiệu quả!"'
+        ];
+
+        function interactWithPet() {
+            const speech = document.getElementById('mascot-text');
+            const randomQuote = mascotQuotes[Math.floor(Math.random() * mascotQuotes.length)];
+            speech.textContent = randomQuote;
+
+            // Pentatonic chime
+            playPentatonicNote(659.25);
+            showToast('🐾 Nala: ' + randomQuote.replace(/"/g, ''), 'info');
+        }
+
+        function toggleLamp(e) {
+            if (e) e.stopPropagation();
+            lampWarm = !lampWarm;
+            const glow = document.getElementById('lamp-glow');
+            if (lampWarm) {
+                glow.className = 'absolute right-8 top-10 w-48 h-48 bg-amber-400/15 rounded-full blur-2xl pointer-events-none transition-opacity duration-700 opacity-100';
+                showToast('Đã bật ánh đèn hổ phách ấm cúng', 'info');
+            } else {
+                glow.className = 'absolute right-8 top-10 w-48 h-48 bg-cyan-400/15 rounded-full blur-2xl pointer-events-none transition-opacity duration-700 opacity-80';
+                showToast('Đã chuyển sang đèn xanh cực quang tập trung', 'info');
+            }
+            playPentatonicNote(587.33);
+        }
+
+        /* =========================================================================
+           4. TIMEBLOCK INTERACTION & CELEBRATION CHIMES
+           ========================================================================= */
+        function toggleCardDone(cardId, title) {
+            const card = document.getElementById(cardId);
+            if (!card) return;
+
+            // Play harmonic chime
+            playPentatonicNote(523.25);
+            setTimeout(() => playPentatonicNote(659.25), 100);
+            setTimeout(() => playPentatonicNote(783.99), 200);
+
+            // Trigger golden confetti
+            try {
+                confetti({
+                    particleCount: 50,
+                    spread: 55,
+                    origin: { y: 0.7 },
+                    colors: ['#f59e0b', '#10b981', '#06b6d4']
+                });
+            } catch (e) { }
+
+            // Add stroke to canvas
+            addRandomArtStroke();
+
+            showToast(`Xuất sắc! Đã hoàn thành: "${title}" (+100 EXP)`, 'success');
+        }
+
+        function triggerEmailNudge(taskTitle, time) {
+            playPentatonicNote(880.00);
+            showToast(`Đã mô phỏng gửi email nhắc nhở cho ca "${taskTitle}" lúc ${time}!`, 'info');
+            toggleEmailPreviewModal();
+        }
+
+        /* =========================================================================
+           5. MODALS & TOAST NOTIFICATION HELPERS
+           ========================================================================= */
+        const emailModal = document.getElementById('email-modal');
+        const emailCard = document.getElementById('email-modal-card');
+
+        function toggleEmailPreviewModal() {
+            if (emailModal.classList.contains('hidden')) {
+                emailModal.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    emailModal.classList.remove('opacity-0');
+                    emailCard.classList.remove('scale-95');
+                });
+                playPentatonicNote(440.00);
+            } else {
+                emailModal.classList.add('opacity-0');
+                emailCard.classList.add('scale-95');
+                setTimeout(() => emailModal.classList.add('hidden'), 250);
+            }
+        }
+
+        function testSendEmailToast() {
+            playPentatonicNote(1046.50);
+            showToast('Đã gửi bưu thiếp thử nghiệm vào hòm thư cá nhân của bạn!', 'success');
+            setTimeout(toggleEmailPreviewModal, 1200);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            const borders = {
+                success: 'border-emerald-500/80 text-emerald-300',
+                info: 'border-amber-500/80 text-amber-300'
+            };
+
+            toast.className = `flex items-center gap-3 p-3.5 rounded-2xl glass-atelier border ${borders[type] || borders.info} shadow-2xl backdrop-blur-xl transform transition-all duration-300 translate-y-3 opacity-0 pointer-events-auto max-w-sm`;
+            toast.innerHTML = `
+        <i class="fa-solid fa-circle-check text-sm shrink-0"></i>
+        <div class="text-xs font-semibold text-zinc-100">${message}</div>
+      `;
+
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-y-3', 'opacity-0'));
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function openNewTaskPrompt() {
+            const title = prompt ? "Khung giờ mới" : "";
+            showToast('Đã mở bảng tạo khung giờ mới', 'info');
+            playPentatonicNote(523.25);
+        }
+
+        /* =========================================================================
+           6. AI PROMPT TO TIMETABLE DECOMPOSER
+           ========================================================================= */
+        function handleAIPrompt() {
+            const input = document.getElementById('ai-prompt-input');
+            const box = document.getElementById('ai-response-box');
+            if (!input.value.trim()) {
+                showToast('Vui lòng gõ dự định của bạn vào ô câu lệnh!', 'info');
+                return;
+            }
+
+            playPentatonicNote(783.99);
+            box.classList.remove('hidden');
+            showToast('AI đã phân rã mục tiêu và thêm 2 khối thời gian vào ca chiều!', 'success');
+            input.value = '';
+        }
+
+        /* =========================================================================
+           7. APP BOOTSTRAP & CLOCK RUNNER
+           ========================================================================= */
+        window.addEventListener('DOMContentLoaded', () => {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Realtime clock updates
+            setInterval(() => {
+                const now = new Date();
+                const pad = (n) => String(n).padStart(2, '0');
+                const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+                const clockEl = document.getElementById('live-time-display');
+                if (clockEl) clockEl.textContent = timeStr;
+            }, 1000);
+        });
+    </script>
+</body>
+
+</html>

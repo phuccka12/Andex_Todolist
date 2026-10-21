@@ -1,0 +1,90 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer base {
+  body {
+    @apply font-sans antialiased text-[#1E2433];
+    letter-spacing: -0.011em;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    background: radial-gradient(circle at 15% 15%, #dce7ff 0%, transparent 60%),
+                radial-gradient(circle at 85% 85%, #cbdcff 0%, transparent 60%),
+                linear-gradient(135deg, #e4ecfc 0%, #d8e4fb 50%, #c8dafa 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+/* Jiron & Weihu Bright Bento Glass Utilities */
+.jiron-app-frame {
+  background: #FFFFFF;
+  border-radius: 32px;
+  box-shadow: 0 20px 60px -15px rgba(60, 85, 155, 0.18), 0 0 1px 1px rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.jiron-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid #EEF2F8;
+  box-shadow: 0 4px 18px -2px rgba(90, 115, 160, 0.06);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.jiron-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -4px rgba(90, 115, 160, 0.12);
+  border-color: #E2E9F4;
+}
+
+/* Clear, Smooth, Prominent Inner Scrollbar for Main Section */
+.custom-main-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #A0B2CD #EDF2F9;
+  scrollbar-gutter: stable;
+}
+
+.custom-main-scroll::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+.custom-main-scroll::-webkit-scrollbar-track {
+  background: #EDF2F9;
+  border-radius: 9999px;
+  margin: 8px 4px;
+}
+
+.custom-main-scroll::-webkit-scrollbar-thumb {
+  background: #A0B2CD;
+  border-radius: 9999px;
+  border: 2px solid #EDF2F9;
+  transition: background-color 0.2s ease;
+}
+
+.custom-main-scroll::-webkit-scrollbar-thumb:hover {
+  background: #627D98;
+}
+
+.custom-main-scroll::-webkit-scrollbar-thumb:active {
+  background: #3B82F6;
+}
+
+/* Global scrollbar fallback */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: #F1F4FA;
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #BCCDE5;
+  border-radius: 9999px;
+  border: 2px solid #F1F4FA;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #8FA7C9;
+}
+
