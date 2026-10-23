@@ -14,7 +14,7 @@ import { aiRouter } from './routes/ai.routes';
 import { emailService } from './services/email.service';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 
 // Connect to MongoDB Atlas Database
 connectDB();
@@ -35,13 +35,13 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'UP',
     database: 'MongoDB Atlas 🍃',
-    backend: 'TypeScript Node.js Express',
+    backend: 'Andex OS TypeScript Node.js Express',
     timestamp: new Date().toISOString(),
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Chrono-Atelier TypeScript Backend running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Andex OS Backend running at http://0.0.0.0:${PORT}`);
   // Start automated background schedule reminder worker
   emailService.startReminderScheduler();
 });
