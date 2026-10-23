@@ -2,6 +2,47 @@ import { TaskItem, PostcardEmail } from './types';
 import { authService } from './authService';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const TASKS_CACHE_KEY = 'andex_cached_tasks_v2';
+
+export const STARTER_TASKS: TaskItem[] = [
+  {
+    id: 'demo-task-1',
+    title: 'Khởi động phiên Deep Work cùng Andex OS',
+    priority: '#1 Cốt Lõi',
+    category: 'deep_work',
+    color_theme: 'twilight',
+    column: 'in_progress',
+    day_index: new Date().getDay() === 0 ? 6 : new Date().getDay() - 1,
+    scheduled_date: new Date().toISOString().slice(0, 10),
+    time_box: { start: '09:00', end: '11:00', duration_minutes: 120 },
+    definition_of_done: [
+      { id: 'dod-1', text: 'Bật chuông ngũ cung 432Hz', completed: true },
+      { id: 'dod-2', text: 'Tập trung hoàn thành mục tiêu ngày', completed: false },
+    ],
+    progress_percentage: 50,
+    punctuality_status: 'on_track',
+    collaborators: [],
+    stats: { comments_count: 0, attachments_count: 0 },
+  },
+  {
+    id: 'demo-task-2',
+    title: 'Lên lịch trình thông minh với Gemini AI',
+    priority: '#2 Quan Trọng',
+    category: 'research',
+    color_theme: 'deep_forest',
+    column: 'draft',
+    day_index: new Date().getDay() === 0 ? 6 : new Date().getDay() - 1,
+    scheduled_date: new Date().toISOString().slice(0, 10),
+    time_box: { start: '14:00', end: '15:30', duration_minutes: 90 },
+    definition_of_done: [
+      { id: 'dod-3', text: 'Trải nghiệm AI Concierge', completed: false },
+    ],
+    progress_percentage: 0,
+    punctuality_status: 'on_track',
+    collaborators: [],
+    stats: { comments_count: 0, attachments_count: 0 },
+  },
+];
 
 export async function fetchTasks(): Promise<TaskItem[]> {
   try {
@@ -13,51 +54,113 @@ export async function fetchTasks(): Promise<TaskItem[]> {
       headers,
     });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-    return await res.json();
+    const data = await res.json();
+    if (Array.isArray(data) && typeof window !== 'undefined') {
+      localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify(data));
+    }
+    return data;
   } catch (error) {
-    console.error('Failed to fetch tasks:', error);
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem(TASKS_CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+      return STARTER_TASKS;
+    }
     return [];
   }
 }
 
 export async function createTask(taskData: Partial<TaskItem>): Promise<TaskItem> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...authService.getAuthHeaders(),
-  };
-  const res = await fetch(`${API_BASE}/tasks`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(taskData),
-  });
-  if (!res.ok) throw new Error('Failed to create task');
-  return await res.json();
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...authService.getAuthHeaders(),
+    };
+    const res = await fetch(`${API_BASE}/tasks`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(taskData),
+    });
+    if (!res.ok) throw new Error('Failed to create task');
+    const created = await res.json();
+    return created;
+  } catch (error) {
+    const newTask: TaskItem = {
+      id: 'local-' + Date.now(),
+      title: taskData.title || 'Công việc mới',
+      priority: taskData.priority || '#2 Quan Trọng',
+      category: taskData.category || 'deep_work',
+      color_theme: taskData.color_theme || 'twilight',
+      column: taskData.column || 'draft',
+      day_index: taskData.day_index ?? 1,
+      scheduled_date: taskData.scheduled_date || new Date().toISOString().slice(0, 10),
+      time_box: taskData.time_box || { start: '09:00', end: '10:00', duration_minutes: 60 },
+      definition_of_done: taskData.definition_of_done || [],
+      note: taskData.note,
+      progress_percentage: 0,
+      collaborators: [],
+      stats: { comments_count: 0, attachments_count: 0 },
+      punctuality_status: 'on_track',
+    };
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem(TASKS_CACHE_KEY);
+        const list = cached ? JSON.parse(cached) : STARTER_TASKS;
+        localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify([newTask, ...list]));
+      } catch {}
+    }
+    return newTask;
+  }
 }
 
 export async function updateTask(id: string, updates: Partial<TaskItem>): Promise<TaskItem> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...authService.getAuthHeaders(),
-  };
-  const res = await fetch(`${API_BASE}/tasks/${id}`, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify(updates),
-  });
-  if (!res.ok) throw new Error('Failed to update task');
-  return await res.json();
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...authService.getAuthHeaders(),
+    };
+    const res = await fetch(`${API_BASE}/tasks/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(updates),
+    });
+    if (!res.ok) throw new Error('Failed to update task');
+    return await res.json();
+  } catch (error) {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem(TASKS_CACHE_KEY);
+        if (cached) {
+          const list: TaskItem[] = JSON.parse(cached);
+          const updatedList = list.map((t) => (t.id === id ? { ...t, ...updates } : t));
+          localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify(updatedList));
+          const found = updatedList.find((t) => t.id === id);
+          if (found) return found;
+        }
+      } catch {}
+    }
+    return { id, ...updates } as TaskItem;
+  }
 }
 
 export async function completeTask(id: string): Promise<TaskItem> {
-  const headers: Record<string, string> = {
-    ...authService.getAuthHeaders(),
-  };
-  const res = await fetch(`${API_BASE}/tasks/${id}/complete`, {
-    method: 'PUT',
-    headers,
-  });
-  if (!res.ok) throw new Error('Failed to complete task');
-  return await res.json();
+  try {
+    const headers: Record<string, string> = {
+      ...authService.getAuthHeaders(),
+    };
+    const res = await fetch(`${API_BASE}/tasks/${id}/complete`, {
+      method: 'PUT',
+      headers,
+    });
+    if (!res.ok) throw new Error('Failed to complete task');
+    return await res.json();
+  } catch (error) {
+    return await updateTask(id, { column: 'done' });
+  }
 }
 
 export async function toggleChecklistItem(taskId: string, checklistId: string): Promise<TaskItem> {

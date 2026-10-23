@@ -54,6 +54,7 @@ export default function WorkspaceApp() {
   // Global drag-to-autoscroll activation
   useDragAutoScroll();
 
+  const [isMounted, setIsMounted] = useState(false);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('tracker');
@@ -187,6 +188,7 @@ export default function WorkspaceApp() {
 
   // Initial load: check auth session, settings, and fetch tasks
   useEffect(() => {
+    setIsMounted(true);
     const initialSettings = getStoredSettings();
     setSettings(initialSettings);
     soundEngine.setMuted(!initialSettings.soundEnabled);
@@ -495,6 +497,19 @@ export default function WorkspaceApp() {
         return 'border-[#E2E8F0] bg-[#FAFBFD]';
     }
   };
+
+  if (!isMounted) {
+    return (
+      <div className="w-full max-w-[1760px] 2xl:max-w-[1880px] h-[98vh] jiron-app-frame flex items-center justify-center bg-[#FAFBFD] border border-[#E2E8F0] shadow-app">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#E11D48] to-[#F43F5E] flex items-center justify-center font-black text-white text-lg shadow-lg shadow-rose-500/25 animate-pulse">
+            A
+          </div>
+          <p className="text-xs font-bold text-slate-500 tracking-wider">Đang tải Andex OS...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
