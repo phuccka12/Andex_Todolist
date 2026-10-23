@@ -200,6 +200,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
+  const handleGuestLogin = () => {
+    soundEngine.playPentatonicChime(4);
+    const guestUser: AuthUser = {
+      id: 'guest-' + Date.now(),
+      name: 'Cao Bảo Phúc (Demo)',
+      email: 'phuc.cbp@gmail.com',
+      role: 'user',
+      title: 'Full-Stack Developer & Creator',
+      bio: 'Không gian làm việc trải nghiệm Andex OS',
+    };
+    authService.setCachedUser(guestUser);
+    onAuthSuccess(guestUser);
+    onClose();
+  };
+
   const handleQuickDemo = () => {
     setName('Cao Bảo Phúc');
     setEmail('phuc.cbp@gmail.com');
@@ -549,17 +564,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             )}
           </button>
 
-          {/* Fast Demo fill helper (for login/register) */}
+          {/* Fast Demo fill helper & Guest Mode (for login/register) */}
           {(tab === 'login' || tab === 'register') && (
-            <div className="pt-2 border-t border-[#EEF2F8] flex items-center justify-between text-[11px] text-[#64748B]">
-              <span>Chưa muốn gõ tay?</span>
+            <div className="pt-2.5 border-t border-[#EEF2F8] flex items-center justify-between text-[11px] text-[#64748B]">
+              <button
+                type="button"
+                onClick={handleGuestLogin}
+                className="text-[#E11D48] hover:text-[#BE123C] font-bold flex items-center gap-1 hover:underline cursor-pointer"
+                title="Vào nhanh không gian làm việc mà không cần máy chủ backend"
+              >
+                <Sparkles className="w-3 h-3 text-[#E11D48]" />
+                <span>Trải nghiệm Khách (Offline Demo)</span>
+              </button>
               <button
                 type="button"
                 onClick={handleQuickDemo}
                 className="text-[#2563EB] hover:text-[#1D4ED8] font-bold flex items-center gap-1 hover:underline cursor-pointer"
               >
-                <Sparkles className="w-3 h-3 text-[#2563EB]" />
-                <span>Điền thông tin mẫu</span>
+                <span>Điền mẫu</span>
               </button>
             </div>
           )}
