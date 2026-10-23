@@ -4,45 +4,7 @@ import { authService } from './authService';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 const TASKS_CACHE_KEY = 'andex_cached_tasks_v2';
 
-export const STARTER_TASKS: TaskItem[] = [
-  {
-    id: 'demo-task-1',
-    title: 'Khởi động phiên Deep Work cùng Andex OS',
-    priority: '#1 Cốt Lõi',
-    category: 'deep_work',
-    color_theme: 'twilight',
-    column: 'in_progress',
-    day_index: new Date().getDay() === 0 ? 6 : new Date().getDay() - 1,
-    scheduled_date: new Date().toISOString().slice(0, 10),
-    time_box: { start: '09:00', end: '11:00', duration_minutes: 120 },
-    definition_of_done: [
-      { id: 'dod-1', text: 'Bật chuông ngũ cung 432Hz', completed: true },
-      { id: 'dod-2', text: 'Tập trung hoàn thành mục tiêu ngày', completed: false },
-    ],
-    progress_percentage: 50,
-    punctuality_status: 'on_track',
-    collaborators: [],
-    stats: { comments_count: 0, attachments_count: 0 },
-  },
-  {
-    id: 'demo-task-2',
-    title: 'Lên lịch trình thông minh với Gemini AI',
-    priority: '#2 Quan Trọng',
-    category: 'research',
-    color_theme: 'deep_forest',
-    column: 'draft',
-    day_index: new Date().getDay() === 0 ? 6 : new Date().getDay() - 1,
-    scheduled_date: new Date().toISOString().slice(0, 10),
-    time_box: { start: '14:00', end: '15:30', duration_minutes: 90 },
-    definition_of_done: [
-      { id: 'dod-3', text: 'Trải nghiệm AI Concierge', completed: false },
-    ],
-    progress_percentage: 0,
-    punctuality_status: 'on_track',
-    collaborators: [],
-    stats: { comments_count: 0, attachments_count: 0 },
-  },
-];
+export const STARTER_TASKS: TaskItem[] = [];
 
 export async function fetchTasks(): Promise<TaskItem[]> {
   try {
@@ -65,10 +27,10 @@ export async function fetchTasks(): Promise<TaskItem[]> {
         const cached = localStorage.getItem(TASKS_CACHE_KEY);
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed)) return parsed;
         }
       } catch {}
-      return STARTER_TASKS;
+      return [];
     }
     return [];
   }
@@ -176,16 +138,63 @@ export async function toggleChecklistItem(taskId: string, checklistId: string): 
 }
 
 export async function deleteTask(id: string): Promise<boolean> {
-  const headers: Record<string, string> = {
-    ...authService.getAuthHeaders(),
-  };
-  const res = await fetch(`${API_BASE}/tasks/${id}`, {
-    method: 'DELETE',
-    headers,
-  });
-  if (!res.ok) throw new Error('Failed to delete task');
-  const data = await res.json();
-  return data.success;
+  // 1. Immediately remove from local storage cache
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem(TASKS_CACHE_KEY);
+      if (cached) {
+        const list: TaskItem[] = JSON.parse(cached);
+        const filtered = list.filter((t) => t.id !== id);
+        localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify(filtered));
+      }
+      // Also clean up any legacy keys
+      const legacy = localStorage.getItem('cbp_atelier_cached_tasks');
+      if (legacy) {
+        const list: TaskItem[] = JSON.parse(legacy);
+        const filtered = list.filter((t) => t.id !== id);
+        localStorage.setItem('cbp_atelier_cached_tasks', JSON.stringify(filtered));
+      }
+    } catch {}
+  }
+
+  // 2. Call backend DELETE
+  try {
+    const headers: Record<string, string> = {
+      ...authService.getAuthHeaders(),
+    };
+    const res = await fetch(`${API_BASE}/tasks/${id}`, {
+      method: 'DELETE',
+      headers,
+    });
+    if (!res.ok) throw new Error('Failed to delete task');
+    const data = await res.json();
+    return data.success;
+  } catch (error) {
+    // Offline / unreach fallback: local deletion already completed
+    return true;
+  }
+}
+
+export async function deleteAllTasks(): Promise<boolean> {
+  // Clear all local caches
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(TASKS_CACHE_KEY);
+    localStorage.removeItem('cbp_atelier_cached_tasks');
+  }
+
+  try {
+    const headers: Record<string, string> = {
+      ...authService.getAuthHeaders(),
+    };
+    const res = await fetch(`${API_BASE}/tasks/all`, {
+      method: 'DELETE',
+      headers,
+    });
+    if (!res.ok) throw new Error('Failed to delete all tasks');
+    return true;
+  } catch (error) {
+    return true;
+  }
 }
 
 export async function sendPostcardEmail(payload: PostcardEmail): Promise<{ success: boolean; message: string }> {

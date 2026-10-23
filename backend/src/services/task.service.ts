@@ -5,13 +5,7 @@ class TaskService {
   public async getAllTasks(userId?: string): Promise<TaskItem[]> {
     if (userId) {
       // Logged in user: ONLY return tasks owned by this specific userId
-      let tasks = await TaskModel.find({ userId }).sort({ createdAt: -1 }).lean();
-      
-      // If this is a brand new user with no tasks yet, seed initial sample tasks assigned specifically to this user
-      if (tasks.length === 0) {
-        await this.seedInitialDataForUser(userId);
-        tasks = await TaskModel.find({ userId }).sort({ createdAt: -1 }).lean();
-      }
+      const tasks = await TaskModel.find({ userId }).sort({ createdAt: -1 }).lean();
 
       return tasks.map((t: any) => ({
         ...t,
@@ -19,14 +13,9 @@ class TaskService {
         userId: t.userId ? t.userId.toString() : undefined,
       }));
     } else {
-      // Guest / Logged-out user: ONLY return tasks with no userId (public/sample tasks)
+      // Guest / Logged-out user: return tasks with no userId
       const guestQuery = { $or: [{ userId: null }, { userId: { $exists: false } }] };
-      let tasks = await TaskModel.find(guestQuery).sort({ createdAt: -1 }).lean();
-
-      if (tasks.length === 0) {
-        await this.seedInitialGuestData();
-        tasks = await TaskModel.find(guestQuery).sort({ createdAt: -1 }).lean();
-      }
+      const tasks = await TaskModel.find(guestQuery).sort({ createdAt: -1 }).lean();
 
       return tasks.map((t: any) => ({
         ...t,
@@ -177,89 +166,24 @@ class TaskService {
   }
 
   public async seedInitialDataForUser(userId: string): Promise<void> {
-    const existingCount = await TaskModel.countDocuments({ userId });
-    if (existingCount > 0) return;
-
-    await TaskModel.create([
-      {
-        userId,
-        title: 'Thiết kế giao diện Workspace Cá nhân',
-        category: 'deep_work',
-        priority: '#1 Cốt Lõi',
-        color_theme: 'twilight',
-        column: 'draft',
-        day_index: 0, // Monday
-        time_box: { start: '08:30', end: '10:00', duration_minutes: 90 },
-        progress_percentage: 0,
-        definition_of_done: [
-          { id: 'd1', text: 'Tối ưu trải nghiệm Timetable', completed: false },
-          { id: 'd2', text: 'Tùy chỉnh màu sắc & wallpaper', completed: false },
-        ],
-        collaborators: [{ name: 'Me', avatar: 'ME' }],
-        stats: { comments_count: 1, attachments_count: 0 },
-        punctuality_status: 'on_track',
-      },
-      {
-        userId,
-        title: 'Xây dựng API Backend & Lưu trữ Cloud',
-        category: 'deep_work',
-        priority: '#1 Cốt Lõi',
-        color_theme: 'deep_forest',
-        column: 'in_progress',
-        day_index: 1, // Tuesday
-        time_box: { start: '09:00', end: '10:30', duration_minutes: 90 },
-        progress_percentage: 65,
-        definition_of_done: [
-          { id: 'd3', text: 'Kết nối Atlas Cluster', completed: true },
-          { id: 'd4', text: 'Bảo mật dữ liệu riêng từng tài khoản', completed: true },
-        ],
-        collaborators: [{ name: 'Me', avatar: 'ME' }],
-        stats: { comments_count: 2, attachments_count: 1 },
-        punctuality_status: 'active_now',
-      },
-    ]);
+    // Clean initial state: no mock tasks
+    return;
   }
 
   public async seedInitialGuestData(): Promise<void> {
-    const guestQuery = { $or: [{ userId: null }, { userId: { $exists: false } }] };
-    const count = await TaskModel.countDocuments(guestQuery);
-    if (count > 0) return;
+    // Clean initial state: no mock tasks
+    return;
+  }
 
-    await TaskModel.create([
-      {
-        title: 'Dùng thử hệ thống CBP Atelier OS',
-        category: 'deep_work',
-        priority: '#1 Cốt Lõi',
-        color_theme: 'deep_forest',
-        column: 'in_progress',
-        day_index: 1,
-        time_box: { start: '09:00', end: '10:30', duration_minutes: 90 },
-        progress_percentage: 50,
-        definition_of_done: [
-          { id: 'g1', text: 'Đăng ký tài khoản cá nhân', completed: false },
-          { id: 'g2', text: 'Trải nghiệm tính năng Timeblocking', completed: true },
-        ],
-        collaborators: [{ name: 'Guest', avatar: 'GT' }],
-        stats: { comments_count: 0, attachments_count: 0 },
-        punctuality_status: 'on_track',
-      },
-      {
-        title: 'Thưởng thức cà phê & lập kế hoạch tuần',
-        category: 'deep_work',
-        priority: '#1 Cốt Lõi',
-        color_theme: 'twilight',
-        column: 'draft',
-        day_index: 0,
-        time_box: { start: '07:00', end: '08:30', duration_minutes: 90 },
-        progress_percentage: 0,
-        definition_of_done: [
-          { id: 'g3', text: 'Chọn bảng màu Twilight Sunset', completed: true },
-        ],
-        collaborators: [{ name: 'Guest', avatar: 'GT' }],
-        stats: { comments_count: 0, attachments_count: 0 },
-        punctuality_status: 'on_track',
-      },
-    ]);
+  public async deleteAllTasks(userId?: string): Promise<number> {
+    if (userId) {
+      const res = await TaskModel.deleteMany({ userId });
+      return res.deletedCount || 0;
+    } else {
+      const guestQuery = { $or: [{ userId: null }, { userId: { $exists: false } }] };
+      const res = await TaskModel.deleteMany(guestQuery);
+      return res.deletedCount || 0;
+    }
   }
 }
 

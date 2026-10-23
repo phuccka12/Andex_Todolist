@@ -70,7 +70,17 @@ taskRouter.patch('/:id/checklist/:checklistId', optionalAuth, async (req: Authen
   }
 });
 
-// DELETE task
+// DELETE all tasks (clean slate)
+taskRouter.delete('/all', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const deletedCount = await taskService.deleteAllTasks(req.user?.id);
+    res.json({ success: true, message: `Deleted ${deletedCount} tasks`, count: deletedCount });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to delete all tasks', details: err.message });
+  }
+});
+
+// DELETE single task
 taskRouter.delete('/:id', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const success = await taskService.deleteTask(req.params.id, req.user?.id);
@@ -81,14 +91,14 @@ taskRouter.delete('/:id', optionalAuth, async (req: AuthenticatedRequest, res: R
   }
 });
 
-// RESET clean starter dataset
-taskRouter.post('/seed-clean', async (req: Request, res: Response) => {
+// RESET clean dataset (wipes all mock data)
+taskRouter.post('/seed-clean', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    await taskService.seedInitialGuestData();
-    const tasks = await taskService.getAllTasks();
-    res.json({ message: 'Seed cleaned successfully', tasks });
+    await taskService.deleteAllTasks(req.user?.id);
+    const tasks = await taskService.getAllTasks(req.user?.id);
+    res.json({ message: 'All tasks cleared successfully', tasks });
   } catch (err: any) {
-    res.status(500).json({ error: 'Failed to seed clean data', details: err.message });
+    res.status(500).json({ error: 'Failed to clean data', details: err.message });
   }
 });
 

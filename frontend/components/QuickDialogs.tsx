@@ -67,26 +67,27 @@ export const QuickDialogs: React.FC<QuickDialogsProps> = ({
                 <div className="flex items-center gap-2.5">
                   <Database className="w-4 h-4 text-[#10B981]" />
                   <div>
-                    <p className="text-xs font-bold text-[#1E2433]">Đồng bộ dữ liệu trực tuyến</p>
-                    <p className="text-[10px] text-emerald-600 font-bold">● Tự động sao lưu và bảo mật an toàn</p>
+                    <p className="text-xs font-bold text-[#1E2433]">Làm sạch bảng & Dữ liệu</p>
+                    <p className="text-[10px] text-slate-500 font-medium">Xóa toàn bộ việc thử nghiệm để bắt đầu mới</p>
                   </div>
                 </div>
                 <button
                   onClick={async () => {
-                    const confirmed = await notify.confirm('Khôi phục lại toàn bộ dữ liệu mẫu khởi tạo của hệ thống?', {
-                      title: 'Khôi Phục Dữ Liệu',
-                      confirmText: 'Khôi phục ngay',
+                    const confirmed = await notify.confirm('Bạn có muốn xóa sạch toàn bộ các công việc thử nghiệm trên bảng để bắt đầu với bảng trống mới?', {
+                      title: 'Làm Sạch Bảng Việc',
+                      confirmText: 'Xóa sạch ngay',
+                      cancelText: 'Hủy',
                       type: 'warning',
                     });
                     if (confirmed) {
                       await onResetSeedData();
                       onCloseAll();
-                      await notify.success('Đã khôi phục dữ liệu mẫu ban đầu.');
+                      await notify.success('Đã dọn sạch toàn bộ công việc trên bảng.');
                     }
                   }}
-                  className="px-2.5 py-1 bg-[#F1F4FA] hover:bg-slate-200 text-[#1E2433] text-[11px] font-bold rounded-lg transition-colors cursor-pointer"
+                  className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold rounded-lg transition-colors cursor-pointer border border-rose-200"
                 >
-                  Khôi phục
+                  Xóa sạch
                 </button>
               </div>
             </div>

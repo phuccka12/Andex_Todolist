@@ -46,6 +46,7 @@ import {
   createTask,
   updateTask,
   deleteTask,
+  deleteAllTasks,
   completeTask,
   toggleChecklistItem,
 } from '@/lib/api';
@@ -357,16 +358,14 @@ export default function WorkspaceApp() {
     }
   };
 
-  // Reset seed clean data
+  // Reset clean data - clears all tasks to empty clean state
   const handleResetSeedData = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/tasks/seed-clean', { method: 'POST' });
-      const data = await res.json();
-      if (data.tasks) {
-        setTasks(data.tasks);
-      }
+      await deleteAllTasks();
+      setTasks([]);
+      soundEngine.playSoftClick();
     } catch (err) {
-      console.error('Failed to reset seed:', err);
+      console.error('Failed to reset tasks:', err);
     }
   };
 
@@ -638,6 +637,7 @@ export default function WorkspaceApp() {
                 onToggleChecklist={handleToggleChecklist}
                 onMoveColumn={handleMoveColumn}
                 onAddTaskToColumn={handleAddTaskToColumn}
+                onDeleteTask={handleDeleteTask}
               />
 
               {/* Section 3: Hero Timetable with Drag & Drop and date-fns Month Calendar */}

@@ -12,6 +12,7 @@ interface KanbanSectionProps {
   onToggleChecklist: (taskId: string, checklistId: string) => Promise<void>;
   onMoveColumn: (taskId: string, newColumn: 'draft' | 'in_progress' | 'editing' | 'done') => Promise<void>;
   onAddTaskToColumn: (column: 'draft' | 'in_progress' | 'editing' | 'done') => void;
+  onDeleteTask?: (taskId: string) => Promise<void>;
 }
 
 const COLUMNS = [
@@ -27,6 +28,7 @@ export const KanbanSection: React.FC<KanbanSectionProps> = ({
   onToggleChecklist,
   onMoveColumn,
   onAddTaskToColumn,
+  onDeleteTask,
 }) => {
   const getTasksForColumn = (colId: string) => {
     return tasks.filter((t) => {
@@ -119,19 +121,35 @@ export const KanbanSection: React.FC<KanbanSectionProps> = ({
                             {palette.name}
                           </span>
 
-                          {nextCol && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                soundEngine.playSoftClick();
-                                onMoveColumn(task.id, nextCol);
-                              }}
-                              title={`Chuyển sang ${nextCol}`}
-                              className="text-[#8F9CAE] hover:text-[#3B82F6] p-0.5 rounded-md hover:bg-[#F0F4FA] shrink-0 transition-colors"
-                            >
-                              <ChevronRight className="w-3.5 h-3.5" />
-                            </button>
-                          )}
+                          <div className="flex items-center gap-1">
+                            {onDeleteTask && (
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  soundEngine.playSoftClick();
+                                  await onDeleteTask(task.id);
+                                }}
+                                title="Xóa công việc này"
+                                className="text-[#8F9CAE] hover:text-rose-500 p-0.5 rounded-md hover:bg-rose-50 shrink-0 transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
+                            {nextCol && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  soundEngine.playSoftClick();
+                                  onMoveColumn(task.id, nextCol);
+                                }}
+                                title={`Chuyển sang ${nextCol}`}
+                                className="text-[#8F9CAE] hover:text-[#3B82F6] p-0.5 rounded-md hover:bg-[#F0F4FA] shrink-0 transition-colors"
+                              >
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </div>
 
                         {/* Title & Priority */}
