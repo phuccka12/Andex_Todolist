@@ -198,8 +198,10 @@ When presented with complex, multi-intent prompts:
       this.activeWorkingModel,
       process.env.GEMINI_MODEL,
       'gemini-2.5-flash-lite',
-      'gemini-flash-lite-latest',
+      'gemini-2.0-flash-lite',
       'gemini-2.0-flash',
+      'gemini-2.5-flash',
+      'gemini-flash-lite-latest',
       'gemini-flash-latest',
     ];
 
@@ -246,6 +248,7 @@ When presented with complex, multi-intent prompts:
           res.status === 503 ||
           res.status === 429 ||
           res.status === 404 ||
+          (res.status === 400 && (errLower.includes('thinking') || errLower.includes('unsupported') || errLower.includes('not supported'))) ||
           errLower.includes('high demand') ||
           errLower.includes('overloaded') ||
           errLower.includes('spikes in demand') ||
@@ -287,6 +290,17 @@ When presented with complex, multi-intent prompts:
       } finally {
         clearTimeout(timeoutHandle);
       }
+    }
+
+    const finalErrLower = String(lastError?.message || '').toLowerCase();
+    if (
+      finalErrLower.includes('high demand') ||
+      finalErrLower.includes('overloaded') ||
+      finalErrLower.includes('503') ||
+      finalErrLower.includes('429') ||
+      finalErrLower.includes('resource_exhausted')
+    ) {
+      throw new Error('Máy chủ AI đang có nhiều lượt truy cập cùng lúc nên hơi bận một chút. Bạn thử nhắn lại sau vài giây nhé!');
     }
 
     throw lastError || new Error('Tất cả mô hình Gemini khả dụng đều đang quá tải hoặc gặp lỗi. Vui lòng thử lại sau giây lát.');
