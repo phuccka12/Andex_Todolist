@@ -48,7 +48,7 @@ class TaskService {
       definition_of_done: taskPartial.definition_of_done || [],
       collaborators: taskPartial.collaborators && taskPartial.collaborators.length > 0
         ? taskPartial.collaborators
-        : [{ name: 'Cao Bảo Phúc', avatar: 'CB' }],
+        : [{ name: 'Andex Member', avatar: 'AM' }],
       stats: { comments_count: 0, attachments_count: 0 },
       punctuality_status: 'on_track',
     });

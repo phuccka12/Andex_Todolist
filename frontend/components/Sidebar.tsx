@@ -37,6 +37,8 @@ interface SidebarProps {
   onOpenAuth?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  onCloseMobile?: () => void;
+  className?: string;
   theme?: AppTheme;
   customTheme?: CustomThemeConfig;
 }
@@ -56,6 +58,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenAuth,
   isCollapsed = false,
   onToggleCollapse,
+  onCloseMobile,
+  className = '',
   theme = 'slate',
   customTheme,
 }) => {
@@ -180,6 +184,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleToggle = () => {
     soundEngine.playSoftClick();
+    if (onCloseMobile) {
+      onCloseMobile();
+      return;
+    }
     if (onToggleCollapse) onToggleCollapse();
   };
 
@@ -188,9 +196,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       style={themeStyles.asideStyle}
       className={`${
         isCollapsed ? 'w-[72px] p-2.5' : 'w-60 p-3.5'
-      } flex flex-col justify-between select-none h-full shrink-0 border-r transition-all duration-300 ease-in-out ${
+      } flex flex-col justify-between select-none h-full shrink-0 border-r transition-all duration-300 ease-in-out overflow-y-auto ${
         themeStyles.aside
-      }`}
+      } ${className}`}
     >
       <div className="space-y-4">
         {/* Brand Logo & 3-stripe Toggle Header */}

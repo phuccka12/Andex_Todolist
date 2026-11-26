@@ -132,7 +132,7 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
     setFilterThemeGroup('all');
   };
 
-  // Load preferences from localStorage
+  // Load preferences from localStorage; default to Day view on narrow mobile screens
   useEffect(() => {
     try {
       const saved = localStorage.getItem(TIMETABLE_PREFS_KEY);
@@ -140,7 +140,13 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
         const parsed = JSON.parse(saved);
         if (parsed.density) setDensity(parsed.density);
         if (parsed.timeSpanMode) setTimeSpanMode(parsed.timeSpanMode);
-        if (parsed.viewMode) setViewMode(parsed.viewMode);
+        if (parsed.viewMode) {
+          setViewMode(parsed.viewMode);
+          return;
+        }
+      }
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        setViewMode('Day');
       }
     } catch {}
   }, []);
@@ -716,7 +722,7 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
       {/* ========================================================================= */}
       {viewMode === 'Week' && (
         <div className="border border-[#DCE4F0] rounded-2xl overflow-hidden bg-white shadow-2xs flex-1 flex flex-col">
-          <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)]">
+          <div className="overflow-x-auto overflow-y-auto max-h-[62dvh] md:max-h-[calc(100dvh-280px)]">
             <div className="min-w-[840px]">
               {/* Day Headers Row */}
               <div className="grid grid-cols-[64px_repeat(7,1fr)] bg-[#F8FAFD] border-b border-[#DCE4F0] text-center sticky top-0 z-20 shadow-xs">

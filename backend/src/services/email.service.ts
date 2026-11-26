@@ -353,7 +353,7 @@ class EmailService {
               <!-- Primary CTA Action -->
               <tr>
                 <td style="padding: 0 32px 32px 32px; text-align: center;">
-                  <a href="http://localhost:3000" target="_blank" style="display: inline-block; padding: 12px 28px; background: #2563EB; color: #FFFFFF; font-weight: 700; font-size: 13px; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);">
+                  <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/app" target="_blank" style="display: inline-block; padding: 12px 28px; background: #2563EB; color: #FFFFFF; font-weight: 700; font-size: 13px; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);">
                     Mở Bàn Làm Việc CBP Atelier OS &rarr;
                   </a>
                   <div style="margin-top: 14px; font-size: 11px; color: #64748B;">

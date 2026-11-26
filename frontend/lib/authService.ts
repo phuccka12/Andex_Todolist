@@ -1,3 +1,5 @@
+import { API_BASE } from './config';
+
 export interface AuthUser {
   id: string;
   name: string;
@@ -18,7 +20,6 @@ export interface AuthResponse {
   user?: AuthUser;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 const TOKEN_KEY = 'cbp_auth_token';
 const USER_KEY = 'cbp_auth_user';
 

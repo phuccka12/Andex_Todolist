@@ -1,9 +1,22 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Cao Bảo Phúc (CBP) — Full-Stack Developer & Andex OS',
-  description: 'Portfolio & Operating System: I build digital products that people love. Andex OS, Gemini AI Scheduling & Flow State Productivity.',
+  title: 'Andex OS — Personal Productivity & Time Operating System',
+  description: 'Andex OS: Thời khóa biểu 24h, Kanban, Pomodoro 432Hz, Nhật ký Ký Ức & Trợ lý AI Gemini.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Andex OS',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#2563EB',
 };
 
 export default function RootLayout({

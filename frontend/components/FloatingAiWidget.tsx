@@ -16,7 +16,7 @@ export const FloatingAiWidget: React.FC<FloatingAiWidgetProps> = ({
   if (isOpen) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end pointer-events-none select-none">
+    <div className="hidden md:flex fixed bottom-6 right-6 z-40 flex-col items-end pointer-events-none select-none">
       {/* Refined Atelier Executive Capsule Trigger */}
       <button
         onClick={() => {

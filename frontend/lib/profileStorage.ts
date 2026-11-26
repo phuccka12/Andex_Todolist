@@ -1,9 +1,9 @@
 import { UserProfileData } from './types';
 
 export const DEFAULT_USER_PROFILE: UserProfileData = {
-  name: 'Yaros Tolstykh',
-  email: 'yaros.tolstykh@cbp.ai',
-  title: 'CBP Personal Workspace Master',
+  name: 'Thành viên Andex OS',
+  email: 'member@andex.os',
+  title: 'Andex Personal Workspace',
   avatar: '',
   cover: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
   background: '',

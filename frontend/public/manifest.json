@@ -1,0 +1,11 @@
+{
+  "name": "Andex OS — Personal Productivity Suite",
+  "short_name": "Andex OS",
+  "description": "Quản lý thời gian, thời khóa biểu thông minh, Pomodoro & Nhật ký Ký Ức.",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#FAFBFD",
+  "theme_color": "#2563EB",
+  "orientation": "portrait-primary"
+}
+

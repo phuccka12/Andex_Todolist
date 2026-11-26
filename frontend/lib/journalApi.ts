@@ -1,4 +1,5 @@
 import { authService } from './authService';
+import { API_BASE } from './config';
 
 export interface JournalEntry {
   id?: string;
@@ -16,8 +17,6 @@ export interface JournalEntry {
   createdAt?: string;
   updatedAt?: string;
 }
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export async function fetchJournals(): Promise<JournalEntry[]> {
   try {

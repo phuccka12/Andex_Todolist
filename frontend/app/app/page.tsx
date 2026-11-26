@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { Clock, BookOpen, Flame, Bot, Menu } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { BentoTrackerCards } from '@/components/BentoTrackerCards';
@@ -59,6 +60,7 @@ export default function WorkspaceApp() {
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('tracker');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Application Settings State
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
@@ -499,7 +501,7 @@ export default function WorkspaceApp() {
 
   if (!isMounted) {
     return (
-      <div className="w-full max-w-[1760px] 2xl:max-w-[1880px] h-[98vh] jiron-app-frame flex items-center justify-center bg-[#FAFBFD] border border-[#E2E8F0] shadow-app">
+      <div className="w-full max-w-[1760px] 2xl:max-w-[1880px] h-full md:h-[98dvh] jiron-app-frame !rounded-none md:!rounded-[32px] flex items-center justify-center bg-[#FAFBFD] border-0 md:border border-[#E2E8F0] shadow-app">
         <div className="flex flex-col items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#E11D48] to-[#F43F5E] flex items-center justify-center font-black text-white text-lg shadow-lg shadow-rose-500/25 animate-pulse">
             A
@@ -526,12 +528,13 @@ export default function WorkspaceApp() {
 
       <div
         style={!userProfile.background && isCustomTheme ? customCanvasStyle : undefined}
-        className={`w-full max-w-[1760px] 2xl:max-w-[1880px] h-[98vh] jiron-app-frame flex overflow-hidden shadow-app relative z-10 transition-all ${
+        className={`w-full max-w-[1760px] 2xl:max-w-[1880px] h-full md:h-[98dvh] jiron-app-frame !rounded-none md:!rounded-[32px] !border-0 md:!border flex overflow-hidden shadow-app relative z-10 transition-all ${
           userProfile.background ? 'bg-white/92 backdrop-blur-xl' : getFrameThemeClass()
         }`}
       >
-        {/* Left Sidebar - Personal Productivity Suite */}
+        {/* Desktop Sidebar */}
         <Sidebar
+          className="hidden md:flex"
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onOpenPomodoro={() => setIsPomodoroOpen(true)}
@@ -553,14 +556,69 @@ export default function WorkspaceApp() {
           customTheme={settings.customTheme}
         />
 
+        {/* Mobile Slide-Over Sidebar Drawer */}
+        {isMobileSidebarOpen && (
+          <div className="fixed inset-0 z-[70] flex md:hidden">
+            <div
+              className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+              onClick={() => setIsMobileSidebarOpen(false)}
+            />
+            <div className="relative z-10 h-full animate-in slide-in-from-left duration-200">
+              <Sidebar
+                className="flex w-64 shadow-2xl"
+                activeTab={activeTab}
+                setActiveTab={(tab) => {
+                  setActiveTab(tab);
+                  setIsMobileSidebarOpen(false);
+                }}
+                onOpenPomodoro={() => {
+                  setIsMobileSidebarOpen(false);
+                  setIsPomodoroOpen(true);
+                }}
+                onOpenHabitTracker={() => {
+                  setIsMobileSidebarOpen(false);
+                  setIsHabitTrackerOpen(true);
+                }}
+                onOpenQuickNotes={() => {
+                  setIsMobileSidebarOpen(false);
+                  setIsQuickNotesOpen(true);
+                }}
+                onOpenUserProfile={() => {
+                  setIsMobileSidebarOpen(false);
+                  setIsUserProfileOpen(true);
+                }}
+                onOpenBackground={() => {
+                  setIsMobileSidebarOpen(false);
+                  setIsBackgroundModalOpen(true);
+                }}
+                onOpenSettings={() => {
+                  setIsMobileSidebarOpen(false);
+                  setIsSettingsOpen(true);
+                }}
+                completedCount={completedCount}
+                profile={userProfile}
+                authUser={authUser}
+                onOpenAuth={() => {
+                  setIsMobileSidebarOpen(false);
+                  setIsAuthModalOpen(true);
+                }}
+                isCollapsed={false}
+                onCloseMobile={() => setIsMobileSidebarOpen(false)}
+                theme={settings.theme || 'slate'}
+                customTheme={settings.customTheme}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Main Studio Area - INNER SCROLLABLE CONTENT */}
         <main
           id="main-content-scroll"
           style={activeTab !== 'journal' ? customCanvasStyle : undefined}
           className={`flex-1 h-full overflow-y-auto overflow-x-hidden ${
             activeTab === 'journal'
-              ? 'p-0 bg-[#F3EBDD]'
-              : `p-6 pb-12 space-y-6 ${getCanvasThemeClass()}`
+              ? 'p-0 pb-20 md:pb-0 bg-[#F3EBDD]'
+              : `p-3.5 sm:p-5 md:p-6 pb-24 md:pb-12 space-y-5 md:space-y-6 ${getCanvasThemeClass()}`
           } custom-main-scroll scroll-smooth transition-colors duration-200`}
         >
           {/* Top Header - Rendered for standard workspace tabs */}
@@ -581,6 +639,7 @@ export default function WorkspaceApp() {
               authUser={authUser}
               onOpenAuth={() => setIsAuthModalOpen(true)}
               onLogout={handleLogout}
+              onOpenMobileMenu={() => setIsMobileSidebarOpen(true)}
             />
           )}
 
@@ -775,6 +834,76 @@ export default function WorkspaceApp() {
 
         {/* Global Luxury Atelier Notification & Confirm Modal */}
         <GlobalNotificationModal />
+
+        {/* Mobile Bottom Navigation Bar */}
+        <nav
+          aria-label="Điều hướng di động"
+          className={`md:hidden fixed bottom-0 inset-x-0 z-40 border-t backdrop-blur-xl px-2 py-1.5 flex items-center justify-around ${
+            settings.theme === 'midnight'
+              ? 'bg-[#0E131F]/95 border-[#1E2638] text-slate-300'
+              : 'bg-white/95 border-[#E2E8F0] text-slate-600'
+          }`}
+          style={{ paddingBottom: 'max(0.375rem, env(safe-area-inset-bottom))' }}
+        >
+          <button
+            onClick={() => {
+              soundEngine.playSoftClick();
+              setActiveTab('tracker');
+            }}
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition-colors ${
+              activeTab === 'tracker' ? 'text-[#2563EB]' : ''
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            <span>Lịch biểu</span>
+          </button>
+
+          <button
+            onClick={() => {
+              soundEngine.playSoftClick();
+              setActiveTab('journal');
+            }}
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition-colors ${
+              activeTab === 'journal' ? 'text-[#8C5D35]' : ''
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Nhật ký</span>
+          </button>
+
+          <button
+            onClick={() => {
+              soundEngine.playSoftClick();
+              setIsPomodoroOpen(true);
+            }}
+            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold text-[#F43F5E]"
+          >
+            <Flame className="w-4 h-4" />
+            <span>Focus</span>
+          </button>
+
+          <button
+            onClick={() => {
+              soundEngine.playPentatonicChime(4);
+              setIsAiOpen(true);
+            }}
+            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold text-[#0EA5E9]"
+          >
+            <Bot className="w-4 h-4" />
+            <span>AI</span>
+          </button>
+
+          <button
+            onClick={() => {
+              soundEngine.playSoftClick();
+              setIsMobileSidebarOpen(true);
+            }}
+            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold"
+          >
+            <Menu className="w-4 h-4" />
+            <span>Menu</span>
+          </button>
+        </nav>
       </div>
     </>
   );

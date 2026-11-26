@@ -14,7 +14,7 @@ import {
   LogOut,
   User as UserIcon,
   ChevronDown,
-  Globe,
+  Menu,
 } from 'lucide-react';
 import { UserProfileData } from '../lib/types';
 import { AuthUser } from '../lib/authService';
@@ -35,6 +35,7 @@ interface HeaderProps {
   authUser?: AuthUser | null;
   onOpenAuth?: () => void;
   onLogout?: () => void;
+  onOpenMobileMenu?: () => void;
   theme?: AppTheme;
 }
 
@@ -53,6 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
   authUser,
   onOpenAuth,
   onLogout,
+  onOpenMobileMenu,
   theme = 'slate',
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -72,15 +74,30 @@ export const Header: React.FC<HeaderProps> = ({
   const isDark = theme === 'midnight';
 
   return (
-    <header className={`flex items-center justify-between pb-3.5 border-b select-none shrink-0 ${
+    <header className={`flex items-center justify-between gap-2 pb-3 md:pb-3.5 border-b select-none shrink-0 ${
       isDark ? 'border-[#1E2638]' : theme === 'cream' ? 'border-[#DCCEB9]' : theme === 'sage' ? 'border-[#C9D9CD]' : 'border-[#EEF2F8]'
     }`}>
-      <div>
-        <h1 className={`text-lg font-extrabold tracking-tight ${isDark ? 'text-white' : 'text-[#1E2433]'}`}>{title}</h1>
-        <p className="text-[11px] text-[#8F9CAE]">{subtitle}</p>
+      <div className="flex items-center gap-2.5 min-w-0">
+        {onOpenMobileMenu && (
+          <button
+            onClick={onOpenMobileMenu}
+            className={`md:hidden p-2 -ml-1 rounded-xl border transition-colors shrink-0 ${
+              isDark
+                ? 'border-[#1E2638] text-slate-200 hover:bg-[#1A2234]'
+                : 'border-[#E2E8F0] bg-white text-[#1E2433] hover:bg-slate-50'
+            }`}
+            aria-label="Mở menu điều hướng"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+        )}
+        <div className="min-w-0">
+          <h1 className={`text-base sm:text-lg font-extrabold tracking-tight truncate ${isDark ? 'text-white' : 'text-[#1E2433]'}`}>{title}</h1>
+          <p className="text-[11px] text-[#8F9CAE] hidden sm:block truncate">{subtitle}</p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
         {/* Landing Page link */}
         <Link
           href="/"
@@ -94,10 +111,11 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Create Task button */}
         <button
           onClick={onOpenNewTaskModal}
-          className="flex items-center gap-1.5 px-4 py-2 bg-[#1E2433] hover:bg-[#2B3448] text-white rounded-full text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+          className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-[#1E2433] hover:bg-[#2B3448] text-white rounded-full text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>Tạo công việc</span>
+          <span className="hidden sm:inline">Tạo công việc</span>
+          <span className="sm:hidden">Mới</span>
         </button>
 
         {/* User Account / Auth Section */}

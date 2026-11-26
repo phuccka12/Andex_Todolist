@@ -401,7 +401,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-                    placeholder="VD: Yaros Tolstykh"
+                    placeholder="VD: Nguyễn Minh Anh"
                     className="w-full px-3.5 py-2 text-xs font-semibold rounded-xl border border-[#E2E8F0] focus:border-[#3B82F6] focus:ring-2 focus:ring-blue-100 outline-none"
                   />
                 </div>

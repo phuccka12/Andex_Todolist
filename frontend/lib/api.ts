@@ -1,7 +1,7 @@
 import { TaskItem, PostcardEmail } from './types';
 import { authService } from './authService';
+import { API_BASE } from './config';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 const TASKS_CACHE_KEY = 'andex_cached_tasks_v2';
 
 export const STARTER_TASKS: TaskItem[] = [];

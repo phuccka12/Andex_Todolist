@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Mail, Send, X, Check, Sun, Moon, Loader2, Flame } from 'lucide-react';
 import { sendPostcardEmail } from '../lib/api';
+import { authService } from '../lib/authService';
 import { soundEngine } from '../lib/audio';
 import { notify } from '../lib/notificationService';
 
@@ -16,7 +17,7 @@ export const EmailPostcardModal: React.FC<EmailPostcardModalProps> = ({ isOpen, 
   const [emailType, setEmailType] = useState<'sunrise' | 'sunset'>('sunrise');
   const [isSending, setIsSending] = useState(false);
   const [sentSuccess, setSentSuccess] = useState(false);
-  const [recipient, setRecipient] = useState('yaros.tolstykh@cbp.ai');
+  const [recipient, setRecipient] = useState(() => authService.getCachedUser()?.email || '');
 
   if (!isOpen) return null;
 
@@ -108,7 +109,9 @@ export const EmailPostcardModal: React.FC<EmailPostcardModalProps> = ({ isOpen, 
 
           <div className="space-y-1">
             <h4 className="font-bold text-sm text-[#1E2433] not-italic">
-              {emailType === 'sunrise' ? 'Chào buổi sáng, Yaros!' : 'Tổng kết ngày trọn vẹn!'}
+              {emailType === 'sunrise'
+                ? `Chào buổi sáng, ${authService.getCachedUser()?.name?.split(' ')[0] || 'Bạn'}!`
+                : 'Tổng kết ngày trọn vẹn!'}
             </h4>
             <p className="text-xs text-[#4A5568] leading-relaxed italic">
               {emailType === 'sunrise'
