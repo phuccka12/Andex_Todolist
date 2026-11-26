@@ -120,6 +120,16 @@ vocabRouter.post('/auto-tag', optionalAuth, async (req: AuthenticatedRequest, re
   }
 });
 
+// DELETE /api/vocab/all - Clear all vocab words for current user
+vocabRouter.delete('/all', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const deletedCount = await vocabService.deleteAllVocab(req.user?.id);
+    res.json({ success: true, deletedCount });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Không thể xóa toàn bộ từ vựng', details: err.message });
+  }
+});
+
 // DELETE /api/vocab/:id - Delete vocab card
 vocabRouter.delete('/:id', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {

@@ -438,6 +438,22 @@ export async function deleteVocab(id: string): Promise<boolean> {
   }
 }
 
+export async function clearAllVocab(): Promise<boolean> {
+  writeCachedVocab([]);
+  if (!authService.getToken()) {
+    return true;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/vocab/all`, {
+      method: 'DELETE',
+      headers: { ...authService.getAuthHeaders() },
+    });
+    return res.ok;
+  } catch {
+    return true;
+  }
+}
+
 export async function autoTagExistingVocab(): Promise<{ updatedCount: number; words: VocabItem[] }> {
   const autoTagLocally = () => {
     const cached = readCachedVocab();
@@ -477,15 +493,43 @@ export async function autoTagExistingVocab(): Promise<{ updatedCount: number; wo
   }
 }
 
+function splitCsvLine(line: string, delimiter = ','): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === delimiter && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current.trim());
+  return result.map((cell) => cell.replace(/^"|"$/g, '').trim());
+}
+
 /**
- * Parses CSV/TSV or delimited lines ("word,meaning" / "word - meaning" / "word | meaning").
+ * Parses CSV/TSV or delimited lines.
+ * Supports header-mapped columns (word, meaning, phonetic, partOfSpeech, example, exampleTranslation, topic)
+ * as well as positional 2..7 column CSV/TSV/dash/pipe rows.
  * Returns null if the input looks like raw words-only or paragraph text that needs AI extraction.
  */
 export function parseStructuredVocabLines(
   rawText: string,
   defaultTopic = 'Chung'
 ): ExtractedVocabDraft[] | null {
-  const lines = rawText
+  const cleanText = rawText.replace(/^\uFEFF/, '');
+  const lines = cleanText
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter(Boolean);
@@ -493,47 +537,112 @@ export function parseStructuredVocabLines(
   if (lines.length === 0) return null;
 
   const parsed: ExtractedVocabDraft[] = [];
+  let colMap: Record<string, number> | null = null;
+  let startIdx = 0;
 
-  for (let i = 0; i < lines.length; i++) {
+  const firstParts = lines[0].includes('\t')
+    ? splitCsvLine(lines[0], '\t')
+    : lines[0].includes(';') && !lines[0].includes(',')
+    ? splitCsvLine(lines[0], ';')
+    : lines[0].includes('|')
+    ? splitCsvLine(lines[0], '|')
+    : lines[0].includes(',')
+    ? splitCsvLine(lines[0], ',')
+    : [];
+
+  if (
+    firstParts.length >= 2 &&
+    /^(word|term|tu|từ|english|từ vựng)$/i.test(firstParts[0])
+  ) {
+    colMap = {};
+    firstParts.forEach((header, idx) => {
+      const h = header.toLowerCase().replace(/\s+/g, '');
+      if (['word', 'term', 'tu', 'từ', 'english', 'từvựng'].includes(h)) colMap!.word = idx;
+      else if (['meaning', 'nghia', 'nghĩa', 'definition', 'vietnamese', 'nghĩatiếngviệt'].includes(h))
+        colMap!.meaning = idx;
+      else if (['phonetic', 'ipa', 'phienam', 'phiênâm'].includes(h)) colMap!.phonetic = idx;
+      else if (['partofspeech', 'pos', 'loaitu', 'loạitừ', 'từloại', 'type'].includes(h))
+        colMap!.partOfSpeech = idx;
+      else if (['example', 'vidu', 'vídụ', 'sentence'].includes(h)) colMap!.example = idx;
+      else if (['exampletranslation', 'dichvidu', 'dịchvídụ', 'translation', 'dich'].includes(h))
+        colMap!.exampleTranslation = idx;
+      else if (['topic', 'tag', 'chude', 'chủđề', 'category'].includes(h)) colMap!.topic = idx;
+    });
+    startIdx = 1;
+  }
+
+  for (let i = startIdx; i < lines.length; i++) {
     const line = lines[i];
-    // Skip CSV header line if present
-    if (i === 0 && /^(word|term|tu|từ)\s*[,;\t|]/i.test(line)) {
-      continue;
-    }
 
     let parts: string[] = [];
     if (line.includes('\t')) {
-      parts = line.split('\t').map((p) => p.trim());
+      parts = splitCsvLine(line, '\t');
     } else if (line.includes('|')) {
-      parts = line.split('|').map((p) => p.trim());
+      parts = splitCsvLine(line, '|');
     } else if (line.includes(' - ')) {
       parts = line.split(' - ').map((p) => p.trim());
     } else if (line.includes(': ')) {
       parts = line.split(': ').map((p) => p.trim());
+    } else if (line.includes(';')) {
+      parts = splitCsvLine(line, ';');
     } else if (line.includes(',')) {
-      // Basic CSV split respecting quotes
-      const csvCols = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
-      if (csvCols && csvCols.length >= 2) {
-        parts = csvCols.map((c) => c.replace(/^"|"$/g, '').trim());
-      }
+      parts = splitCsvLine(line, ',');
     }
 
-    if (parts.length >= 2 && parts[0] && parts[1]) {
+    const word = colMap ? parts[colMap.word ?? 0] || '' : parts[0] || '';
+    const meaning = colMap ? parts[colMap.meaning ?? 1] || '' : parts[1] || '';
+
+    if (word && meaning) {
+      const phonetic = colMap
+        ? colMap.phonetic !== undefined
+          ? parts[colMap.phonetic] || ''
+          : ''
+        : parts[2] || '';
+      const partOfSpeech = colMap
+        ? colMap.partOfSpeech !== undefined
+          ? parts[colMap.partOfSpeech] || ''
+          : ''
+        : parts.length >= 6
+        ? parts[3] || ''
+        : '';
+      const example = colMap
+        ? colMap.example !== undefined
+          ? parts[colMap.example] || ''
+          : ''
+        : parts.length >= 6
+        ? parts[4] || ''
+        : parts[3] || '';
+      const exampleTranslation = colMap
+        ? colMap.exampleTranslation !== undefined
+          ? parts[colMap.exampleTranslation] || ''
+          : ''
+        : parts.length >= 6
+        ? parts[5] || ''
+        : '';
+      const rawTopic = colMap
+        ? colMap.topic !== undefined
+          ? parts[colMap.topic] || ''
+          : ''
+        : parts.length >= 6
+        ? parts[6] || ''
+        : parts[4] || '';
+
       parsed.push({
-        word: parts[0],
-        meaning: parts[1],
-        phonetic: parts[2] || '',
-        partOfSpeech: '',
-        example: parts[3] || '',
-        exampleTranslation: '',
-        topic: classifyTopicByKeywords(parts[0], parts[1], parts[3] || '', parts[4] || defaultTopic),
+        word,
+        meaning,
+        phonetic,
+        partOfSpeech,
+        example,
+        exampleTranslation,
+        topic: classifyTopicByKeywords(word, meaning, example, rawTopic || defaultTopic),
         selected: true,
       });
     }
   }
 
-  // Only treat as structured import if at least half of non-empty lines matched word+meaning pairs
-  if (parsed.length > 0 && parsed.length >= Math.ceil(lines.length * 0.5)) {
+  const effectiveLines = Math.max(1, lines.length - startIdx);
+  // Only treat as structured import if at least half of data lines matched word+meaning pairs
+  if (parsed.length > 0 && parsed.length >= Math.ceil(effectiveLines * 0.5)) {
     return parsed;
   }
 

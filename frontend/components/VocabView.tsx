@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   BookOpen,
   Sparkles,
@@ -25,6 +26,8 @@ import {
   RefreshCw,
   Wand2,
   Maximize2,
+  Download,
+  Copy,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEngine } from '../lib/audio';
@@ -42,6 +45,7 @@ import {
   reviewVocab,
   updateVocab,
   deleteVocab,
+  clearAllVocab,
   autoTagExistingVocab,
   parseStructuredVocabLines,
   speakEnglishWord,
@@ -257,6 +261,15 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     setIsDeckFlipped(false);
     setIsStudyPopupOpen(true);
   };
+
+  useEffect(() => {
+    if (mode !== 'review' || isWordModalOpen || isImportModalOpen) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMode('learn');
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [mode, isWordModalOpen, isImportModalOpen]);
 
   useEffect(() => {
     if (!isStudyPopupOpen || isWordModalOpen || isImportModalOpen) return;
@@ -505,6 +518,29 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     setWords((prev) => prev.filter((w) => w.id !== id));
   };
 
+  const handleClearAllWords = async () => {
+    if (words.length === 0) return;
+    const confirmed = await notify.confirm(
+      `Thao tác này sẽ xóa sạch ${words.length} từ vựng hiện có và không thể hoàn tác.`,
+      {
+        title: 'Xóa toàn bộ kho từ vựng?',
+        confirmText: 'Xóa hết',
+        cancelText: 'Hủy',
+        type: 'warning',
+      }
+    );
+    if (!confirmed) return;
+
+    soundEngine.playSoftClick();
+    await clearAllVocab();
+    setWords([]);
+    setSelectedTopic('all');
+    setSearchQuery('');
+    setIsStudyPopupOpen(false);
+    setMode('learn');
+    notify.success('Đã xóa toàn bộ dữ liệu từ vựng.');
+  };
+
   // Auto-Import Handlers
   const openImportModal = () => {
     soundEngine.playSoftClick();
@@ -566,9 +602,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const processImageFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
       notify.warning('Vui lòng chọn file ảnh (JPG, PNG, WebP).');
       return;
@@ -598,7 +632,66 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processImageFile(file);
     if (imageInputRef.current) imageInputRef.current.value = '';
+  };
+
+  useEffect(() => {
+    if (!isImportModalOpen) return;
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            e.preventDefault();
+            setImportTab('image');
+            processImageFile(file);
+            break;
+          }
+        }
+      }
+    };
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [isImportModalOpen, importTopic]);
+
+  const CSV_TEMPLATE_CONTENT = [
+    'word,meaning,phonetic,partOfSpeech,example,exampleTranslation,topic',
+    'resilient,"Kiên cường, mau phục hồi",/rɪˈzɪliənt/,adj,"She remained resilient despite setbacks.","Cô ấy vẫn kiên cường dù gặp nhiều trở ngại.",Cảm xúc & Tâm lý',
+    'latency,"Độ trễ mạng, độ trễ xử lý",/ˈleɪtənsi/,noun,"Caching significantly reduces API latency.","Bộ nhớ đệm giúp giảm đáng kể độ trễ API.",IT & Tech',
+    'negotiate,"Đàm phán, thương lượng",/nɪˈɡəʊʃieɪt/,verb,"We need to negotiate the contract terms.","Chúng ta cần thương lượng các điều khoản hợp đồng.",Kinh doanh',
+  ].join('\n');
+
+  const handleDownloadCsvTemplate = () => {
+    soundEngine.playSoftClick();
+    const blob = new Blob(['\uFEFF' + CSV_TEMPLATE_CONTENT], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'genncore-vocab-template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    notify.success('Đã tải file mẫu genncore-vocab-template.csv');
+  };
+
+  const handleCopyCsvTemplate = async () => {
+    soundEngine.playSoftClick();
+    try {
+      await navigator.clipboard.writeText(CSV_TEMPLATE_CONTENT);
+      notify.success('Đã sao chép mẫu CSV vào bộ nhớ tạm!');
+    } catch {
+      notify.warning('Không thể tự copy, bạn hãy tải file CSV mẫu bên cạnh nhé.');
+    }
   };
 
   const handleSaveExtractedBatch = async () => {
@@ -725,14 +818,29 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             <Plus className="w-3.5 h-3.5" />
             <span>Thêm Từ</span>
           </button>
+
+          {words.length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearAllWords}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-all ${
+                isDark
+                  ? 'bg-rose-500/10 border-rose-500/25 text-rose-300 hover:bg-rose-500/20'
+                  : 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100'
+              }`}
+              title="Xóa toàn bộ dữ liệu từ vựng"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Xóa tất cả</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* ===================================================================== */}
-      {/* MODE 1: LEARN & VOCAB LIBRARY                                         */}
+      {/* MODE 1: LEARN & VOCAB LIBRARY (Always visible behind blur modals)     */}
       {/* ===================================================================== */}
-      {mode === 'learn' && (
-        <div className="flex-1 min-h-0 flex flex-col space-y-3.5">
+      <div className="flex-1 min-h-0 flex flex-col space-y-3.5">
           {/* Search, Topic Filters & Grid/Deck Toggle */}
           <div className={`p-3 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shrink-0 ${surfaceCls}`}>
             <div className="flex items-center gap-2 flex-1 flex-wrap">
@@ -866,8 +974,8 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     <div
                       key={item.id}
                       onClick={() => {
-                        soundEngine.playSoftClick();
-                        setFlippedIds((prev) => ({ ...prev, [item.id]: !prev[item.id] }));
+                        const idx = filteredWords.findIndex((w) => w.id === item.id);
+                        openStudyPopupAt(idx >= 0 ? idx : 0);
                       }}
                       className={`rounded-2xl border p-4 flex flex-col justify-between gap-3 cursor-pointer transition-all hover:-translate-y-0.5 select-none ${
                         isDark
@@ -1110,73 +1218,95 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               )}
             </div>
           )}
-        </div>
-      )}
+      </div>
 
       {/* ===================================================================== */}
-      {/* MODE 2: DAILY REVIEW (SRS FLASHCARD + QUICK QUIZ)                     */}
+      {/* MODE 2: DAILY REVIEW POPUP (CENTERED OVER BLURRED BACKDROP)           */}
       {/* ===================================================================== */}
-      {mode === 'review' && (
-        <div className="flex-1 min-h-0 flex flex-col space-y-4">
-          {/* Review Toolbar */}
-          <div className={`p-3 rounded-2xl border flex flex-wrap items-center justify-between gap-2.5 shrink-0 ${surfaceCls}`}>
-            <div className="flex items-center gap-2">
-              <div className={`inline-flex p-0.5 rounded-xl border text-xs font-bold ${
-                isDark ? 'bg-[#181C28] border-white/10' : 'bg-slate-100 border-slate-200'
-              }`}>
-                <button
-                  onClick={() => {
-                    setReviewStyle('flashcard');
-                    setShowReviewAnswer(false);
-                  }}
-                  className={`px-3 py-1 rounded-lg cursor-pointer ${
-                    reviewStyle === 'flashcard' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500'
-                  }`}
+      {typeof document !== 'undefined' && mode === 'review' && createPortal(
+        <div
+          onClick={() => setMode('learn')}
+          className="fixed inset-0 z-[150] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={`w-full max-w-2xl max-h-[92dvh] overflow-y-auto rounded-3xl border shadow-2xl p-4 sm:p-6 space-y-4 ${
+              isDark
+                ? 'bg-[#12151E] border-white/10 text-white'
+                : 'bg-white border-slate-200 text-slate-900'
+            }`}
+          >
+            {/* Review Popup Header & Toolbar */}
+            <div className={`pb-3 border-b flex flex-wrap items-center justify-between gap-2.5 ${
+              isDark ? 'border-white/[0.08]' : 'border-slate-100'
+            }`}>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className={`inline-flex p-0.5 rounded-xl border text-xs font-bold ${
+                  isDark ? 'bg-[#181C28] border-white/10' : 'bg-slate-100 border-slate-200'
+                }`}>
+                  <button
+                    onClick={() => {
+                      setReviewStyle('flashcard');
+                      setShowReviewAnswer(false);
+                    }}
+                    className={`px-3 py-1 rounded-lg cursor-pointer ${
+                      reviewStyle === 'flashcard' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500'
+                    }`}
+                  >
+                    Lật Thẻ SRS
+                  </button>
+                  <button
+                    onClick={() => {
+                      setReviewStyle('quiz');
+                      setQuizSelectedIdx(null);
+                    }}
+                    className={`px-3 py-1 rounded-lg cursor-pointer flex items-center gap-1 ${
+                      reviewStyle === 'quiz' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500'
+                    }`}
+                  >
+                    <HelpCircle className="w-3 h-3" />
+                    <span>Trắc Nghiệm</span>
+                  </button>
+                </div>
+
+                <select
+                  value={reviewTopic}
+                  onChange={(e) => startReviewSession(reviewScope, e.target.value)}
+                  className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold outline-none cursor-pointer ${surfaceCls}`}
+                  title="Chọn chủ đề ôn tập"
                 >
-                  Lật Thẻ SRS
-                </button>
+                  <option value="all">Tất cả ({words.length})</option>
+                  {topics.map((tp) => (
+                    <option key={tp} value={tp}>
+                      {tp} ({topicCounts[tp] || 0})
+                    </option>
+                  ))}
+                </select>
+
                 <button
-                  onClick={() => {
-                    setReviewStyle('quiz');
-                    setQuizSelectedIdx(null);
-                  }}
-                  className={`px-3 py-1 rounded-lg cursor-pointer flex items-center gap-1 ${
-                    reviewStyle === 'quiz' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500'
-                  }`}
+                  onClick={() => startReviewSession(reviewScope === 'due' ? 'all' : 'due', reviewTopic)}
+                  className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold cursor-pointer flex items-center gap-1.5 ${surfaceCls}`}
                 >
-                  <HelpCircle className="w-3 h-3" />
-                  <span>Trắc Nghiệm</span>
+                  <RefreshCw className="w-3 h-3 text-indigo-500" />
+                  <span>
+                    {reviewScope === 'due'
+                      ? `Đến hạn (${dueWords.length})`
+                      : `Toàn bộ (${reviewTopic === 'all' ? words.length : topicCounts[reviewTopic] || 0})`}
+                  </span>
                 </button>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2 text-xs flex-wrap">
-              <select
-                value={reviewTopic}
-                onChange={(e) => startReviewSession(reviewScope, e.target.value)}
-                className={`px-3 py-1.5 rounded-xl border font-bold outline-none cursor-pointer ${surfaceCls}`}
-                title="Chọn chủ đề ôn tập"
-              >
-                <option value="all">Tất cả chủ đề ({words.length})</option>
-                {topics.map((tp) => (
-                  <option key={tp} value={tp}>
-                    {tp} ({topicCounts[tp] || 0})
-                  </option>
-                ))}
-              </select>
               <button
-                onClick={() => startReviewSession(reviewScope === 'due' ? 'all' : 'due', reviewTopic)}
-                className={`px-3 py-1.5 rounded-xl border font-bold cursor-pointer flex items-center gap-1.5 ${surfaceCls}`}
+                type="button"
+                onClick={() => setMode('learn')}
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                  isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-500'
+                }`}
+                title="Đóng phòng ôn tập (Esc)"
               >
-                <RefreshCw className="w-3 h-3 text-indigo-500" />
-                <span>
-                  {reviewScope === 'due'
-                    ? `Đang ôn từ đến hạn (${dueWords.length})`
-                    : `Đang ôn toàn bộ (${reviewTopic === 'all' ? words.length : topicCounts[reviewTopic] || 0})`}
-                </span>
+                <X className="w-4 h-4" />
               </button>
             </div>
-          </div>
 
           {/* Review Stage */}
           {words.length === 0 ? (
@@ -1397,14 +1527,16 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               </div>
             </div>
           )}
-        </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* ===================================================================== */}
       {/* MODAL 1: ADD / EDIT SINGLE VOCAB WORD                                 */}
       {/* ===================================================================== */}
-      {isWordModalOpen && (
-        <div className="fixed inset-0 z-[120] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+      {typeof document !== 'undefined' && isWordModalOpen && createPortal(
+        <div className="fixed inset-0 z-[160] bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <h3 className="font-extrabold text-sm">
@@ -1533,14 +1665,15 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ===================================================================== */}
       {/* MODAL 2: SMART AUTO-IMPORT (TEXT/PARAGRAPH, CSV/TXT, IMAGE OCR)       */}
       {/* ===================================================================== */}
-      {isImportModalOpen && (
-        <div className="fixed inset-0 z-[120] bg-black/55 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      {typeof document !== 'undefined' && isImportModalOpen && createPortal(
+        <div className="fixed inset-0 z-[160] bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white text-slate-900 rounded-3xl max-w-2xl w-full max-h-[90dvh] flex flex-col overflow-hidden shadow-2xl border border-slate-200">
             {/* Header */}
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-indigo-50/70 via-white to-violet-50/70 shrink-0">
@@ -1639,7 +1772,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               )}
 
               {importTab === 'file' && (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -1649,14 +1782,80 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   />
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-2xl p-8 text-center space-y-2 cursor-pointer bg-slate-50/70 hover:bg-indigo-50/30 transition-all"
+                    className="border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-2xl p-6 text-center space-y-2 cursor-pointer bg-slate-50/70 hover:bg-indigo-50/30 transition-all"
                   >
                     <Upload className="w-7 h-7 text-indigo-500 mx-auto" />
                     <p className="text-xs font-bold text-slate-700">
                       Bấm để chọn file <code>.csv</code> hoặc <code>.txt</code>
                     </p>
                     <p className="text-[11px] text-slate-500">
-                      Hỗ trợ file xuất từ Quizlet, Excel, Google Sheets (hoặc file chỉ có danh sách từ để AI tự dịch).
+                      Hỗ trợ file xuất từ Excel, Google Sheets, Quizlet (hoặc file chỉ có danh sách từ để AI tự dịch).
+                    </p>
+                  </div>
+
+                  {/* CSV Column Guide */}
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="text-xs font-extrabold text-slate-800">
+                        Hướng dẫn 7 cột chuẩn khi tạo file CSV / Excel
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={handleCopyCsvTemplate}
+                          className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <Copy className="w-3 h-3" />
+                          <span>Copy mẫu</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleDownloadCsvTemplate}
+                          className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <Download className="w-3 h-3" />
+                          <span>Tải file CSV mẫu</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
+                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
+                        <code className="font-bold text-indigo-600">word</code>{' '}
+                        <span className="text-rose-500 font-bold">*</span>{' '}
+                        <span className="text-slate-600">— Từ tiếng Anh (VD: resilient)</span>
+                      </div>
+                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
+                        <code className="font-bold text-indigo-600">meaning</code>{' '}
+                        <span className="text-rose-500 font-bold">*</span>{' '}
+                        <span className="text-slate-600">— Nghĩa tiếng Việt</span>
+                      </div>
+                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
+                        <code className="font-bold text-slate-700">phonetic</code>{' '}
+                        <span className="text-slate-500">— Phiên âm IPA (VD: /rɪˈzɪliənt/)</span>
+                      </div>
+                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
+                        <code className="font-bold text-slate-700">partOfSpeech</code>{' '}
+                        <span className="text-slate-500">— Từ loại (noun, verb, adj...)</span>
+                      </div>
+                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
+                        <code className="font-bold text-slate-700">example</code>{' '}
+                        <span className="text-slate-500">— Câu ví dụ tiếng Anh</span>
+                      </div>
+                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
+                        <code className="font-bold text-slate-700">exampleTranslation</code>{' '}
+                        <span className="text-slate-500">— Dịch nghĩa ví dụ</span>
+                      </div>
+                      <div className="sm:col-span-2 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
+                        <code className="font-bold text-slate-700">topic</code>{' '}
+                        <span className="text-slate-500">
+                          — Chủ đề / Tag (để trống hệ thống sẽ tự động bắt keyword chia chủ đề)
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="text-[10.5px] text-slate-500 leading-relaxed">
+                      Mẹo: Bạn chỉ cần tối thiểu 2 cột <code>word, meaning</code> là đã import thẳng vào đúng cột không cần AI; hoặc file chỉ có 1 cột từ tiếng Anh để AI tự điền phần còn lại.
                     </p>
                   </div>
                 </div>
@@ -1685,12 +1884,31 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       <>
                         <ImageIcon className="w-7 h-7 text-indigo-500 mx-auto" />
                         <p className="text-xs font-bold text-slate-700">
-                          Chọn ảnh trang sách, ghi chú hoặc ảnh chụp màn hình
+                          Bấm chọn ảnh hoặc nhấn{' '}
+                          <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-300 text-indigo-600 font-mono text-[11px]">
+                            Ctrl + V
+                          </kbd>{' '}
+                          để dán ảnh chụp màn hình
                         </p>
                         <p className="text-[11px] text-slate-500">
-                          Gencoore AI Vision sẽ tự đọc ảnh và nhặt ra các từ vựng đáng học.
+                          Chụp nhanh bằng <code>Win + Shift + S</code> rồi bấm <code>Ctrl + V</code> ngay vào cửa sổ này — AI tự đọc và trích xuất từ vựng.
                         </p>
                       </>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
+                    <span>Hỗ trợ JPG, PNG, WebP hoặc ảnh copy từ clipboard.</span>
+                    {importImagePreview && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImportImagePreview('');
+                          setExtractedDrafts([]);
+                        }}
+                        className="text-rose-500 font-bold hover:underline cursor-pointer"
+                      >
+                        Xóa ảnh
+                      </button>
                     )}
                   </div>
                   {isExtracting && (
@@ -1794,13 +2012,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ===================================================================== */}
       {/* MODAL 3: BIG CENTERED STUDY FLASHCARD POPUP (BLURRED BACKDROP)        */}
       {/* ===================================================================== */}
-      {isStudyPopupOpen && filteredWords[deckIndex] && (() => {
+      {typeof document !== 'undefined' && isStudyPopupOpen && filteredWords[deckIndex] && createPortal((() => {
         const card = filteredWords[deckIndex];
         const badge = getMasteryBadge(card.srsLevel || 0);
         const topicLabel = card.topic?.trim() || 'Chung';
@@ -1809,7 +2028,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
         return (
           <div
             onClick={() => setIsStudyPopupOpen(false)}
-            className="fixed inset-0 z-[115] bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150"
+            className="fixed inset-0 z-[150] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150"
           >
             <div
               onClick={(e) => e.stopPropagation()}
@@ -2094,7 +2313,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             </div>
           </div>
         );
-      })()}
+      })(), document.body)}
     </div>
   );
 };

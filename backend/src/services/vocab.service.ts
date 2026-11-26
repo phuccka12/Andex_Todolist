@@ -547,6 +547,14 @@ Return ONLY a valid JSON array of objects with exact keys:
     return !!deleted;
   }
 
+  public async deleteAllVocab(userId?: string): Promise<number> {
+    const scopeQuery = userId
+      ? { userId }
+      : { $or: [{ userId: null }, { userId: { $exists: false } }] };
+    const res = await VocabModel.deleteMany(scopeQuery);
+    return res.deletedCount || 0;
+  }
+
   /**
    * Automatically re-tag existing uncategorized ("Chung" / "Đời sống" / empty) words into domain tags
    */
