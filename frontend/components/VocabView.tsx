@@ -123,7 +123,9 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
   const [dictCategory, setDictCategory] = useState<DictionaryCategory>('auto');
   const [isLookingUpDict, setIsLookingUpDict] = useState(false);
   const [dictResult, setDictResult] = useState<DictionaryEntry | null>(null);
+  const [dictError, setDictError] = useState<string | null>(null);
   const [isSavingDictWord, setIsSavingDictWord] = useState(false);
+  const dictRequestSeqRef = useRef(0);
 
   // Floating Cute IELTS 8.0+ English Tutor Chatbot state
   const [isTutorOpen, setIsTutorOpen] = useState(false);
@@ -656,17 +658,25 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
       notify.warning('Nhập từ, Modal Verb, Idiom hoặc Phrasal Verb để tra cứu.');
       return;
     }
+    const seq = ++dictRequestSeqRef.current;
     setDictQuery(q);
     setDictCategory(cat);
+    setDictError(null);
     setIsLookingUpDict(true);
     try {
       const entry = await lookupDictionary({ query: q, category: cat });
+      if (seq !== dictRequestSeqRef.current) return;
       setDictResult(entry);
       soundEngine.playPentatonicChime(4);
     } catch (err: any) {
-      notify.error(err.message || 'Chưa tra cứu được lúc này.');
+      if (seq !== dictRequestSeqRef.current) return;
+      const errMsg = err?.message || 'Chưa tra cứu được lúc này.';
+      setDictError(errMsg);
+      setDictResult(null);
     } finally {
-      setIsLookingUpDict(false);
+      if (seq === dictRequestSeqRef.current) {
+        setIsLookingUpDict(false);
+      }
     }
   };
 
@@ -4145,7 +4155,12 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   <button
                     key={tab.id}
                     type="button"
-                    onClick={() => setDictCategory(tab.id)}
+                    onClick={() => {
+                      setDictCategory(tab.id);
+                      if (dictQuery.trim() && (dictResult || dictError)) {
+                        handleLookupDictionary(dictQuery, tab.id);
+                      }
+                    }}
                     className={`px-3 py-1.5 rounded-xl text-xs font-black cursor-pointer transition-all ${
                       dictCategory === tab.id
                         ? isDark
@@ -4221,6 +4236,28 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 <div className="py-10 flex flex-col items-center justify-center gap-2 text-xs font-semibold text-slate-500">
                   <Loader2 className="w-6 h-6 animate-spin text-[#E11D48]" />
                   <span>Đang tra cứu chi tiết nghĩa, công thức và ví dụ...</span>
+                </div>
+              )}
+
+              {!isLookingUpDict && dictError && (
+                <div
+                  className={`rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    isDark
+                      ? 'bg-rose-500/10 border border-rose-500/30 text-rose-200'
+                      : 'bg-[#FFE4E6] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A]'
+                  }`}
+                >
+                  <div className="space-y-0.5 text-xs">
+                    <p className="font-black text-[#E11D48]">Chưa tra cứu được từ này</p>
+                    <p className={isDark ? 'text-rose-200/85' : 'text-[#0F172A]/80 font-semibold'}>{dictError}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleLookupDictionary()}
+                    className="px-3.5 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-xs font-black shrink-0 cursor-pointer"
+                  >
+                    Thử tra lại
+                  </button>
                 </div>
               )}
 

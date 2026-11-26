@@ -424,12 +424,21 @@ export async function lookupDictionary(payload: {
   query: string;
   category?: DictionaryCategory;
 }): Promise<DictionaryEntry> {
-  const cacheKey = `${payload.category || 'auto'}|${payload.query.trim().toLowerCase()}`;
+  const normalizedQuery = payload.query.trim().replace(/\s+/g, ' ');
+  const cacheKey = `${payload.category || 'auto'}|${normalizedQuery.toLowerCase()}`;
   if (typeof window !== 'undefined') {
     try {
       const raw = localStorage.getItem(DICT_CACHE_KEY);
       const map: Record<string, DictionaryEntry> = raw ? JSON.parse(raw) : {};
-      if (map[cacheKey]) return map[cacheKey];
+      const cached = map[cacheKey];
+      if (cached && cached.term && cached.shortMeaningVi) {
+        return {
+          ...cached,
+          synonyms: Array.isArray(cached.synonyms) ? cached.synonyms : [],
+          antonyms: Array.isArray(cached.antonyms) ? cached.antonyms : [],
+          examples: Array.isArray(cached.examples) ? cached.examples : [],
+        };
+      }
     } catch {}
   }
 
@@ -439,14 +448,29 @@ export async function lookupDictionary(payload: {
       'Content-Type': 'application/json',
       ...authService.getAuthHeaders(),
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ...payload, query: normalizedQuery }),
   }, 25000);
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.success || !data.entry) {
     throw new Error(data.error || 'Không thể tra cứu từ điển lúc này.');
   }
 
-  if (typeof window !== 'undefined') {
+  const normalizedEntry: DictionaryEntry = {
+    term: String(data.entry.term || normalizedQuery).trim(),
+    category: data.entry.category || payload.category || 'word',
+    phonetic: String(data.entry.phonetic || '').trim(),
+    partOfSpeech: String(data.entry.partOfSpeech || '').trim(),
+    shortMeaningVi: String(data.entry.shortMeaningVi || '').trim() || String(data.entry.detailedExplanationVi || '').trim(),
+    detailedExplanationVi: String(data.entry.detailedExplanationVi || '').trim(),
+    grammarFormula: String(data.entry.grammarFormula || '').trim(),
+    usageNotesVi: String(data.entry.usageNotesVi || '').trim(),
+    synonyms: Array.isArray(data.entry.synonyms) ? data.entry.synonyms : [],
+    antonyms: Array.isArray(data.entry.antonyms) ? data.entry.antonyms : [],
+    examples: Array.isArray(data.entry.examples) ? data.entry.examples : [],
+    suggestedTopic: String(data.entry.suggestedTopic || 'Đời sống').trim(),
+  };
+
+  if (typeof window !== 'undefined' && normalizedEntry.term && normalizedEntry.shortMeaningVi) {
     try {
       const raw = localStorage.getItem(DICT_CACHE_KEY);
       const map: Record<string, DictionaryEntry> = raw ? JSON.parse(raw) : {};
@@ -454,12 +478,12 @@ export async function lookupDictionary(payload: {
       if (keys.length >= 100) {
         delete map[keys[0]];
       }
-      map[cacheKey] = data.entry;
+      map[cacheKey] = normalizedEntry;
       localStorage.setItem(DICT_CACHE_KEY, JSON.stringify(map));
     } catch {}
   }
 
-  return data.entry;
+  return normalizedEntry;
 }
 
 export async function sendEnglishTutorMessage(payload: {

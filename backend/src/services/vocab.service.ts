@@ -188,6 +188,7 @@ class VocabService {
           res.status === 503 ||
           res.status === 429 ||
           res.status === 404 ||
+          (res.status === 400 && (errLower.includes('thinking') || errLower.includes('unsupported') || errLower.includes('not supported'))) ||
           errLower.includes('overloaded') ||
           errLower.includes('high demand') ||
           errLower.includes('resource_exhausted') ||
@@ -212,6 +213,40 @@ class VocabService {
     }
 
     throw lastError || new Error('Dịch vụ AI tạm thời quá tải, vui lòng thử lại sau giây lát.');
+  }
+
+  private extractTextFromGemini(data: any): string {
+    const parts = data?.candidates?.[0]?.content?.parts;
+    if (!Array.isArray(parts)) return '';
+    return parts
+      .filter((p: any) => !p?.thought && typeof p?.text === 'string')
+      .map((p: any) => p.text)
+      .join('')
+      .trim();
+  }
+
+  private parseJsonObjectFromGemini(rawText: string, friendlyError: string): any {
+    const cleaned = rawText
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```$/i, '')
+      .trim();
+
+    const startIdx = cleaned.indexOf('{');
+    const endIdx = cleaned.lastIndexOf('}');
+    if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) {
+      throw new Error(friendlyError);
+    }
+
+    const slice = cleaned
+      .slice(startIdx, endIdx + 1)
+      .replace(/,\s*([}\]])/g, '$1');
+
+    try {
+      return JSON.parse(slice);
+    } catch {
+      throw new Error(friendlyError);
+    }
   }
 
   private parseJsonArrayFromGemini(rawText: string, fallbackTopic: string): ExtractedVocabItem[] {
@@ -686,7 +721,7 @@ Return ONLY a valid JSON array of objects with exact keys:
       input.customApiKey
     );
 
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const rawText = this.extractTextFromGemini(data);
     const cleaned = rawText
       .replace(/^```json\s*/i, '')
       .replace(/^```\s*/i, '')
@@ -820,27 +855,19 @@ Return ONLY a valid JSON array of objects with exact keys:
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.25,
-          maxOutputTokens: 1024,
+          maxOutputTokens: 2048,
           responseMimeType: 'application/json',
         },
       },
-      input.customApiKey
+      input.customApiKey,
+      16000
     );
 
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const cleaned = rawText
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/```$/i, '')
-      .trim();
-
-    const startIdx = cleaned.indexOf('{');
-    const endIdx = cleaned.lastIndexOf('}');
-    if (startIdx === -1 || endIdx === -1) {
-      throw new Error('Không tra được định dạng từ điển hợp lệ, bạn thử lại nhé.');
-    }
-
-    const parsed = JSON.parse(cleaned.slice(startIdx, endIdx + 1));
+    const rawText = this.extractTextFromGemini(data);
+    const parsed = this.parseJsonObjectFromGemini(
+      rawText,
+      'Không tra được định dạng từ điển hợp lệ, bạn bấm "Tra ngay" lại nhé.'
+    );
     const resolvedCategory = ['word', 'modal_verb', 'idiom', 'phrasal_verb'].includes(parsed.category)
       ? parsed.category
       : cat === 'auto'
@@ -861,7 +888,10 @@ Return ONLY a valid JSON array of objects with exact keys:
       category: resolvedCategory,
       phonetic: String(parsed.phonetic || '').trim(),
       partOfSpeech: String(parsed.partOfSpeech || '').trim(),
-      shortMeaningVi: String(parsed.shortMeaningVi || '').trim(),
+      shortMeaningVi:
+        String(parsed.shortMeaningVi || '').trim() ||
+        String(parsed.detailedExplanationVi || '').trim() ||
+        'Chưa có nghĩa ngắn gọn',
       detailedExplanationVi: String(parsed.detailedExplanationVi || '').trim(),
       grammarFormula: String(parsed.grammarFormula || '').trim(),
       usageNotesVi: String(parsed.usageNotesVi || '').trim(),
@@ -876,11 +906,13 @@ Return ONLY a valid JSON array of objects with exact keys:
       suggestedTopic: String(parsed.suggestedTopic || fallbackTopic).trim(),
     };
 
-    if (this.dictionaryCache.size >= 300) {
-      const oldest = this.dictionaryCache.keys().next().value;
-      if (oldest) this.dictionaryCache.delete(oldest);
+    if (finalEntry.term && finalEntry.shortMeaningVi) {
+      if (this.dictionaryCache.size >= 300) {
+        const oldest = this.dictionaryCache.keys().next().value;
+        if (oldest) this.dictionaryCache.delete(oldest);
+      }
+      this.dictionaryCache.set(cacheKey, finalEntry);
     }
-    this.dictionaryCache.set(cacheKey, finalEntry);
     return finalEntry;
   }
 
@@ -943,7 +975,7 @@ Return ONLY a valid JSON array of objects with exact keys:
       input.customApiKey
     );
 
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const rawText = this.extractTextFromGemini(data);
     const cleaned = rawText
       .replace(/^```json\s*/i, '')
       .replace(/^```\s*/i, '')
