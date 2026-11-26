@@ -154,15 +154,15 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
       {/* 1. UNIFIED HEADER */}
-      <div className="flex items-center justify-between pb-4 border-b border-[#EEF2F8] flex-wrap gap-3">
+      <div className="flex items-center justify-between pb-4 border-b-2 border-[#0F172A] flex-wrap gap-3">
         <div className="space-y-1">
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <div className="text-[10px] font-black text-[#E11D48] uppercase tracking-widest">
             Không Gian Làm Việc / Nhãn & Danh Mục
           </div>
-          <h2 className="text-lg font-black text-[#1E293B] tracking-tight">
+          <h2 className="text-lg font-black text-[#0F172A] tracking-tight">
             Phân Loại Nhãn & Danh Mục
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-600 font-medium">
             Hệ thống phân loại công việc theo mức độ ưu tiên, danh mục và chủ đề cốt lõi
           </p>
         </div>
@@ -173,17 +173,17 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
               soundEngine.playSoftClick();
               setIsCreatingTag(!isCreatingTag);
             }}
-            className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-all flex items-center gap-1.5 shadow-2xs"
+            className="px-3.5 py-1.5 bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] text-xs font-black rounded-xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 stroke-[2]" />
+            <Plus className="w-3.5 h-3.5 stroke-[2.5] text-[#E11D48]" />
             <span>Tạo Nhãn Mới</span>
           </button>
 
           <button
             onClick={onOpenTaskModal}
-            className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5"
+            className="px-3.5 py-1.5 bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs font-black rounded-xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 stroke-[2]" />
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Thêm Việc Mới</span>
           </button>
         </div>
@@ -191,50 +191,50 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
 
       {/* 2. UNIFIED 4-METRIC STRIP */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="bg-white border border-[#E2E8F0] p-4 rounded-2xl shadow-2xs space-y-2">
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="bg-[#FFF1F2] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
+          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
             Tổng Số Nhãn
           </div>
-          <div className="text-2xl font-black text-[#1E293B] tracking-tight">
+          <div className="text-2xl font-black text-[#0F172A] tracking-tight">
             {tags.length} nhãn
           </div>
-          <div className="text-[11px] text-slate-500 font-medium">
+          <div className="text-[11px] text-slate-600 font-bold">
             Đang hoạt động trong hệ thống
           </div>
         </div>
 
-        <div className="bg-white border border-[#E2E8F0] p-4 rounded-2xl shadow-2xs space-y-2">
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="bg-[#DCFCE7] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
+          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
             Đã Phân Loại
           </div>
-          <div className="text-2xl font-black text-emerald-600 tracking-tight">
+          <div className="text-2xl font-black text-emerald-700 tracking-tight">
             {totalTagged} / {tasks.length}
           </div>
-          <div className="text-[11px] text-slate-500 font-medium">
+          <div className="text-[11px] text-slate-600 font-bold">
             Nhiệm vụ có nhãn nhận diện
           </div>
         </div>
 
-        <div className="bg-white border border-[#E2E8F0] p-4 rounded-2xl shadow-2xs space-y-2">
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="bg-[#FEF9C3] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
+          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
             Nhiệm Vụ Cốt Lõi
           </div>
-          <div className="text-2xl font-black text-[#AE445A] tracking-tight">
+          <div className="text-2xl font-black text-[#E11D48] tracking-tight">
             {p1Count} việc
           </div>
-          <div className="text-[11px] text-slate-500 font-medium">
+          <div className="text-[11px] text-slate-600 font-bold">
             Mức ưu tiên P1 tối cao
           </div>
         </div>
 
-        <div className="bg-white border border-[#E2E8F0] p-4 rounded-2xl shadow-2xs space-y-2">
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="bg-[#DBEAFE] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
+          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
             Phiên Deep Work
           </div>
-          <div className="text-2xl font-black text-[#2563EB] tracking-tight">
+          <div className="text-2xl font-black text-[#1D4ED8] tracking-tight">
             {deepWorkCount} việc
           </div>
-          <div className="text-[11px] text-slate-500 font-medium">
+          <div className="text-[11px] text-slate-600 font-bold">
             Tập trung sâu chuyên môn
           </div>
         </div>
@@ -244,14 +244,14 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
       {isCreatingTag && (
         <form
           onSubmit={handleCreateTag}
-          className="bg-white border border-[#2563EB]/40 rounded-2xl p-5 shadow-xs space-y-4 animate-in fade-in duration-150"
+          className="bg-white border-2 border-[#0F172A] rounded-2xl p-5 shadow-[4px_4px_0px_#0F172A] space-y-4 animate-in fade-in duration-150"
         >
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h3 className="text-xs font-extrabold text-[#1E293B]">Khởi tạo nhãn mới</h3>
+          <div className="flex items-center justify-between pb-2.5 border-b-2 border-[#0F172A]/15">
+            <h3 className="text-xs font-black text-[#0F172A]">Khởi tạo nhãn mới</h3>
             <button
               type="button"
               onClick={() => setIsCreatingTag(false)}
-              className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+              className="p-1 text-[#0F172A] bg-[#FFF1F2] hover:bg-[#FFE4E6] border border-[#0F172A] rounded-lg cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -259,19 +259,19 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[11px] font-bold text-slate-600">Tên nhãn / chủ đề:</label>
+              <label className="text-[11px] font-black text-[#0F172A]">Tên nhãn / chủ đề:</label>
               <input
                 type="text"
                 placeholder="Ví dụ: Khách Hàng VIP, Tài Chính, v.v..."
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
-                className="w-full px-3 py-2 bg-[#F8FAFD] border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#2563EB]"
+                className="w-full px-3 py-2 bg-[#FFFDF7] border-2 border-[#0F172A] rounded-xl text-xs font-bold text-[#0F172A] placeholder:text-slate-400 focus:outline-none focus:bg-[#FFF1F2] transition-colors"
                 autoFocus
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-bold text-slate-600">Màu sắc nhận diện (Designer Palettes):</label>
+              <label className="text-[11px] font-black text-[#0F172A]">Màu sắc nhận diện (Designer Palettes):</label>
               <div className="flex items-center gap-2 flex-wrap pt-1">
                 {Object.values(PALETTES).slice(0, 12).map((p) => (
                   <button
@@ -280,9 +280,9 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
                     title={p.name}
                     onClick={() => setNewTagColor(p.hex)}
                     style={{ backgroundColor: p.hex }}
-                    className={`w-6 h-6 rounded-full transition-all ${
+                    className={`w-6 h-6 rounded-full border-2 border-[#0F172A] transition-all cursor-pointer ${
                       newTagColor === p.hex
-                        ? 'ring-2 ring-offset-2 ring-slate-800 scale-120 shadow-xs'
+                        ? 'ring-2 ring-offset-2 ring-[#E11D48] scale-115 shadow-[2px_2px_0px_#0F172A]'
                         : 'opacity-85 hover:opacity-100 hover:scale-110'
                     }`}
                   />
@@ -295,14 +295,14 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
             <button
               type="button"
               onClick={() => setIsCreatingTag(false)}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-black text-[#0F172A] bg-white hover:bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] transition-all cursor-pointer"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={!newTagName.trim()}
-              className="px-4 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-xl transition-all shadow-xs disabled:opacity-50"
+              className="px-4 py-1.5 bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs font-black rounded-xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] transition-all disabled:opacity-50 cursor-pointer"
             >
               Lưu Nhãn
             </button>
@@ -311,7 +311,7 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
       )}
 
       {/* 4. TAG FILTER TOOLBAR */}
-      <div className="flex items-center justify-between gap-3 flex-wrap bg-white border border-[#E2E8F0] p-2.5 rounded-2xl shadow-2xs">
+      <div className="flex items-center justify-between gap-3 flex-wrap bg-white border-2 border-[#0F172A] p-3 rounded-2xl shadow-[3px_3px_0px_#0F172A]">
         <div className="flex items-center gap-1.5 flex-wrap">
           {/* All Button */}
           <button
@@ -319,14 +319,14 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
               soundEngine.playSoftClick();
               setSelectedTagId('all');
             }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all border-2 border-[#0F172A] cursor-pointer ${
               selectedTagId === 'all'
-                ? 'bg-[#1E293B] text-white border-[#1E293B] shadow-2xs'
-                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                ? 'bg-[#E11D48] text-white shadow-[2px_2px_0px_#0F172A]'
+                : 'bg-[#FFFDF7] text-[#0F172A] hover:bg-[#FEF9C3]'
             }`}
           >
             <span>Tất cả</span>
-            <span className="ml-1.5 text-[10px] font-mono opacity-80">({tasks.length})</span>
+            <span className="ml-1.5 text-[10px] font-mono opacity-85">({tasks.length})</span>
           </button>
 
           {/* Dynamic Tag Pills with clean dot */}
@@ -341,20 +341,20 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
                   soundEngine.playSoftClick();
                   setSelectedTagId(tag.id);
                 }}
-                className={`group px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5 cursor-pointer ${
+                className={`group px-3 py-1.5 rounded-xl text-xs font-black transition-all border-2 border-[#0F172A] flex items-center gap-1.5 cursor-pointer ${
                   isSelected
-                    ? 'bg-[#1E293B] text-white border-[#1E293B] shadow-2xs'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    ? 'bg-[#E11D48] text-white shadow-[2px_2px_0px_#0F172A]'
+                    : 'bg-white text-[#0F172A] hover:bg-[#FEF9C3]'
                 }`}
               >
                 <span
                   style={{ backgroundColor: tag.color }}
-                  className="w-2 h-2 rounded-full inline-block shrink-0"
+                  className="w-2 h-2 rounded-full inline-block border border-[#0F172A] shrink-0"
                 />
                 <span>{tag.name}</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                    isSelected ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-black ${
+                    isSelected ? 'bg-white text-[#E11D48]' : 'bg-[#FFF1F2] text-[#0F172A]'
                   }`}
                 >
                   {count}
@@ -364,7 +364,7 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
                   <button
                     onClick={(e) => handleDeleteTag(tag.id, e)}
                     title="Xóa nhãn này"
-                    className="opacity-0 group-hover:opacity-100 hover:text-rose-400 p-0.5 rounded transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 hover:text-rose-300 p-0.5 rounded transition-opacity cursor-pointer"
                   >
                     <Trash2 className="w-3 h-3 stroke-[2]" />
                   </button>
@@ -375,10 +375,10 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
         </div>
 
         {/* Filter Summary */}
-        <div className="flex items-center gap-2 text-xs text-slate-500 pr-1">
-          <Filter className="w-3.5 h-3.5 text-slate-400" />
+        <div className="flex items-center gap-2 text-xs font-bold text-[#0F172A]/75 pr-1">
+          <Filter className="w-3.5 h-3.5 text-[#E11D48]" />
           <span>
-            Đang lọc: <strong className="text-slate-800">{activeTag ? activeTag.name : 'Tất cả'}</strong> ({filteredTasks.length} việc)
+            Đang lọc: <strong className="text-[#0F172A] font-black">{activeTag ? activeTag.name : 'Tất cả'}</strong> ({filteredTasks.length} việc)
           </span>
         </div>
       </div>
@@ -386,12 +386,12 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
       {/* 5. FILTERED TASK CARDS GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
         {filteredTasks.length === 0 ? (
-          <div className="col-span-full py-16 text-center bg-white border border-slate-200 rounded-2xl space-y-2">
-            <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-xs font-bold">
+          <div className="col-span-full py-16 text-center bg-white border-2 border-[#0F172A] shadow-[4px_4px_0px_#0F172A] rounded-2xl space-y-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-[#FFE4E6] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] flex items-center justify-center mx-auto text-xs font-black">
               0
             </div>
-            <p className="text-xs font-bold text-slate-700">Không tìm thấy công việc nào mang nhãn này</p>
-            <p className="text-[11px] text-slate-400">Bấm "Thêm Việc Mới" để tạo nhiệm vụ với phân loại tương ứng</p>
+            <p className="text-xs font-black text-[#0F172A]">Không tìm thấy công việc nào mang nhãn này</p>
+            <p className="text-[11px] text-slate-600 font-medium">Bấm "Thêm Việc Mới" để tạo nhiệm vụ với phân loại tương ứng</p>
           </div>
         ) : (
           filteredTasks.map((task) => {
@@ -406,8 +406,10 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
                   backgroundColor: isCompleted ? '#94A3B8' : palette.hex,
                   color: palette.textColor,
                 }}
-                className={`rounded-2xl p-4 transition-all duration-200 cursor-pointer select-none ${
-                  isCompleted ? 'opacity-40 saturate-50' : `${palette.shadow} hover:-translate-y-0.5 hover:brightness-105`
+                className={`rounded-2xl p-4 border-2 border-[#0F172A] transition-all duration-200 cursor-pointer select-none ${
+                  isCompleted
+                    ? 'opacity-45 saturate-50 shadow-[1.5px_1.5px_0px_#0F172A]'
+                    : 'shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1.5px_1.5px_0px_#0F172A]'
                 } space-y-3 flex flex-col justify-between`}
               >
                 {/* Header row: timebox & priority */}
@@ -446,18 +448,18 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
 
                 {/* Title */}
                 <div>
-                  <h4 className="font-extrabold text-xs tracking-tight leading-snug drop-shadow-xs line-clamp-2">
+                  <h4 className="font-black text-xs tracking-tight leading-snug line-clamp-2">
                     {task.title}
                   </h4>
                 </div>
 
                 {/* Footer: progress & checklist */}
                 <div className="flex items-center justify-between text-[10.5px] pt-2 border-t border-white/20">
-                  <span className="font-bold opacity-85">
+                  <span className="font-bold opacity-90">
                     Tiến độ: {task.progress_percentage}%
                   </span>
                   {task.definition_of_done && task.definition_of_done.length > 0 && (
-                    <span className="font-bold opacity-85">
+                    <span className="font-bold opacity-90">
                       Checklist: {task.definition_of_done.filter((c) => c.completed).length}/
                       {task.definition_of_done.length}
                     </span>

@@ -14,14 +14,13 @@ import {
   ShieldCheck,
   Loader2,
   CalendarCheck2,
-  CalendarRange,
   Zap,
   Smartphone,
   MessageSquare,
   Sparkles,
 } from 'lucide-react';
 import { TaskItem } from '../lib/types';
-import { authService, AuthUser } from '../lib/authService';
+import { AuthUser } from '../lib/authService';
 import { soundEngine } from '../lib/audio';
 import {
   sendScheduleReminderEmail,
@@ -301,141 +300,145 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[88vh] shadow-2xl flex flex-col overflow-hidden border border-[#EEF2F8] animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-[120] bg-black/55 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-150">
+      <div className="bg-[#FFFDF7] rounded-3xl max-w-4xl w-full max-h-[88vh] shadow-[6px_6px_0px_#0F172A] flex flex-col overflow-hidden border-2 border-[#0F172A] animate-in zoom-in-95 duration-150">
         
         {/* Header */}
-        <div className="px-6 py-4.5 shrink-0 flex items-center justify-between border-b border-[#EEF2F8] bg-[#FAFBFD]">
+        <div className="px-5 sm:px-6 py-4 shrink-0 flex items-center justify-between gap-3 flex-wrap border-b-2 border-[#0F172A] bg-[#FFF1F2]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0284C7] to-[#2563EB] text-white flex items-center justify-center shadow-sm">
-              <Zap className="w-5 h-5 text-amber-300" />
+            <div className="w-10 h-10 rounded-2xl bg-[#E11D48] border-2 border-[#0F172A] text-white flex items-center justify-center shadow-[2px_2px_0px_#0F172A]">
+              <Zap className="w-5 h-5 text-[#FDE047]" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-sm sm:text-base text-[#1E2433]">Nhắc Lịch Thông Minh & Đồng Bộ</h3>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-[#E0F2FE] text-[#0284C7] border border-[#BAE6FD]">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-black text-sm sm:text-base text-[#0F172A]">Nhắc Lịch Thông Minh & Đồng Bộ</h3>
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-black bg-[#FEF08A] text-[#0F172A] border-2 border-[#0F172A]">
                   Multi-Channel OS
                 </span>
               </div>
-              <p className="text-[11px] text-[#8F9CAE]">Rung điện thoại qua Telegram, email báo cáo & đồng bộ Google Calendar</p>
+              <p className="text-[11px] text-slate-600 font-bold">Rung điện thoại qua Telegram, email báo cáo & đồng bộ Google Calendar</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* 3 Main Tab Pills */}
-            <div className="flex items-center bg-[#F1F4F9] p-1 rounded-2xl border border-[#E2E8F0]">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* 3 Main Cartoon Tab Pills */}
+            <div className="flex items-center gap-1 bg-white p-1 rounded-2xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
               <button
+                type="button"
                 onClick={() => {
                   setActiveTab('telegram');
                   soundEngine.playSoftClick();
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all relative ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
                   activeTab === 'telegram'
-                    ? 'bg-white text-[#0284C7] shadow-xs'
-                    : 'text-[#64748B] hover:text-[#1E2433]'
+                    ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                    : 'text-[#0F172A] hover:bg-[#FFE4E6]/70 font-bold border-2 border-transparent'
                 }`}
               >
-                <Smartphone className="w-3.5 h-3.5 text-[#0284C7]" />
+                <Smartphone className={`w-3.5 h-3.5 ${activeTab === 'telegram' ? 'text-white' : 'text-[#E11D48]'}`} />
                 <span>Telegram Bot</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                <span className={`w-1.5 h-1.5 rounded-full ${activeTab === 'telegram' ? 'bg-[#FDE047]' : 'bg-emerald-500'}`} />
               </button>
 
               <button
+                type="button"
                 onClick={() => {
                   setActiveTab('email');
                   soundEngine.playSoftClick();
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
                   activeTab === 'email'
-                    ? 'bg-white text-[#1E293B] shadow-xs'
-                    : 'text-[#64748B] hover:text-[#1E2433]'
+                    ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                    : 'text-[#0F172A] hover:bg-[#FFE4E6]/70 font-bold border-2 border-transparent'
                 }`}
               >
-                <Mail className="w-3.5 h-3.5 text-[#38BDF8]" />
+                <Mail className={`w-3.5 h-3.5 ${activeTab === 'email' ? 'text-white' : 'text-[#E11D48]'}`} />
                 <span>Email Điểm Danh</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => {
                   setActiveTab('calendar');
                   soundEngine.playSoftClick();
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
                   activeTab === 'calendar'
-                    ? 'bg-white text-[#1E293B] shadow-xs'
-                    : 'text-[#64748B] hover:text-[#1E2433]'
+                    ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                    : 'text-[#0F172A] hover:bg-[#FFE4E6]/70 font-bold border-2 border-transparent'
                 }`}
               >
-                <Calendar className="w-3.5 h-3.5 text-[#10B981]" />
+                <Calendar className={`w-3.5 h-3.5 ${activeTab === 'calendar' ? 'text-white' : 'text-[#E11D48]'}`} />
                 <span>Google Calendar</span>
               </button>
             </div>
 
             <button
+              type="button"
               onClick={onClose}
-              className="p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-white hover:bg-[#FEF9C3] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] transition-colors cursor-pointer"
             >
-              <X className="w-4.5 h-4.5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Modal Main Body (Spacious 2-column studio layout) */}
-        <div className="flex-1 p-6 overflow-y-auto custom-main-scroll">
+        {/* Modal Main Body */}
+        <div className="flex-1 p-5 sm:p-6 overflow-y-auto custom-main-scroll">
           
-          {/* TAB 1: TELEGRAM BOT (CHỦ ĐỘNG & RUNG MÁY TỨC THÌ) */}
+          {/* TAB 1: TELEGRAM BOT */}
           {activeTab === 'telegram' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
               
               {/* LEFT COLUMN: TELEGRAM CONFIG & DISPATCH (7 cols) */}
-              <div className="lg:col-span-7 space-y-4">
-                <div className="flex items-center justify-between pb-1 border-b border-[#EEF2F8]">
-                  <h4 className="text-xs font-extrabold text-[#1E2433] uppercase tracking-wide flex items-center gap-1.5">
-                    <Smartphone className="w-4 h-4 text-[#0284C7]" />
+              <div className="lg:col-span-7 space-y-4 bg-white p-5 rounded-2xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
+                <div className="flex items-center justify-between pb-2 border-b-2 border-[#0F172A]">
+                  <h4 className="text-xs font-black text-[#0F172A] uppercase tracking-wide flex items-center gap-1.5">
+                    <Smartphone className="w-4 h-4 text-[#E11D48]" />
                     <span>1. Kết Nối Nhận Tin Nhắn Telegram</span>
                   </h4>
-                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  <span className="text-[10px] text-[#0F172A] font-black bg-[#DCFCE7] px-2.5 py-0.5 rounded-full border-2 border-[#0F172A]">
                     Chủ động 100%
                   </span>
                 </div>
 
                 {/* Chat ID Input */}
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-bold text-[#1E2433]">
+                  <div className="flex items-center justify-between text-xs font-black text-[#0F172A]">
                     <label>Telegram Chat ID của bạn</label>
                     <a
                       href="https://t.me/userinfobot"
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[10px] text-[#0284C7] hover:underline font-semibold inline-flex items-center gap-1"
+                      className="text-[10px] text-[#E11D48] hover:underline font-extrabold inline-flex items-center gap-1"
                     >
                       Lấy Chat ID từ @userinfobot <ExternalLink className="w-2.5 h-2.5" />
                     </a>
                   </div>
                   <div className="relative">
-                    <MessageSquare className="w-4 h-4 text-[#94A3B8] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <MessageSquare className="w-4 h-4 text-[#E11D48] absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       value={telegramChatId}
                       onChange={(e) => setTelegramChatId(e.target.value)}
                       placeholder="Ví dụ: 987654321"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#CBD5E1] text-xs font-mono font-bold text-[#1E2433] focus:border-[#0284C7] focus:ring-1 focus:ring-[#0284C7] outline-none bg-white shadow-2xs"
+                      className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-[#0F172A] rounded-xl text-xs font-mono text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none transition-colors"
                     />
                   </div>
-                  <p className="text-[10px] text-[#64748B]">
-                    Chỉ cần gõ <code>/start</code> cho bot <strong>@userinfobot</strong> hoặc <strong>@RawDataBot</strong> trên Telegram, bot sẽ hiển thị dãy số ID của bạn.
+                  <p className="text-[10px] font-semibold text-slate-600">
+                    Chỉ cần gõ <code className="font-black text-[#E11D48]">/start</code> cho bot <strong>@userinfobot</strong> hoặc <strong>@RawDataBot</strong> trên Telegram, bot sẽ hiển thị dãy số ID của bạn.
                   </p>
                 </div>
 
                 {/* Bot Token */}
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-bold text-[#1E2433]">
+                  <div className="flex items-center justify-between text-xs font-black text-[#0F172A]">
                     <label>Telegram Bot Token</label>
                     <a
                       href="https://t.me/BotFather"
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[10px] text-[#0284C7] hover:underline font-semibold inline-flex items-center gap-1"
+                      className="text-[10px] text-[#E11D48] hover:underline font-extrabold inline-flex items-center gap-1"
                     >
                       Tạo bot trong 15s tại @BotFather <ExternalLink className="w-2.5 h-2.5" />
                     </a>
@@ -445,32 +448,32 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
                     value={telegramBotToken}
                     onChange={(e) => setTelegramBotToken(e.target.value)}
                     placeholder="Dán mã Token từ @BotFather (VD: 7123456789:AAFx...)"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD5E1] text-xs font-mono text-[#1E2433] focus:border-[#0284C7] outline-none bg-white shadow-2xs"
+                    className="w-full px-3.5 py-2.5 bg-white border-2 border-[#0F172A] rounded-xl text-xs font-mono text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none transition-colors"
                   />
-                  <div className="p-2.5 rounded-xl bg-sky-50/70 border border-sky-100 text-[11px] text-slate-600 space-y-1">
-                    <p className="font-semibold text-sky-950 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-sky-600" /> Hướng dẫn kết nối Telegram trong 30 giây:
+                  <div className="p-3 rounded-2xl bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[11px] text-[#0F172A] space-y-1">
+                    <p className="font-black text-[#0F172A] flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5 text-[#E11D48]" /> Hướng dẫn kết nối Telegram trong 30 giây:
                     </p>
-                    <ol className="list-decimal list-inside space-y-0.5 text-[10.5px] text-slate-600 pl-1">
-                      <li>Mở <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="text-[#0284C7] underline font-medium">@BotFather</a> trên Telegram, gõ <code>/newbot</code> đặt tên để lấy <strong>Bot Token</strong>.</li>
+                    <ol className="list-decimal list-inside space-y-0.5 text-[10.5px] font-semibold text-slate-800 pl-1">
+                      <li>Mở <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="text-[#E11D48] underline font-black">@BotFather</a> trên Telegram, gõ <code>/newbot</code> đặt tên để lấy <strong>Bot Token</strong>.</li>
                       <li>Nhấn vào link bot bạn vừa tạo và bấm <strong>START</strong> để kích hoạt.</li>
-                      <li>Mở <a href="https://t.me/userinfobot" target="_blank" rel="noreferrer" className="text-[#0284C7] underline font-medium">@userinfobot</a> bấm <code>/start</code> để lấy <strong>Chat ID</strong> của bạn rồi điền vào trên.</li>
+                      <li>Mở <a href="https://t.me/userinfobot" target="_blank" rel="noreferrer" className="text-[#E11D48] underline font-black">@userinfobot</a> bấm <code>/start</code> để lấy <strong>Chat ID</strong> của bạn rồi điền vào trên.</li>
                     </ol>
                   </div>
                 </div>
 
-                {/* 2 Big Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+                {/* 2 Big Cartoon Actions */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                   <button
                     type="button"
                     onClick={handleTestTelegram}
                     disabled={isTestingTelegram}
-                    className="py-3 px-4 rounded-xl bg-[#0284C7] hover:bg-[#0369A1] text-white text-xs font-bold transition-all shadow-md shadow-sky-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                    className="py-3 px-4 rounded-xl bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                   >
                     {isTestingTelegram ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin text-[#E11D48]" />
                     ) : (
-                      <Bell className="w-4 h-4" />
+                      <Bell className="w-4 h-4 text-[#E11D48]" />
                     )}
                     <span>Bắn Tin Nhắn Thử Nghiệm</span>
                   </button>
@@ -479,30 +482,30 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
                     type="button"
                     onClick={handleSendTelegramScheduleNow}
                     disabled={isSendingTelegramSchedule}
-                    className="py-3 px-4 rounded-xl bg-[#1E293B] hover:bg-[#0F172A] text-white text-xs font-bold transition-all shadow-md shadow-slate-900/10 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                    className="py-3 px-4 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                   >
                     {isSendingTelegramSchedule ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <Send className="w-4 h-4 text-[#38BDF8]" />
+                      <Send className="w-4 h-4 text-[#FDE047]" />
                     )}
                     <span>Bắn Lịch Hôm Nay Lên Telegram</span>
                   </button>
                 </div>
 
                 {/* Scope selector for on-demand schedule */}
-                <div className="p-3 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] space-y-1.5">
-                  <span className="text-[10px] font-bold text-[#64748B] block uppercase tracking-wider">
-                    Phạm vi khi bấm "Bắn Lịch Lên Telegram":
+                <div className="p-3 rounded-2xl bg-[#FFF1F2] border-2 border-[#0F172A] space-y-2">
+                  <span className="text-[10px] font-black text-[#0F172A] block uppercase tracking-wider">
+                    Phạm vi khi bấm &ldquo;Bắn Lịch Lên Telegram&rdquo;:
                   </span>
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       type="button"
                       onClick={() => setFilterScope('today')}
-                      className={`py-1.5 px-2 rounded-lg text-xs font-bold border transition-all text-center ${
+                      className={`py-1.5 px-2 rounded-xl text-xs transition-all text-center cursor-pointer ${
                         filterScope === 'today'
-                          ? 'border-[#0284C7] bg-[#E0F2FE] text-[#0284C7]'
-                          : 'border-slate-200 bg-white text-slate-600'
+                          ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                          : 'bg-white hover:bg-[#FEF9C3] text-[#0F172A] border-2 border-[#0F172A] font-bold'
                       }`}
                     >
                       Lịch Hôm Nay
@@ -510,10 +513,10 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setFilterScope('p1')}
-                      className={`py-1.5 px-2 rounded-lg text-xs font-bold border transition-all text-center ${
+                      className={`py-1.5 px-2 rounded-xl text-xs transition-all text-center cursor-pointer ${
                         filterScope === 'p1'
-                          ? 'border-[#AE445A] bg-[#FFF1F2] text-[#AE445A]'
-                          : 'border-slate-200 bg-white text-slate-600'
+                          ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                          : 'bg-white hover:bg-[#FEF9C3] text-[#0F172A] border-2 border-[#0F172A] font-bold'
                       }`}
                     >
                       P1 Cốt Lõi
@@ -521,10 +524,10 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setFilterScope('all')}
-                      className={`py-1.5 px-2 rounded-lg text-xs font-bold border transition-all text-center ${
+                      className={`py-1.5 px-2 rounded-xl text-xs transition-all text-center cursor-pointer ${
                         filterScope === 'all'
-                          ? 'border-slate-800 bg-slate-100 text-slate-900'
-                          : 'border-slate-200 bg-white text-slate-600'
+                          ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                          : 'bg-white hover:bg-[#FEF9C3] text-[#0F172A] border-2 border-[#0F172A] font-bold'
                       }`}
                     >
                       Toàn Bộ Tuần
@@ -534,12 +537,12 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
               </div>
 
               {/* RIGHT COLUMN: TELEGRAM AUTOMATION WORKER (5 cols) */}
-              <div className="lg:col-span-5 space-y-4 bg-[#FAFBFD] p-5 rounded-3xl border border-[#EEF2F8] flex flex-col justify-between">
+              <div className="lg:col-span-5 space-y-4 bg-[#FFF1F2] p-5 rounded-2xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] flex flex-col justify-between">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between pb-1 border-b border-[#E2E8F0]">
+                  <div className="flex items-center justify-between pb-2 border-b-2 border-[#0F172A]">
                     <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-amber-500" />
-                      <h4 className="text-xs font-extrabold text-[#1E2433] uppercase tracking-wide">
+                      <Zap className="w-4 h-4 text-[#E11D48]" />
+                      <h4 className="text-xs font-black text-[#0F172A] uppercase tracking-wide">
                         2. Tự Động Định Kỳ Telegram
                       </h4>
                     </div>
@@ -550,65 +553,65 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
                         onChange={(e) => setTelegramEnabled(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#0284C7]" />
+                      <div className="w-11 h-6 bg-white border-2 border-[#0F172A] rounded-full peer peer-checked:bg-[#E11D48] after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#0F172A] peer-checked:after:bg-white after:border-2 after:border-[#0F172A] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
                     </label>
                   </div>
 
                   {/* Option 1: Daily morning telegram briefing */}
-                  <div className="p-3 rounded-2xl bg-white border border-[#E2E8F0] space-y-2 shadow-2xs">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                          <Clock className="w-3.5 h-3.5" />
+                  <div className="p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-[#FEF9C3] border-2 border-[#0F172A] text-[#0F172A] flex items-center justify-center shrink-0">
+                          <Clock className="w-4 h-4 text-[#E11D48]" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-[#1E2433]">Điểm danh sáng qua Telegram</p>
-                          <p className="text-[10px] text-[#8F9CAE]">Báo cáo tổng kết ca việc lúc 07:00</p>
+                          <p className="text-xs font-black text-[#0F172A]">Điểm danh sáng qua Telegram</p>
+                          <p className="text-[10px] font-bold text-slate-600">Báo cáo tổng kết ca việc lúc 07:00</p>
                         </div>
                       </div>
 
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input
                           type="checkbox"
                           checked={telegramAutoMorning}
                           onChange={(e) => setTelegramAutoMorning(e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-8 h-4.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-[#0284C7]" />
+                        <div className="w-11 h-6 bg-white border-2 border-[#0F172A] rounded-full peer peer-checked:bg-[#E11D48] after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#0F172A] peer-checked:after:bg-white after:border-2 after:border-[#0F172A] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
                       </label>
                     </div>
                   </div>
 
                   {/* Option 2: Pre-task telegram reminder */}
-                  <div className="p-3 rounded-2xl bg-white border border-[#E2E8F0] space-y-2 shadow-2xs">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-indigo-100 text-[#4F46E5] flex items-center justify-center shrink-0">
-                          <Bell className="w-3.5 h-3.5" />
+                  <div className="p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-[#FFE4E6] border-2 border-[#0F172A] text-[#E11D48] flex items-center justify-center shrink-0">
+                          <Bell className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-[#1E2433]">Rung chuông trước ca việc</p>
-                          <p className="text-[10px] text-[#8F9CAE]">Báo động trước giờ bắt đầu</p>
+                          <p className="text-xs font-black text-[#0F172A]">Rung chuông trước ca việc</p>
+                          <p className="text-[10px] font-bold text-slate-600">Báo động trước giờ bắt đầu</p>
                         </div>
                       </div>
 
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input
                           type="checkbox"
                           checked={telegramAutoUpcoming}
                           onChange={(e) => setTelegramAutoUpcoming(e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-8 h-4.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-[#0284C7]" />
+                        <div className="w-11 h-6 bg-white border-2 border-[#0F172A] rounded-full peer peer-checked:bg-[#E11D48] after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#0F172A] peer-checked:after:bg-white after:border-2 after:border-[#0F172A] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
-                      <span className="text-[#64748B] font-medium">Khoảng cách thời gian:</span>
+                    <div className="flex items-center justify-between pt-2 border-t-2 border-[#0F172A]/15 text-[11px]">
+                      <span className="text-[#0F172A] font-bold">Khoảng cách thời gian:</span>
                       <select
                         value={telegramUpcomingMinutes}
                         onChange={(e) => setTelegramUpcomingMinutes(Number(e.target.value))}
-                        className="px-2 py-0.5 rounded-lg border border-[#CBD5E1] text-[11px] font-bold bg-[#FAFBFD] text-[#1E2433]"
+                        className="px-2.5 py-1 bg-white border-2 border-[#0F172A] rounded-xl text-[11px] text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none cursor-pointer"
                       >
                         <option value={15}>Trước 15 phút</option>
                         <option value={30}>Trước 30 phút</option>
@@ -624,14 +627,14 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
                     type="button"
                     onClick={handleSaveTelegram}
                     disabled={isSavingTelegram}
-                    className="w-full py-2.5 px-3 rounded-xl bg-white hover:bg-slate-100 text-[#1E2433] text-xs font-bold transition-all border border-[#CBD5E1] shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-2.5 px-3 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
                   >
                     {isSavingTelegram ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : telegramSavedNotice ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <Check className="w-3.5 h-3.5 text-[#FDE047]" />
                     ) : (
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#0284C7]" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#FDE047]" />
                     )}
                     <span>{telegramSavedNotice ? 'Đã Lưu & Kích Hoạt' : 'Lưu Cấu Hình Nhắc Việc Telegram'}</span>
                   </button>
@@ -643,39 +646,41 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
 
           {/* TAB 2: EMAIL DISPATCHER */}
           {activeTab === 'email' && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
               
               {/* LEFT COLUMN: ON-DEMAND DISPATCH (7 cols) */}
-              <div className="lg:col-span-7 space-y-4">
-                <div className="flex items-center justify-between pb-1 border-b border-[#EEF2F8]">
-                  <h4 className="text-xs font-extrabold text-[#1E2433] uppercase tracking-wide">
+              <div className="lg:col-span-7 space-y-4 bg-white p-5 rounded-2xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
+                <div className="flex items-center justify-between pb-2 border-b-2 border-[#0F172A]">
+                  <h4 className="text-xs font-black text-[#0F172A] uppercase tracking-wide">
                     Gửi Email Điểm Danh
                   </h4>
-                  <span className="text-[10px] text-[#64748B]">HTML Atelier Template</span>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#FEF9C3] text-[#0F172A] border-2 border-[#0F172A]">
+                    HTML Studio Template
+                  </span>
                 </div>
 
                 {/* Recipient Email Input */}
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-bold text-[#1E2433]">
+                  <div className="flex items-center justify-between text-xs font-black text-[#0F172A]">
                     <label>Hộp Thư Nhận Lịch</label>
                     {authUser?.email && (
                       <button
                         type="button"
                         onClick={() => setRecipient(authUser.email)}
-                        className="text-[10px] text-[#2563EB] hover:underline font-semibold"
+                        className="text-[10px] text-[#E11D48] hover:underline font-extrabold cursor-pointer"
                       >
                         Email tài khoản ({authUser.email})
                       </button>
                     )}
                   </div>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-[#94A3B8] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-4 h-4 text-[#E11D48] absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="email"
                       value={recipient}
                       onChange={(e) => setRecipient(e.target.value)}
                       placeholder="ten-ban@congty.com"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#CBD5E1] text-xs font-medium text-[#1E2433] focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] outline-none bg-white shadow-2xs"
+                      className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-[#0F172A] rounded-xl text-xs text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -685,7 +690,7 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
                   type="button"
                   onClick={handleSendReminderNow}
                   disabled={isSending}
-                  className="w-full py-3 px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                  className="w-full py-3 px-4 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                 >
                   {isSending ? (
                     <>
@@ -694,7 +699,7 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
                     </>
                   ) : (
                     <>
-                      <Send className="w-4 h-4" />
+                      <Send className="w-4 h-4 text-[#FDE047]" />
                       <span>Gửi Lịch Nhắc Nhở Ngay Về Email</span>
                     </>
                   )}
@@ -702,19 +707,19 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
 
                 {/* Success Notification & Preview Link */}
                 {sendSuccessMsg && (
-                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex flex-col gap-1.5 animate-in fade-in">
-                    <div className="flex items-center gap-2 font-bold">
-                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div className="p-3.5 rounded-2xl bg-[#DCFCE7] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A] text-xs flex flex-col gap-1.5 animate-in fade-in">
+                    <div className="flex items-center gap-2 font-black">
+                      <Check className="w-4 h-4 text-emerald-700 shrink-0" />
                       <span>{sendSuccessMsg}</span>
                     </div>
                     {previewUrl && (
-                      <div className="pl-6 text-[11px] text-emerald-700">
+                      <div className="pl-6 text-[11px] font-bold text-slate-800">
                         <span>Xem thử email đã kết xuất: </span>
                         <a
                           href={previewUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="underline font-bold text-[#2563EB] hover:text-[#1D4ED8] inline-flex items-center gap-1"
+                          className="underline font-black text-[#E11D48] hover:text-[#BE123C] inline-flex items-center gap-1"
                         >
                           Mở bản xem trước Ethereal <ExternalLink className="w-3 h-3" />
                         </a>
@@ -725,35 +730,41 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
               </div>
 
               {/* RIGHT COLUMN: EMAIL AUTOMATION WORKER (5 cols) */}
-              <div className="lg:col-span-5 space-y-4 bg-[#FAFBFD] p-5 rounded-3xl border border-[#EEF2F8] flex flex-col justify-between">
+              <div className="lg:col-span-5 space-y-4 bg-[#FFF1F2] p-5 rounded-2xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] flex flex-col justify-between">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between pb-1 border-b border-[#E2E8F0]">
+                  <div className="flex items-center justify-between pb-2 border-b-2 border-[#0F172A]">
                     <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-amber-500" />
-                      <h4 className="text-xs font-extrabold text-[#1E2433] uppercase tracking-wide">
+                      <Zap className="w-4 h-4 text-[#E11D48]" />
+                      <h4 className="text-xs font-black text-[#0F172A] uppercase tracking-wide">
                         Tự Động Qua Email
                       </h4>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-white border border-[#E2E8F0] space-y-2 shadow-2xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#1E2433]">Điểm danh sáng (07:00)</span>
-                      <input
-                        type="checkbox"
-                        checked={autoMorning}
-                        onChange={(e) => setAutoMorning(e.target.checked)}
-                        className="accent-[#2563EB]"
-                      />
+                  <div className="p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-black text-[#0F172A]">Điểm danh sáng (07:00)</span>
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={autoMorning}
+                          onChange={(e) => setAutoMorning(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-white border-2 border-[#0F172A] rounded-full peer peer-checked:bg-[#E11D48] after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#0F172A] peer-checked:after:bg-white after:border-2 after:border-[#0F172A] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
+                      </label>
                     </div>
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
-                      <span className="text-[#64748B]">Cảnh báo trước 30p</span>
-                      <input
-                        type="checkbox"
-                        checked={autoUpcoming}
-                        onChange={(e) => setAutoUpcoming(e.target.checked)}
-                        className="accent-[#2563EB]"
-                      />
+                    <div className="flex items-center justify-between pt-2.5 border-t-2 border-[#0F172A]/15 text-xs">
+                      <span className="font-bold text-slate-700">Cảnh báo trước 30p</span>
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={autoUpcoming}
+                          onChange={(e) => setAutoUpcoming(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-white border-2 border-[#0F172A] rounded-full peer peer-checked:bg-[#E11D48] after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#0F172A] peer-checked:after:bg-white after:border-2 after:border-[#0F172A] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -762,9 +773,9 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
                   type="button"
                   onClick={handleSaveAutomation}
                   disabled={isSavingSettings}
-                  className="w-full py-2.5 px-3 rounded-xl bg-white hover:bg-slate-100 text-[#1E2433] text-xs font-bold transition-all border border-[#CBD5E1] shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB]" />
+                  <ShieldCheck className="w-4 h-4 text-[#E11D48]" />
                   <span>{settingsSavedNotice ? 'Đã Lưu Cấu Hình' : 'Lưu Cài Đặt Email'}</span>
                 </button>
               </div>
@@ -777,38 +788,38 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
             <div className="space-y-5">
               
               {/* Highlight Card */}
-              <div className="p-5 rounded-3xl bg-gradient-to-tr from-emerald-50 via-teal-50 to-sky-50 border border-emerald-200 flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-2xl bg-white shadow-xs text-emerald-600 flex items-center justify-center shrink-0">
+              <div className="p-5 rounded-2xl bg-[#DCFCE7] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-emerald-700 flex items-center justify-center shrink-0">
                   <CalendarCheck2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-extrabold text-[#064E3B]">Tương Thích Chuẩn Quốc Tế iCalendar (RFC 5545)</h4>
-                  <p className="text-xs text-[#047857] mt-0.5">
+                  <h4 className="text-sm font-black text-[#0F172A]">Tương Thích Chuẩn Quốc Tế iCalendar (RFC 5545)</h4>
+                  <p className="text-xs font-extrabold text-emerald-800 mt-0.5">
                     Đồng bộ tức thì với Google Calendar, Apple Calendar (iPhone/Mac), và Microsoft Outlook
                   </p>
-                  <p className="text-xs text-[#334155] leading-relaxed pt-2">
+                  <p className="text-xs font-semibold text-slate-800 leading-relaxed pt-2">
                     Toàn bộ thời khóa biểu công việc của bạn được đóng gói thành tệp tin <strong>.ics</strong> tiêu chuẩn, tự động map đúng ngày, khung giờ bắt đầu và ghi chú chi tiết.
                   </p>
                 </div>
               </div>
 
-              {/* Action Buttons (2 Generous Cards) */}
+              {/* Action Buttons (2 Generous Cartoon Cards) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
                   type="button"
                   onClick={handleExportIcs}
-                  className="p-5 rounded-3xl bg-[#1E293B] hover:bg-[#0F172A] text-white transition-all shadow-md flex flex-col justify-between text-left group cursor-pointer border border-slate-700"
+                  className="p-5 rounded-2xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] transition-all flex flex-col justify-between text-left group cursor-pointer"
                 >
                   <div>
-                    <div className="w-9 h-9 rounded-2xl bg-white/10 flex items-center justify-center mb-3 text-[#38BDF8] group-hover:scale-110 transition-transform">
-                      <Download className="w-4.5 h-4.5" />
+                    <div className="w-10 h-10 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] flex items-center justify-center mb-3 text-[#E11D48] group-hover:scale-105 transition-transform">
+                      <Download className="w-5 h-5" />
                     </div>
                     <h5 className="text-sm font-black">Xuất Tệp Lịch .ics Chuẩn</h5>
-                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                    <p className="text-xs text-[#FFE4E6] font-semibold mt-1 leading-relaxed">
                       Tải về máy tệp lịch của {tasks.length} ca việc đã được lập lịch trong hệ thống.
                     </p>
                   </div>
-                  <span className="text-xs font-bold text-[#38BDF8] mt-4 inline-flex items-center gap-1.5">
+                  <span className="text-xs font-black text-[#FDE047] mt-4 inline-flex items-center gap-1.5">
                     Bấm để tải tệp .ics về máy &rarr;
                   </span>
                 </button>
@@ -816,37 +827,37 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
                 <button
                   type="button"
                   onClick={openGoogleCalendarImportPage}
-                  className="p-5 rounded-3xl bg-white hover:bg-slate-50 border border-[#CBD5E1] text-[#1E2433] transition-all shadow-xs flex flex-col justify-between text-left group cursor-pointer"
+                  className="p-5 rounded-2xl bg-[#FEF9C3] hover:bg-[#FDE047] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-[#0F172A] transition-all flex flex-col justify-between text-left group cursor-pointer"
                 >
                   <div>
-                    <div className="w-9 h-9 rounded-2xl bg-blue-50 flex items-center justify-center mb-3 text-[#2563EB] group-hover:scale-110 transition-transform">
-                      <ExternalLink className="w-4.5 h-4.5" />
+                    <div className="w-10 h-10 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] flex items-center justify-center mb-3 text-[#E11D48] group-hover:scale-105 transition-transform">
+                      <ExternalLink className="w-5 h-5" />
                     </div>
                     <h5 className="text-sm font-black">Mở Nhập Google Calendar</h5>
-                    <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
+                    <p className="text-xs text-slate-700 font-semibold mt-1 leading-relaxed">
                       Mở trực tiếp trang Cài đặt & Nhập lịch của Google Calendar trên trình duyệt.
                     </p>
                   </div>
-                  <span className="text-xs font-bold text-[#2563EB] mt-4 inline-flex items-center gap-1.5">
+                  <span className="text-xs font-black text-[#E11D48] mt-4 inline-flex items-center gap-1.5">
                     Mở tab Google Calendar &rarr;
                   </span>
                 </button>
               </div>
 
               {/* 3 Step Guide */}
-              <div className="p-4 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] space-y-2">
-                <h5 className="text-xs font-bold text-[#1E2433]">Quy trình 3 bước đồng bộ:</h5>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[#64748B] pt-1">
-                  <div className="p-3 bg-white rounded-xl border border-[#EEF2F8]">
-                    <span className="font-mono font-bold text-[#2563EB] block mb-1">Bước 1</span>
-                    Bấm <strong>"Xuất Tệp Lịch .ics"</strong> để tải tệp lịch về máy.
+              <div className="p-4 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2.5">
+                <h5 className="text-xs font-black text-[#0F172A]">Quy trình 3 bước đồng bộ:</h5>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[#0F172A] pt-1">
+                  <div className="p-3 bg-[#FFF1F2] rounded-xl border-2 border-[#0F172A] font-semibold">
+                    <span className="font-mono font-black text-[#E11D48] block mb-1">Bước 1</span>
+                    Bấm <strong>&ldquo;Xuất Tệp Lịch .ics&rdquo;</strong> để tải tệp lịch về máy.
                   </div>
-                  <div className="p-3 bg-white rounded-xl border border-[#EEF2F8]">
-                    <span className="font-mono font-bold text-[#2563EB] block mb-1">Bước 2</span>
-                    Bấm <strong>"Mở Nhập Google Calendar"</strong> để chuyển sang màn hình nhập file.
+                  <div className="p-3 bg-[#FEF9C3] rounded-xl border-2 border-[#0F172A] font-semibold">
+                    <span className="font-mono font-black text-[#E11D48] block mb-1">Bước 2</span>
+                    Bấm <strong>&ldquo;Mở Nhập Google Calendar&rdquo;</strong> để chuyển sang màn hình nhập file.
                   </div>
-                  <div className="p-3 bg-white rounded-xl border border-[#EEF2F8]">
-                    <span className="font-mono font-bold text-[#2563EB] block mb-1">Bước 3</span>
+                  <div className="p-3 bg-[#DBEAFE] rounded-xl border-2 border-[#0F172A] font-semibold">
+                    <span className="font-mono font-black text-[#E11D48] block mb-1">Bước 3</span>
                     Chọn tệp <strong>.ics</strong> vừa tải và ấn <strong>Nhập (Import)</strong>. Lịch sẽ đồng bộ lên điện thoại của bạn.
                   </div>
                 </div>
@@ -858,14 +869,15 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 shrink-0 flex items-center justify-between border-t border-[#EEF2F8] bg-white">
-          <span className="text-[11px] text-[#8F9CAE]">
-            Gencoore Synchronizer • Tiêu chuẩn bảo mật ISO 27001 • Đồng bộ đám mây MongoDB Atlas
+        <div className="px-6 py-4 shrink-0 flex items-center justify-between gap-3 flex-wrap border-t-2 border-[#0F172A] bg-[#FFF1F2]">
+          <span className="text-[11px] font-bold text-slate-700">
+            Genncore Synchronizer • Tiêu chuẩn bảo mật ISO 27001 • Đồng bộ đám mây MongoDB Atlas
           </span>
 
           <button
+            type="button"
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-[#1E293B] hover:bg-[#0F172A] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+            className="px-5 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black transition-all cursor-pointer"
           >
             Đóng
           </button>

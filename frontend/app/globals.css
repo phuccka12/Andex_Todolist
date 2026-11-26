@@ -7,22 +7,23 @@
     @apply font-sans antialiased text-[#1E2433];
     letter-spacing: -0.011em;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    background-color: #F8FAFC;
+    background-color: #FFF8F1;
     min-height: 100vh;
   }
 }
 
 .jiron-card {
   background: #FFFFFF;
-  border-radius: 16px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 20px;
+  border: 2px solid #0F172A;
+  box-shadow: 4px 4px 0px #0F172A;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .jiron-card:hover {
-  box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.08);
-  border-color: #CBD5E1;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #0F172A;
+  border-color: #0F172A;
 }
 
 /* Clear, Smooth Inner Scrollbar for Main Section */

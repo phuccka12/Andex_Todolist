@@ -85,78 +85,86 @@ export const PomodoroFocusModal: React.FC<PomodoroFocusModalProps> = ({
   const progressPercent = Math.round(((totalDuration - timeLeft) / totalDuration) * 100);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-[28px] max-w-md w-full p-6 space-y-5 shadow-2xl relative border border-[#EEF2F8] animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-[#FFFDF7] rounded-3xl max-w-md w-full p-6 space-y-5 shadow-[6px_6px_0px_#0F172A] relative border-2 border-[#0F172A] animate-in zoom-in-95 duration-200">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+          className="absolute top-4 right-4 p-1.5 rounded-xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A] hover:bg-[#FFE4E6] cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Modal Header */}
-        <div className="flex items-center gap-3 pb-3 border-b border-[#EEF2F8]">
-          <div className="w-10 h-10 rounded-2xl bg-[#FFF1F2] text-[#F43F5E] flex items-center justify-center font-bold shadow-xs">
+        <div className="flex items-center gap-3 pb-3 border-b-2 border-[#0F172A]/15">
+          <div className="w-10 h-10 rounded-2xl bg-[#FFE4E6] border-2 border-[#0F172A] text-[#E11D48] flex items-center justify-center font-bold shadow-[2px_2px_0px_#0F172A]">
             <Flame className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-extrabold text-sm text-[#1E2433]">Đồng Hồ Pomodoro Deep Work</h3>
-            <p className="text-[10px] text-[#8F9CAE]">Duy trì sự tập trung cao độ theo phiên 25 phút</p>
+            <h3 className="font-black text-sm text-[#0F172A]">Đồng Hồ Pomodoro Deep Work</h3>
+            <p className="text-[10px] text-slate-600 font-bold">Duy trì sự tập trung cao độ theo phiên 25 phút</p>
           </div>
         </div>
 
         {/* Mode Pills */}
-        <div className="flex bg-[#F4F6FA] p-1 rounded-full text-xs font-bold text-[#8F9CAE]">
+        <div className="flex bg-[#FFF1F2] p-1.5 rounded-2xl border-2 border-[#0F172A] gap-1 text-xs font-black text-[#0F172A]">
           <button
             onClick={() => switchMode('focus')}
-            className={`flex-1 py-1.5 rounded-full transition-all ${
-              mode === 'focus' ? 'bg-[#F43F5E] text-white shadow-xs' : 'hover:text-[#1E2433]'
+            className={`flex-1 py-1.5 rounded-xl transition-all cursor-pointer ${
+              mode === 'focus'
+                ? 'bg-[#E11D48] text-white border border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                : 'hover:bg-white/70 text-[#0F172A]'
             }`}
           >
             Tập trung (25p)
           </button>
           <button
             onClick={() => switchMode('short_break')}
-            className={`flex-1 py-1.5 rounded-full transition-all ${
-              mode === 'short_break' ? 'bg-[#10B981] text-white shadow-xs' : 'hover:text-[#1E2433]'
+            className={`flex-1 py-1.5 rounded-xl transition-all cursor-pointer ${
+              mode === 'short_break'
+                ? 'bg-[#DCFCE7] text-[#0F172A] border border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                : 'hover:bg-white/70 text-[#0F172A]'
             }`}
           >
             Nghỉ ngắn (5p)
           </button>
           <button
             onClick={() => switchMode('long_break')}
-            className={`flex-1 py-1.5 rounded-full transition-all ${
-              mode === 'long_break' ? 'bg-[#3B82F6] text-white shadow-xs' : 'hover:text-[#1E2433]'
+            className={`flex-1 py-1.5 rounded-xl transition-all cursor-pointer ${
+              mode === 'long_break'
+                ? 'bg-[#FEF9C3] text-[#0F172A] border border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                : 'hover:bg-white/70 text-[#0F172A]'
             }`}
           >
             Nghỉ dài (15p)
           </button>
         </div>
 
-        {/* Big Circular Counter */}
-        <div className="relative py-4 flex flex-col items-center justify-center">
-          <div className="relative w-44 h-44 rounded-full border-8 border-[#F1F4FA] flex items-center justify-center bg-gradient-to-b from-[#FAFBFD] to-white shadow-inner">
-            <div className="text-center">
-              <span className="text-4xl font-black text-[#1E2433] tracking-tighter font-mono">
-                {formattedTime}
-              </span>
-              <p className="text-[10px] font-bold text-[#8F9CAE] uppercase tracking-wider mt-1">
-                {mode === 'focus' ? 'Đang tập trung' : 'Đang nghỉ ngơi'}
-              </p>
-            </div>
+        {/* Central Timer Card */}
+        <div className="bg-white border-2 border-[#0F172A] shadow-[4px_4px_0px_#0F172A] rounded-3xl p-6 flex flex-col items-center justify-center">
+          <span className="text-5xl font-black text-[#0F172A] tracking-tighter font-mono">
+            {formattedTime}
+          </span>
+          <span className="px-3 py-0.5 rounded-full bg-[#FFF1F2] border border-[#0F172A] text-[10px] font-black text-[#E11D48] uppercase tracking-wider mt-2">
+            {mode === 'focus' ? 'Đang tập trung' : 'Đang nghỉ ngơi'}
+          </span>
+          <div className="w-full h-2.5 bg-[#FFF1F2] border border-[#0F172A] rounded-full overflow-hidden mt-4">
+            <div
+              className="h-full bg-[#E11D48] transition-all duration-500 rounded-full"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
         </div>
 
         {/* Selected Task Focus */}
-        <div className="space-y-1.5 bg-[#F8FAFD] p-3 rounded-2xl border border-[#EEF2F8]">
-          <span className="text-[10px] font-bold text-[#8F9CAE] flex items-center gap-1 uppercase tracking-wide">
-            <Target className="w-3 h-3 text-[#3B82F6]" />
+        <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
+          <span className="text-[10px] font-black text-[#0F172A] flex items-center gap-1.5 uppercase tracking-wide">
+            <Target className="w-3.5 h-3.5 text-[#E11D48]" />
             <span>Mục tiêu phiên này:</span>
           </span>
           <select
             value={selectedTaskId}
             onChange={(e) => setSelectedTaskId(e.target.value)}
-            className="w-full bg-white border border-[#E2E8F0] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-[#1E2433] focus:outline-none focus:border-[#3B82F6]"
+            className="w-full bg-white border-2 border-[#0F172A] rounded-xl px-3 py-2 text-xs font-semibold text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none"
           >
             {tasks.map((t) => (
               <option key={t.id} value={t.id}>
@@ -168,15 +176,15 @@ export const PomodoroFocusModal: React.FC<PomodoroFocusModalProps> = ({
 
         {/* Control Buttons & Sessions Counter */}
         <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-[#64748B]">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-xs font-black text-[#0F172A]">
             <span>🍅 Đã chốt:</span>
-            <span className="text-[#F43F5E]">{completedSessions} phiên</span>
+            <span className="text-[#E11D48]">{completedSessions} phiên</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={handleReset}
-              className="p-2.5 rounded-full text-[#8F9CAE] hover:text-[#1E2433] hover:bg-[#F4F6FA] border border-[#E2E8F0] transition-colors"
+              className="p-2.5 rounded-xl bg-white hover:bg-[#FEF9C3] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black transition-all cursor-pointer"
               title="Đặt lại thời gian"
             >
               <RotateCcw className="w-4 h-4" />
@@ -184,11 +192,7 @@ export const PomodoroFocusModal: React.FC<PomodoroFocusModalProps> = ({
 
             <button
               onClick={toggleStartPause}
-              className={`px-5 py-2.5 rounded-full text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-md active:scale-95 ${
-                isRunning
-                  ? 'bg-amber-500 hover:bg-amber-600'
-                  : 'bg-[#F43F5E] hover:bg-rose-600'
-              }`}
+              className="px-5 py-2.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer active:translate-y-0.5"
             >
               {isRunning ? (
                 <>

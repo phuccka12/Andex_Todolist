@@ -483,19 +483,21 @@ export default function WorkspaceApp() {
         return '';
       case 'slate':
       default:
-        return 'bg-[#F8FAFC] text-[#1E2433]';
+        return 'bg-gradient-to-b from-[#FFF8F1] via-[#FFF1F2] to-[#FEFCE8] text-[#0F172A]';
     }
   };
 
   if (!isMounted) {
     return (
-      <div className="w-full h-dvh flex items-center justify-center bg-[#F8FAFC]">
+      <div className="w-full h-dvh flex items-center justify-center bg-[#FFF8F1]">
         <div className="flex flex-col items-center gap-3.5 animate-pulse">
-          <img src="/images/logo-wordmark.png" alt="GENNCORE" className="block h-8 w-auto object-contain" />
-          <div className="w-24 h-1 rounded-full bg-slate-200 overflow-hidden">
-            <div className="w-1/2 h-full bg-slate-900 rounded-full animate-pulse" />
+          <div className="px-4 py-2 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[4px_4px_0px_#0F172A]">
+            <img src="/images/logo-wordmark.png" alt="GENNCORE" className="block h-8 w-auto object-contain" />
           </div>
-          <p className="text-[11px] font-semibold text-slate-400 tracking-wide">Đang mở Workspace...</p>
+          <div className="w-24 h-1.5 rounded-full bg-[#FFE4E6] border border-[#0F172A] overflow-hidden">
+            <div className="w-1/2 h-full bg-[#E11D48] rounded-full animate-pulse" />
+          </div>
+          <p className="text-[11px] font-black text-[#0F172A] tracking-wide">Đang mở Workspace...</p>
         </div>
       </div>
     );
@@ -503,8 +505,8 @@ export default function WorkspaceApp() {
 
   return (
     <>
-      {/* Dynamic App Background Wallpaper */}
-      {userProfile.background && (
+      {/* Dynamic App Background Wallpaper or Cartoon Polka-Dot Texture */}
+      {userProfile.background ? (
         <div
           className="fixed inset-0 pointer-events-none z-0 bg-cover bg-center transition-all duration-700"
           style={{
@@ -513,6 +515,16 @@ export default function WorkspaceApp() {
             opacity: userProfile.backgroundOpacity ?? 0.75,
           }}
         />
+      ) : (
+        settings.theme !== 'midnight' && (
+          <div
+            className="fixed inset-0 pointer-events-none z-10 opacity-[0.22]"
+            style={{
+              backgroundImage: 'radial-gradient(#94A3B8 1.2px, transparent 1.2px)',
+              backgroundSize: '22px 22px',
+            }}
+          />
+        )
       )}
 
       <div
@@ -606,7 +618,7 @@ export default function WorkspaceApp() {
           style={activeTab !== 'journal' ? customCanvasStyle : undefined}
           className={`flex-1 h-full overflow-y-auto overflow-x-hidden flex flex-col ${
             activeTab === 'journal'
-              ? 'p-0 pb-20 md:pb-0 bg-[#F3EBDD]'
+              ? 'p-0 pb-20 md:pb-0 bg-[#FFF8F1]'
               : `p-3.5 sm:p-5 md:px-6 md:py-4 pb-24 md:pb-6 space-y-4 ${getCanvasThemeClass()}`
           } custom-main-scroll scroll-smooth transition-colors duration-200`}
         >
@@ -635,18 +647,18 @@ export default function WorkspaceApp() {
           {/* Guest Mode Notice Banner (Isolated local storage, encourages Cloud Sync login) */}
           {!isLoading && !authUser && activeTab !== 'journal' && (
             <div
-              className={`px-3.5 py-2 rounded-xl border flex flex-wrap items-center justify-between gap-2 text-xs shrink-0 ${
+              className={`px-3.5 py-2 rounded-2xl border-2 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0 ${
                 settings.theme === 'midnight'
                   ? 'bg-indigo-500/10 border-indigo-400/25 text-indigo-200'
-                  : 'bg-indigo-50/80 border-indigo-200/80 text-indigo-900'
+                  : 'bg-[#FEF9C3] border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A]'
               }`}
             >
-              <span className="font-medium">
+              <span className="font-bold">
                 Bạn đang ở <strong>Chế độ Khách</strong> (dữ liệu chỉ lưu trên trình duyệt này). Đăng nhập để đồng bộ Cloud trên mọi thiết bị.
               </span>
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] cursor-pointer shrink-0 transition-colors"
+                className="px-3 py-1 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black text-[11px] cursor-pointer shrink-0 transition-colors"
               >
                 Đăng nhập / Đăng ký
               </button>
@@ -665,16 +677,16 @@ export default function WorkspaceApp() {
 
           {(activeTab === 'projects' || activeTab === 'tags') && (
             <div className="space-y-4">
-              <div className="inline-flex items-center p-1 rounded-xl bg-slate-200/70 border border-slate-200/80 gap-1">
+              <div className="inline-flex items-center p-1 rounded-2xl bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] gap-1">
                 <button
                   onClick={() => {
                     soundEngine.playSoftClick();
                     setActiveTab('projects');
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
                     activeTab === 'projects'
-                      ? 'bg-white text-slate-900 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                      : 'text-[#0F172A] hover:bg-white/70'
                   }`}
                 >
                   <FolderKanban className="w-3.5 h-3.5" />
@@ -685,10 +697,10 @@ export default function WorkspaceApp() {
                     soundEngine.playSoftClick();
                     setActiveTab('tags');
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
                     activeTab === 'tags'
-                      ? 'bg-white text-slate-900 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                      : 'text-[#0F172A] hover:bg-white/70'
                   }`}
                 >
                   <Tag className="w-3.5 h-3.5" />
@@ -742,10 +754,10 @@ export default function WorkspaceApp() {
               {/* Workspace Focus Switcher: Timetable dominates by default */}
               <div className="flex items-center justify-between gap-2 flex-wrap shrink-0">
                 <div
-                  className={`inline-flex items-center p-0.5 rounded-xl border text-xs font-bold ${
+                  className={`inline-flex items-center p-1 rounded-2xl border-2 text-xs font-extrabold ${
                     settings.theme === 'midnight'
                       ? 'bg-[#12151E] border-white/[0.08] text-slate-400'
-                      : 'bg-slate-200/60 border-slate-200/80 text-slate-600'
+                      : 'bg-[#FFF1F2] border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A]'
                   }`}
                 >
                   <button
@@ -753,15 +765,15 @@ export default function WorkspaceApp() {
                       soundEngine.playSoftClick();
                       setTrackerLayout('schedule');
                     }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                       trackerLayout === 'schedule'
                         ? settings.theme === 'midnight'
                           ? 'bg-[#181C28] text-white shadow-xs'
-                          : 'bg-white text-slate-900 shadow-2xs'
-                        : 'hover:text-slate-900 dark:hover:text-white'
+                          : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                        : 'hover:bg-white/70'
                     }`}
                   >
-                    <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+                    <Calendar className={`w-3.5 h-3.5 ${trackerLayout === 'schedule' ? 'text-white' : 'text-[#E11D48]'}`} />
                     <span>Thời Khóa Biểu</span>
                   </button>
                   <button
@@ -769,15 +781,15 @@ export default function WorkspaceApp() {
                       soundEngine.playSoftClick();
                       setTrackerLayout('kanban');
                     }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                       trackerLayout === 'kanban'
                         ? settings.theme === 'midnight'
                           ? 'bg-[#181C28] text-white shadow-xs'
-                          : 'bg-white text-slate-900 shadow-2xs'
-                        : 'hover:text-slate-900 dark:hover:text-white'
+                          : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                        : 'hover:bg-white/70'
                     }`}
                   >
-                    <Kanban className="w-3.5 h-3.5 text-emerald-500" />
+                    <Kanban className={`w-3.5 h-3.5 ${trackerLayout === 'kanban' ? 'text-white' : 'text-emerald-600'}`} />
                     <span>Bảng Kanban ({tasks.length})</span>
                   </button>
                   <button
@@ -785,15 +797,15 @@ export default function WorkspaceApp() {
                       soundEngine.playSoftClick();
                       setTrackerLayout('split');
                     }}
-                    className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                       trackerLayout === 'split'
                         ? settings.theme === 'midnight'
                           ? 'bg-[#181C28] text-white shadow-xs'
-                          : 'bg-white text-slate-900 shadow-2xs'
-                        : 'hover:text-slate-900 dark:hover:text-white'
+                          : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                        : 'hover:bg-white/70'
                     }`}
                   >
-                    <LayoutGrid className="w-3.5 h-3.5 text-amber-500" />
+                    <LayoutGrid className={`w-3.5 h-3.5 ${trackerLayout === 'split' ? 'text-white' : 'text-amber-600'}`} />
                     <span>Kết Hợp</span>
                   </button>
                 </div>
@@ -946,10 +958,10 @@ export default function WorkspaceApp() {
         {/* Mobile Bottom Navigation Bar */}
         <nav
           aria-label="Điều hướng di động"
-          className={`md:hidden fixed bottom-0 inset-x-0 z-40 border-t backdrop-blur-xl px-2 py-1.5 flex items-center justify-around ${
+          className={`md:hidden fixed bottom-0 inset-x-0 z-40 border-t-2 backdrop-blur-xl px-2 py-1.5 flex items-center justify-around ${
             settings.theme === 'midnight'
               ? 'bg-[#0E131F]/95 border-[#1E2638] text-slate-300'
-              : 'bg-white/95 border-[#E2E8F0] text-slate-600'
+              : 'bg-[#FFFDF7]/95 border-[#0F172A] text-[#0F172A]'
           }`}
           style={{ paddingBottom: 'max(0.375rem, env(safe-area-inset-bottom))' }}
         >
@@ -958,8 +970,8 @@ export default function WorkspaceApp() {
               soundEngine.playSoftClick();
               setActiveTab('tracker');
             }}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition-colors ${
-              activeTab === 'tracker' ? 'text-[#2563EB]' : ''
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-black transition-colors ${
+              activeTab === 'tracker' ? 'text-[#E11D48] bg-[#FFE4E6]' : ''
             }`}
           >
             <Clock className="w-4 h-4" />
@@ -971,8 +983,8 @@ export default function WorkspaceApp() {
               soundEngine.playSoftClick();
               setActiveTab('vocab');
             }}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition-colors ${
-              activeTab === 'vocab' ? 'text-indigo-600' : ''
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-black transition-colors ${
+              activeTab === 'vocab' ? 'text-[#E11D48] bg-[#FFE4E6]' : ''
             }`}
           >
             <Languages className="w-4 h-4" />
@@ -984,8 +996,8 @@ export default function WorkspaceApp() {
               soundEngine.playSoftClick();
               setActiveTab('journal');
             }}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition-colors ${
-              activeTab === 'journal' ? 'text-[#8C5D35]' : ''
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-black transition-colors ${
+              activeTab === 'journal' ? 'text-[#E11D48] bg-[#FFE4E6]' : ''
             }`}
           >
             <BookOpen className="w-4 h-4" />
@@ -997,7 +1009,7 @@ export default function WorkspaceApp() {
               soundEngine.playPentatonicChime(4);
               setIsAiOpen(true);
             }}
-            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold text-[#0EA5E9]"
+            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-black text-[#E11D48]"
           >
             <Bot className="w-4 h-4" />
             <span>AI</span>
@@ -1008,7 +1020,7 @@ export default function WorkspaceApp() {
               soundEngine.playSoftClick();
               setIsMobileSidebarOpen(true);
             }}
-            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold"
+            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-black"
           >
             <Menu className="w-4 h-4" />
             <span>Menu</span>

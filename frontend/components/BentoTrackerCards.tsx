@@ -32,8 +32,9 @@ export const BentoTrackerCards: React.FC<BentoTrackerCardsProps> = ({
       metric: `${totalTasks}`,
       unit: 'việc',
       subtitle: `${totalHours}h đã lên lịch`,
-      iconBg: isDark ? 'bg-indigo-500/15 text-indigo-400' : 'bg-indigo-50 text-indigo-600',
-      accentDot: 'bg-indigo-500',
+      cardBg: 'bg-[#FFF1F2]',
+      iconBg: isDark ? 'bg-indigo-500/15 text-indigo-400' : 'bg-[#E11D48] text-white border-2 border-[#0F172A]',
+      accentDot: 'bg-[#E11D48]',
       icon: ListTodo,
     },
     {
@@ -42,8 +43,9 @@ export const BentoTrackerCards: React.FC<BentoTrackerCardsProps> = ({
       metric: `${inProgressTasks.length}`,
       unit: 'ca',
       subtitle: inProgressTasks[0]?.title || 'Sẵn sàng bắt đầu ca mới',
-      iconBg: isDark ? 'bg-sky-500/15 text-sky-400' : 'bg-sky-50 text-sky-600',
-      accentDot: 'bg-sky-500',
+      cardBg: 'bg-[#FEF9C3]',
+      iconBg: isDark ? 'bg-sky-500/15 text-sky-400' : 'bg-[#FACC15] text-[#0F172A] border-2 border-[#0F172A]',
+      accentDot: 'bg-[#F59E0B]',
       icon: Flame,
     },
     {
@@ -52,8 +54,9 @@ export const BentoTrackerCards: React.FC<BentoTrackerCardsProps> = ({
       metric: `${editingTasks.length}`,
       unit: 'việc',
       subtitle: editingTasks[0]?.title || 'Không có việc tồn đọng',
-      iconBg: isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-600',
-      accentDot: 'bg-amber-500',
+      cardBg: 'bg-[#DBEAFE]',
+      iconBg: isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-[#3B82F6] text-white border-2 border-[#0F172A]',
+      accentDot: 'bg-[#3B82F6]',
       icon: Clock,
     },
     {
@@ -62,8 +65,9 @@ export const BentoTrackerCards: React.FC<BentoTrackerCardsProps> = ({
       metric: `${completionRate}%`,
       unit: '',
       subtitle: `${doneTasks.length}/${totalTasks} việc đã xong`,
-      iconBg: isDark ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-50 text-emerald-600',
-      accentDot: 'bg-emerald-500',
+      cardBg: 'bg-[#DCFCE7]',
+      iconBg: isDark ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#22C55E] text-[#0F172A] border-2 border-[#0F172A]',
+      accentDot: 'bg-[#22C55E]',
       icon: CheckCircle2,
     },
   ];
@@ -75,10 +79,10 @@ export const BentoTrackerCards: React.FC<BentoTrackerCardsProps> = ({
         return (
           <div
             key={card.id}
-            className={`rounded-xl px-3.5 py-2.5 border flex items-center justify-between gap-3 transition-all select-none ${
+            className={`rounded-2xl px-3.5 py-2.5 border-2 flex items-center justify-between gap-3 transition-all select-none ${
               isDark
                 ? 'bg-[#12151E] border-white/[0.08] hover:border-white/[0.16] text-slate-100'
-                : 'bg-white border-slate-200/80 hover:border-slate-300 text-slate-900 shadow-2xs'
+                : `${card.cardBg} border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#0F172A] text-[#0F172A]`
             }`}
           >
             <div className="min-w-0 flex-1">

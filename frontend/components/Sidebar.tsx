@@ -92,45 +92,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
     switch (theme) {
       case 'cream':
         return {
-          aside: 'bg-[#EDE4D5] border-r border-[#DCCEB9] text-[#2C180C]',
+          aside: 'bg-[#FAF5EC] border-r-2 border-[#0F172A] text-[#0F172A]',
           asideStyle: {},
-          sectionTitle: 'text-[#8A715E]',
-          btnDefault: 'text-[#5C4535] hover:bg-[#FAF7F2]/80 hover:text-[#2C180C]',
-          btnActive: 'bg-[#8C5D35] text-white shadow-xs font-bold',
+          sectionTitle: 'text-[#6E5641] font-black',
+          btnDefault: 'text-[#2C180C]/85 hover:bg-[#FEF9C3] hover:text-[#0F172A] font-bold',
+          btnActive: 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] font-black',
           btnActiveStyle: {},
           iconActive: 'text-white',
-          iconDefault: 'text-[#8A715E]',
-          badgeNew: 'bg-[#DFCDB9] text-[#3D2514] border-[#CBB39C]',
-          borderSeparator: 'border-[#DCCEB9]',
-          toggleBtn: 'text-[#5C4535] hover:text-[#2C180C] hover:bg-[#FAF7F2]/80',
+          iconDefault: 'text-[#5C4535]',
+          badgeNew: 'bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]',
+          borderSeparator: 'border-[#0F172A]/15',
+          toggleBtn: 'text-[#0F172A] bg-white hover:bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
         };
       case 'graphite':
         return {
-          aside: 'bg-[#EEF2F6] border-r border-[#CBD5E1] text-[#0F172A]',
+          aside: 'bg-[#F1F5F9] border-r-2 border-[#0F172A] text-[#0F172A]',
           asideStyle: {},
-          sectionTitle: 'text-[#64748B]',
-          btnDefault: 'text-[#334155] hover:bg-white/90 hover:text-[#0F172A]',
-          btnActive: 'bg-[#0F172A] text-white shadow-xs font-bold',
+          sectionTitle: 'text-[#475569] font-black',
+          btnDefault: 'text-[#0F172A]/80 hover:bg-white hover:text-[#0F172A] font-bold',
+          btnActive: 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] font-black',
           btnActiveStyle: {},
           iconActive: 'text-white',
-          iconDefault: 'text-[#64748B]',
-          badgeNew: 'bg-slate-200 text-slate-800 border-slate-300',
-          borderSeparator: 'border-[#CBD5E1]',
-          toggleBtn: 'text-[#475569] hover:text-[#0F172A] hover:bg-white/80',
+          iconDefault: 'text-[#334155]',
+          badgeNew: 'bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]',
+          borderSeparator: 'border-[#0F172A]/15',
+          toggleBtn: 'text-[#0F172A] bg-white hover:bg-[#FFE4E6] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
         };
       case 'sage':
         return {
-          aside: 'bg-[#E5EEE7] border-r border-[#C9D9CD] text-[#1B3624]',
+          aside: 'bg-[#ECFDF5] border-r-2 border-[#0F172A] text-[#0F172A]',
           asideStyle: {},
-          sectionTitle: 'text-[#527961]',
-          btnDefault: 'text-[#2C4A34] hover:bg-white/80 hover:text-[#14301C]',
-          btnActive: 'bg-[#166534] text-white shadow-xs font-bold',
+          sectionTitle: 'text-[#166534] font-black',
+          btnDefault: 'text-[#14532D] hover:bg-white hover:text-[#0F172A] font-bold',
+          btnActive: 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] font-black',
           btnActiveStyle: {},
           iconActive: 'text-white',
-          iconDefault: 'text-[#527961]',
-          badgeNew: 'bg-[#D1E2D6] text-[#14301C] border-[#B7CEBE]',
-          borderSeparator: 'border-[#C9D9CD]',
-          toggleBtn: 'text-[#2C4A34] hover:text-[#14301C] hover:bg-white/80',
+          iconDefault: 'text-[#166534]',
+          badgeNew: 'bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]',
+          borderSeparator: 'border-[#0F172A]/15',
+          toggleBtn: 'text-[#0F172A] bg-white hover:bg-[#DCFCE7] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
         };
       case 'midnight':
         return {
@@ -149,17 +149,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
       case 'slate':
       default:
         return {
-          aside: 'bg-white border-r border-slate-200/80 text-slate-800',
+          aside: 'bg-[#FFFDF7] border-r-2 border-[#0F172A] text-[#0F172A]',
           asideStyle: {},
-          sectionTitle: 'text-slate-400',
-          btnDefault: 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900',
-          btnActive: 'bg-indigo-600 text-white shadow-xs font-bold',
+          sectionTitle: 'text-slate-500 font-black',
+          btnDefault: 'text-[#0F172A]/80 hover:bg-[#FFE4E6]/75 hover:text-[#0F172A] font-bold',
+          btnActive: 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] font-black',
           btnActiveStyle: {},
           iconActive: 'text-white',
-          iconDefault: 'text-slate-400',
-          badgeNew: 'bg-indigo-50 text-indigo-600 border-indigo-200/70',
-          borderSeparator: 'border-slate-200/80',
-          toggleBtn: 'text-slate-500 hover:text-slate-900 hover:bg-slate-100',
+          iconDefault: 'text-[#0F172A]/70',
+          badgeNew: 'bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]',
+          borderSeparator: 'border-[#0F172A]/15',
+          toggleBtn: 'text-[#0F172A] hover:bg-[#FFE4E6] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
         };
     }
   };
@@ -195,16 +195,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="flex flex-col items-start group min-w-0"
               title="Về trang giới thiệu Genncore"
             >
-              <img
-                src="/images/logo-wordmark.png"
-                alt="Genncore"
-                className={`block h-7 w-auto max-w-[144px] object-contain object-left transition-transform duration-200 group-hover:scale-[1.03] ${
-                  isDark ? 'brightness-0 invert' : ''
-                }`}
-              />
-              <span className="text-[9px] font-bold text-slate-400 tracking-[0.16em] uppercase mt-0.5">
-                Workspace OS
-              </span>
+              <div className="px-2.5 py-1.5 rounded-xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] group-hover:shadow-[1px_1px_0px_#0F172A] group-hover:translate-x-[1px] group-hover:translate-y-[1px] transition-all">
+                <img
+                  src="/images/logo-wordmark.png"
+                  alt="Genncore"
+                  className="block h-5 w-auto max-w-[128px] object-contain object-left"
+                />
+              </div>
             </Link>
 
             <button
@@ -220,10 +217,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Link
               href="/"
               title="Genncore Workspace"
-              className={`w-10 h-10 rounded-xl border shadow-xs flex items-center justify-center p-1.5 shrink-0 hover:scale-105 transition-transform ${
+              className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center p-1.5 shrink-0 hover:scale-105 transition-transform ${
                 isDark
                   ? 'bg-white/[0.08] border-white/15'
-                  : 'bg-white border-slate-200/80'
+                  : 'bg-white border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
               }`}
             >
               <img
@@ -312,20 +309,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 isCollapsed ? 'justify-center p-2.5 rounded-xl' : 'justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
               } transition-all relative cursor-pointer ${
                 activeTab === 'journal'
-                  ? 'bg-[#EDE0CE] text-[#2C180C] font-bold shadow-xs'
+                  ? themeStyles.btnActive
                   : themeStyles.btnDefault
               }`}
               title="Nhật Ký Ký Ức"
             >
               <div className="flex items-center gap-2.5">
-                <BookOpen className={`w-4 h-4 shrink-0 ${activeTab === 'journal' ? 'text-[#8C5D35]' : themeStyles.iconDefault}`} />
+                <BookOpen className={`w-4 h-4 shrink-0 ${activeTab === 'journal' ? themeStyles.iconActive : themeStyles.iconDefault}`} />
                 {!isCollapsed && <span>Nhật Ký</span>}
               </div>
               {!isCollapsed && (
                 <span
-                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${
+                  className={`text-[9px] font-black px-1.5 py-0.5 rounded-md border ${
                     activeTab === 'journal'
-                      ? 'bg-[#DFCDB9] text-[#3D2514] border-[#CBB39C]'
+                      ? 'bg-[#FEF08A] text-[#0F172A] border-[#0F172A]'
                       : themeStyles.badgeNew
                   }`}
                 >
@@ -351,11 +348,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               } ${themeStyles.btnDefault} transition-colors cursor-pointer`}
               title="Đồng Hồ Pomodoro (25m)"
             >
-              <Flame className="w-4 h-4 text-rose-500 shrink-0" />
+              <Flame className="w-4 h-4 text-[#E11D48] shrink-0" />
               {!isCollapsed && (
                 <>
                   <span className="flex-1 truncate">Pomodoro</span>
-                  <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-md ${isDark ? 'bg-rose-500/15 text-rose-400' : 'bg-rose-50 text-rose-600'}`}>
+                  <span className={`text-[9.5px] font-black px-1.5 py-0.5 rounded-md ${isDark ? 'bg-rose-500/15 text-rose-400' : 'bg-[#FFE4E6] text-[#E11D48] border border-[#0F172A]'}`}>
                     25m
                   </span>
                 </>
@@ -373,7 +370,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {!isCollapsed && (
                 <>
                   <span className="flex-1 truncate">Thói Quen</span>
-                  <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-md ${isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
+                  <span className={`text-[9.5px] font-black px-1.5 py-0.5 rounded-md ${isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]'}`}>
                     Streak
                   </span>
                 </>
@@ -387,7 +384,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               } ${themeStyles.btnDefault} transition-colors cursor-pointer`}
               title="Ghi Chú Nhanh"
             >
-              <StickyNote className="w-4 h-4 text-violet-500 shrink-0" />
+              <StickyNote className="w-4 h-4 text-[#E11D48] shrink-0" />
               {!isCollapsed && <span className="flex-1 truncate">Ghi Chú</span>}
             </button>
           </nav>
@@ -396,7 +393,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Bottom Area: Settings + Account */}
       <div className="space-y-2 pt-3">
-        <div className={`pt-2.5 border-t ${themeStyles.borderSeparator}`}>
+        <div className={`pt-2.5 border-t-2 ${themeStyles.borderSeparator}`}>
           <button
             onClick={() => {
               soundEngine.playSoftClick();
@@ -412,16 +409,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        <div className={`pt-2 border-t ${themeStyles.borderSeparator}`}>
+        <div className={`pt-2 border-t-2 ${themeStyles.borderSeparator}`}>
           {authUser ? (
             <div
               onClick={onOpenUserProfile}
               className={`flex items-center ${
-                isCollapsed ? 'justify-center p-1.5' : 'gap-2.5 p-1.5'
-              } hover:bg-black/5 cursor-pointer rounded-xl transition-colors group`}
+                isCollapsed ? 'justify-center p-1.5' : 'gap-2.5 p-2'
+              } ${isDark ? 'hover:bg-white/10' : 'bg-white hover:bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'} cursor-pointer rounded-xl transition-all group`}
               title={`${authUser.name} - Hồ sơ cá nhân`}
             >
-              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px] overflow-hidden shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#E11D48] border border-[#0F172A] text-white font-black flex items-center justify-center text-[11px] overflow-hidden shrink-0">
                 {authUser.avatar || profile?.avatar ? (
                   <img
                     src={authUser.avatar || profile?.avatar}
@@ -441,8 +438,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               {!isCollapsed && (
                 <div className="overflow-hidden flex-1 text-left">
-                  <h4 className="text-xs font-bold truncate">{authUser.name}</h4>
-                  <span className="text-[9.5px] text-emerald-500 font-semibold flex items-center gap-1">
+                  <h4 className="text-xs font-black truncate">{authUser.name}</h4>
+                  <span className="text-[9.5px] text-emerald-600 font-extrabold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                     <span>Cloud Sync</span>
                   </span>
@@ -454,16 +451,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={onOpenAuth}
               className={`flex items-center ${
                 isCollapsed ? 'justify-center p-1.5' : 'gap-2.5 p-2'
-              } ${isDark ? 'hover:bg-white/[0.06]' : 'hover:bg-indigo-50'} cursor-pointer rounded-xl transition-all group`}
+              } ${isDark ? 'hover:bg-white/[0.06]' : 'bg-[#FEF9C3] hover:bg-[#FDE047] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'} cursor-pointer rounded-xl transition-all group`}
               title="Đăng Nhập / Đăng Ký Tài Khoản"
             >
-              <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-500 font-black flex items-center justify-center text-sm shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+              <div className="w-8 h-8 rounded-lg bg-[#E11D48] border border-[#0F172A] text-white font-black flex items-center justify-center text-sm shrink-0">
                 +
               </div>
               {!isCollapsed && (
                 <div className="overflow-hidden flex-1 text-left">
-                  <h4 className="text-xs font-bold text-indigo-500 truncate">Đăng Nhập</h4>
-                  <span className="text-[9.5px] text-slate-400 truncate block">Đồng bộ Cloud</span>
+                  <h4 className="text-xs font-black text-[#0F172A] truncate">Đăng Nhập</h4>
+                  <span className="text-[9.5px] text-slate-600 font-bold truncate block">Đồng bộ Cloud</span>
                 </div>
               )}
             </div>

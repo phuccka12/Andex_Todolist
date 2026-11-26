@@ -95,57 +95,57 @@ export const HabitTrackerModal: React.FC<HabitTrackerModalProps> = ({ isOpen, on
   const progressPercent = habits.length > 0 ? Math.round((completedCount / habits.length) * 100) : 0;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-[28px] max-w-md w-full p-6 space-y-4 shadow-2xl relative border border-[#EEF2F8] animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-[#FFFDF7] rounded-3xl max-w-md w-full p-6 space-y-4 shadow-[6px_6px_0px_#0F172A] relative border-2 border-[#0F172A] animate-in zoom-in-95 duration-200">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+          className="absolute top-4 right-4 p-1.5 rounded-xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A] hover:bg-[#FFE4E6] cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Modal Header */}
-        <div className="flex items-center gap-3 pb-3 border-b border-[#EEF2F8]">
-          <div className="w-10 h-10 rounded-2xl bg-[#FFF6DF] text-[#F59E0B] flex items-center justify-center font-bold shadow-xs">
-            <Flame className="w-5 h-5 fill-amber-500 text-amber-500" />
+        <div className="flex items-center gap-3 pb-3 border-b-2 border-[#0F172A]/15">
+          <div className="w-10 h-10 rounded-2xl bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#E11D48] flex items-center justify-center font-bold">
+            <Flame className="w-5 h-5 fill-[#E11D48] text-[#E11D48]" />
           </div>
           <div>
-            <h3 className="font-extrabold text-sm text-[#1E2433]">Theo Dõi Thói Quen (Habit Tracker)</h3>
-            <p className="text-[10px] text-[#8F9CAE]">Duy trì kỷ luật hàng ngày & chuỗi ngày streak</p>
+            <h3 className="font-black text-sm text-[#0F172A]">Theo Dõi Thói Quen (Habit Tracker)</h3>
+            <p className="text-[10px] text-slate-600 font-bold">Duy trì kỷ luật hàng ngày & chuỗi ngày streak</p>
           </div>
         </div>
 
         {/* Daily Progress */}
-        <div className="bg-[#FAFBFD] p-3.5 rounded-2xl border border-[#EEF2F8] space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold">
-            <span className="text-[#1E2433]">Tiến độ hôm nay</span>
-            <span className="text-[#3B82F6]">{completedCount}/{habits.length} thói quen ({progressPercent}%)</span>
+        <div className="bg-[#FEF9C3] p-3.5 rounded-2xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2">
+          <div className="flex items-center justify-between text-xs font-black">
+            <span className="text-[#0F172A]">Tiến độ hôm nay</span>
+            <span className="text-[#E11D48]">{completedCount}/{habits.length} thói quen ({progressPercent}%)</span>
           </div>
-          <div className="w-full h-2 bg-[#EEF2F8] rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-white border border-[#0F172A] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#3B82F6] to-[#10B981] rounded-full transition-all duration-300"
+              className="h-full bg-[#E11D48] rounded-full transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
         </div>
 
         {/* Habits List */}
-        <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+        <div className="space-y-2.5 max-h-[260px] overflow-y-auto pr-1 pb-1">
           {habits.map((habit) => (
             <div
               key={habit.id}
               onClick={() => handleToggleHabit(habit.id)}
-              className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+              className={`p-3 rounded-2xl border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] transition-all cursor-pointer flex items-center justify-between gap-3 ${
                 habit.completed
-                  ? 'bg-[#F0FDF4] border-[#BBF7D0]'
-                  : 'bg-white border-[#E2E8F0] hover:border-[#3B82F6]'
+                  ? 'bg-[#DCFCE7]'
+                  : 'bg-white hover:bg-[#FFF1F2]'
               }`}
             >
               <div className="flex items-center gap-2.5 flex-1 min-w-0">
                 <span className="text-base shrink-0">{habit.icon}</span>
                 <span
-                  className={`text-xs font-bold truncate ${
-                    habit.completed ? 'line-through text-slate-400' : 'text-[#1E2433]'
+                  className={`text-xs font-black truncate ${
+                    habit.completed ? 'line-through text-slate-500' : 'text-[#0F172A]'
                   }`}
                 >
                   {habit.name}
@@ -153,8 +153,8 @@ export const HabitTrackerModal: React.FC<HabitTrackerModalProps> = ({ isOpen, on
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 flex items-center gap-0.5">
-                  <Flame className="w-2.5 h-2.5 fill-amber-500" />
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#FEF9C3] text-[#0F172A] border border-[#0F172A] flex items-center gap-0.5">
+                  <Flame className="w-2.5 h-2.5 fill-[#E11D48] text-[#E11D48]" />
                   <span>{habit.streak} ngày</span>
                 </span>
 
@@ -163,7 +163,7 @@ export const HabitTrackerModal: React.FC<HabitTrackerModalProps> = ({ isOpen, on
                     e.stopPropagation();
                     handleDeleteHabit(habit.id);
                   }}
-                  className="text-slate-300 hover:text-rose-500 p-1"
+                  className="text-[#0F172A]/50 hover:text-[#E11D48] hover:bg-[#FFE4E6] p-1 rounded-lg transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -173,20 +173,21 @@ export const HabitTrackerModal: React.FC<HabitTrackerModalProps> = ({ isOpen, on
         </div>
 
         {/* Add new habit input */}
-        <div className="flex items-center gap-2 pt-2 border-t border-[#EEF2F8]">
+        <div className="flex items-center gap-2 pt-3 border-t-2 border-[#0F172A]/15">
           <input
             type="text"
             value={newHabitName}
             onChange={(e) => setNewHabitName(e.target.value)}
             placeholder="Thêm thói quen mới..."
             onKeyDown={(e) => e.key === 'Enter' && handleAddHabit()}
-            className="flex-1 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs text-[#1E2433] focus:outline-none focus:border-[#3B82F6]"
+            className="flex-1 px-3.5 py-2 bg-white border-2 border-[#0F172A] rounded-xl text-xs font-semibold text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none"
           />
           <button
             onClick={handleAddHabit}
-            className="px-4 py-2 bg-[#3B82F6] hover:bg-[#2563EB] text-white text-xs font-bold rounded-xl transition-all shadow-xs"
+            className="px-4 py-2 bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black rounded-xl transition-all flex items-center gap-1 cursor-pointer active:translate-y-0.5"
           >
-            Thêm
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Thêm</span>
           </button>
         </div>
       </div>

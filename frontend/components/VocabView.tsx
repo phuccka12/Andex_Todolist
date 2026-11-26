@@ -228,45 +228,45 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     const key = (topicName || '').trim();
     const map: Record<string, { light: string; dark: string }> = {
       'IT & Tech': {
-        light: 'bg-sky-50 text-sky-700 border-sky-200',
+        light: 'bg-[#DBEAFE] text-[#1D4ED8] border-[#0F172A]',
         dark: 'bg-sky-500/15 text-sky-300 border-sky-400/25',
       },
       'Kinh doanh': {
-        light: 'bg-violet-50 text-violet-700 border-violet-200',
-        dark: 'bg-violet-500/15 text-violet-300 border-violet-400/25',
+        light: 'bg-[#FFE4E6] text-[#E11D48] border-[#0F172A]',
+        dark: 'bg-rose-500/15 text-rose-300 border-rose-400/25',
       },
       'Tài chính': {
-        light: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        light: 'bg-[#DCFCE7] text-[#15803D] border-[#0F172A]',
         dark: 'bg-emerald-500/15 text-emerald-300 border-emerald-400/25',
       },
       'Cảm xúc & Tâm lý': {
-        light: 'bg-rose-50 text-rose-700 border-rose-200',
+        light: 'bg-[#FFE4E6] text-[#BE123C] border-[#0F172A]',
         dark: 'bg-rose-500/15 text-rose-300 border-rose-400/25',
       },
       'Sức khỏe': {
-        light: 'bg-lime-50 text-lime-700 border-lime-200',
+        light: 'bg-[#DCFCE7] text-[#15803D] border-[#0F172A]',
         dark: 'bg-lime-500/15 text-lime-300 border-lime-400/25',
       },
       'Du lịch': {
-        light: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+        light: 'bg-[#DBEAFE] text-[#1D4ED8] border-[#0F172A]',
         dark: 'bg-cyan-500/15 text-cyan-300 border-cyan-400/25',
       },
       'IELTS & Học thuật': {
-        light: 'bg-amber-50 text-amber-700 border-amber-200',
+        light: 'bg-[#FEF08A] text-[#0F172A] border-[#0F172A]',
         dark: 'bg-amber-500/15 text-amber-300 border-amber-400/25',
       },
       'Giao tiếp': {
-        light: 'bg-blue-50 text-blue-700 border-blue-200',
+        light: 'bg-[#DBEAFE] text-[#1D4ED8] border-[#0F172A]',
         dark: 'bg-blue-500/15 text-blue-300 border-blue-400/25',
       },
       'Đời sống': {
-        light: 'bg-teal-50 text-teal-700 border-teal-200',
+        light: 'bg-[#FEF9C3] text-[#0F172A] border-[#0F172A]',
         dark: 'bg-teal-500/15 text-teal-300 border-teal-400/25',
       },
     };
     const palette = map[key] || {
-      light: 'bg-indigo-50 text-indigo-700 border-indigo-100',
-      dark: 'bg-indigo-500/15 text-indigo-300 border-indigo-400/25',
+      light: 'bg-[#FFE4E6] text-[#E11D48] border-[#0F172A]',
+      dark: 'bg-rose-500/15 text-rose-300 border-rose-400/25',
     };
     return isDark ? palette.dark : palette.light;
   };
@@ -363,60 +363,60 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
   const getTopicDeckStyle = (topicName: string) => {
     const palettes = [
       {
-        lightCard: 'bg-gradient-to-br from-indigo-50/90 via-white to-blue-50/60 border-indigo-200/80 hover:border-indigo-400',
-        darkCard: 'bg-gradient-to-br from-indigo-950/60 via-[#12151E] to-indigo-900/20 border-indigo-500/25 hover:border-indigo-400/60',
-        icon: isDark ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600',
-        bar: isDark ? 'bg-indigo-400' : 'bg-indigo-600',
-        link: isDark ? 'text-indigo-300' : 'text-indigo-600',
+        lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
+        darkCard: 'bg-gradient-to-br from-rose-950/60 via-[#12151E] to-rose-900/20 border border-rose-500/25 hover:border-rose-400/60',
+        icon: isDark ? 'bg-rose-500/20 text-rose-300' : 'bg-[#FFE4E6] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        bar: isDark ? 'bg-rose-400' : 'bg-[#E11D48]',
+        link: isDark ? 'text-rose-300' : 'text-[#E11D48]',
       },
       {
-        lightCard: 'bg-gradient-to-br from-sky-50/90 via-white to-cyan-50/60 border-sky-200/80 hover:border-sky-400',
-        darkCard: 'bg-gradient-to-br from-sky-950/60 via-[#12151E] to-sky-900/20 border-sky-500/25 hover:border-sky-400/60',
-        icon: isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-100 text-sky-600',
-        bar: isDark ? 'bg-sky-400' : 'bg-sky-600',
-        link: isDark ? 'text-sky-300' : 'text-sky-600',
+        lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
+        darkCard: 'bg-gradient-to-br from-sky-950/60 via-[#12151E] to-sky-900/20 border border-sky-500/25 hover:border-sky-400/60',
+        icon: isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-[#DBEAFE] text-[#1D4ED8] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        bar: isDark ? 'bg-sky-400' : 'bg-[#1D4ED8]',
+        link: isDark ? 'text-sky-300' : 'text-[#E11D48]',
       },
       {
-        lightCard: 'bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/60 border-emerald-200/80 hover:border-emerald-400',
-        darkCard: 'bg-gradient-to-br from-emerald-950/60 via-[#12151E] to-emerald-900/20 border-emerald-500/25 hover:border-emerald-400/60',
-        icon: isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-600',
-        bar: isDark ? 'bg-[#1DB954]' : 'bg-emerald-600',
-        link: isDark ? 'text-[#1DB954]' : 'text-emerald-600',
+        lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
+        darkCard: 'bg-gradient-to-br from-emerald-950/60 via-[#12151E] to-emerald-900/20 border border-emerald-500/25 hover:border-emerald-400/60',
+        icon: isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-[#DCFCE7] text-[#15803D] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        bar: isDark ? 'bg-[#1DB954]' : 'bg-[#16A34A]',
+        link: isDark ? 'text-[#1DB954]' : 'text-[#E11D48]',
       },
       {
-        lightCard: 'bg-gradient-to-br from-violet-50/90 via-white to-purple-50/60 border-violet-200/80 hover:border-violet-400',
-        darkCard: 'bg-gradient-to-br from-violet-950/60 via-[#12151E] to-violet-900/20 border-violet-500/25 hover:border-violet-400/60',
-        icon: isDark ? 'bg-violet-500/20 text-violet-300' : 'bg-violet-100 text-violet-600',
-        bar: isDark ? 'bg-violet-400' : 'bg-violet-600',
-        link: isDark ? 'text-violet-300' : 'text-violet-600',
+        lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
+        darkCard: 'bg-gradient-to-br from-amber-950/60 via-[#12151E] to-amber-900/20 border border-amber-500/25 hover:border-amber-400/60',
+        icon: isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-[#FEF08A] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        bar: isDark ? 'bg-amber-400' : 'bg-[#E11D48]',
+        link: isDark ? 'text-amber-300' : 'text-[#E11D48]',
       },
       {
-        lightCard: 'bg-gradient-to-br from-rose-50/90 via-white to-pink-50/60 border-rose-200/80 hover:border-rose-400',
-        darkCard: 'bg-gradient-to-br from-rose-950/60 via-[#12151E] to-rose-900/20 border-rose-500/25 hover:border-rose-400/60',
-        icon: isDark ? 'bg-rose-500/20 text-rose-300' : 'bg-rose-100 text-rose-600',
-        bar: isDark ? 'bg-rose-400' : 'bg-rose-600',
-        link: isDark ? 'text-rose-300' : 'text-rose-600',
+        lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
+        darkCard: 'bg-gradient-to-br from-rose-950/60 via-[#12151E] to-rose-900/20 border border-rose-500/25 hover:border-rose-400/60',
+        icon: isDark ? 'bg-rose-500/20 text-rose-300' : 'bg-[#FFE4E6] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        bar: isDark ? 'bg-rose-400' : 'bg-[#E11D48]',
+        link: isDark ? 'text-rose-300' : 'text-[#E11D48]',
       },
       {
-        lightCard: 'bg-gradient-to-br from-amber-50/90 via-white to-orange-50/60 border-amber-200/80 hover:border-amber-400',
-        darkCard: 'bg-gradient-to-br from-amber-950/60 via-[#12151E] to-amber-900/20 border-amber-500/25 hover:border-amber-400/60',
-        icon: isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-600',
-        bar: isDark ? 'bg-amber-400' : 'bg-amber-500',
-        link: isDark ? 'text-amber-300' : 'text-amber-600',
+        lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
+        darkCard: 'bg-gradient-to-br from-amber-950/60 via-[#12151E] to-amber-900/20 border border-amber-500/25 hover:border-amber-400/60',
+        icon: isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-[#FEF9C3] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        bar: isDark ? 'bg-amber-400' : 'bg-[#F59E0B]',
+        link: isDark ? 'text-amber-300' : 'text-[#E11D48]',
       },
       {
-        lightCard: 'bg-gradient-to-br from-cyan-50/90 via-white to-sky-50/60 border-cyan-200/80 hover:border-cyan-400',
-        darkCard: 'bg-gradient-to-br from-cyan-950/60 via-[#12151E] to-cyan-900/20 border-cyan-500/25 hover:border-cyan-400/60',
-        icon: isDark ? 'bg-cyan-500/20 text-cyan-300' : 'bg-cyan-100 text-cyan-600',
-        bar: isDark ? 'bg-cyan-400' : 'bg-cyan-600',
-        link: isDark ? 'text-cyan-300' : 'text-cyan-600',
+        lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
+        darkCard: 'bg-gradient-to-br from-cyan-950/60 via-[#12151E] to-cyan-900/20 border border-cyan-500/25 hover:border-cyan-400/60',
+        icon: isDark ? 'bg-cyan-500/20 text-cyan-300' : 'bg-[#DBEAFE] text-[#1D4ED8] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        bar: isDark ? 'bg-cyan-400' : 'bg-[#0284C7]',
+        link: isDark ? 'text-cyan-300' : 'text-[#E11D48]',
       },
       {
-        lightCard: 'bg-gradient-to-br from-teal-50/90 via-white to-emerald-50/60 border-teal-200/80 hover:border-teal-400',
-        darkCard: 'bg-gradient-to-br from-teal-950/60 via-[#12151E] to-teal-900/20 border-teal-500/25 hover:border-teal-400/60',
-        icon: isDark ? 'bg-teal-500/20 text-teal-300' : 'bg-teal-100 text-teal-600',
-        bar: isDark ? 'bg-teal-400' : 'bg-teal-600',
-        link: isDark ? 'text-teal-300' : 'text-teal-600',
+        lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
+        darkCard: 'bg-gradient-to-br from-teal-950/60 via-[#12151E] to-teal-900/20 border border-teal-500/25 hover:border-teal-400/60',
+        icon: isDark ? 'bg-teal-500/20 text-teal-300' : 'bg-[#DCFCE7] text-[#15803D] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        bar: isDark ? 'bg-teal-400' : 'bg-[#16A34A]',
+        link: isDark ? 'text-teal-300' : 'text-[#E11D48]',
       },
     ];
 
@@ -443,7 +443,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
     const p = palettes[idx];
     return {
-      card: isDark ? p.darkCard : `${p.lightCard} shadow-2xs hover:shadow-md`,
+      card: isDark ? p.darkCard : p.lightCard,
       icon: p.icon,
       bar: p.bar,
       link: p.link,
@@ -807,7 +807,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               className={`px-1.5 py-0.5 rounded-md font-extrabold mx-0.5 ${
                 isDark
                   ? 'bg-amber-400/20 text-amber-300'
-                  : 'bg-amber-100/90 text-amber-900'
+                  : 'bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]'
               }`}
             >
               {part.slice(2, -2)}
@@ -820,8 +820,8 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               key={idx}
               className={`px-1.5 py-0.5 rounded-md font-mono font-bold text-[11px] mx-0.5 ${
                 isDark
-                  ? 'bg-indigo-500/25 text-indigo-300'
-                  : 'bg-indigo-50 text-indigo-700 border border-indigo-200/70'
+                  ? 'bg-rose-500/25 text-rose-300'
+                  : 'bg-[#FFE4E6] text-[#E11D48] border border-[#0F172A]'
               }`}
             >
               {part.slice(1, -1)}
@@ -846,7 +846,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               <div key={i} className="flex items-start gap-2">
                 <span
                   className={`w-4 h-4 rounded-full text-[10px] font-extrabold flex items-center justify-center shrink-0 mt-0.5 ${
-                    isDark ? 'bg-emerald-500/25 text-emerald-300' : 'bg-indigo-100 text-indigo-700'
+                    isDark ? 'bg-emerald-500/25 text-emerald-300' : 'bg-[#FFE4E6] text-[#E11D48] border border-[#0F172A]'
                   }`}
                 >
                   {numbered[1]}
@@ -860,7 +860,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
           if (bulleted) {
             return (
               <div key={i} className="flex items-start gap-2 pl-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-1.5" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48] shrink-0 mt-1.5" />
                 <p className="flex-1 leading-relaxed">{renderInline(bulleted[1])}</p>
               </div>
             );
@@ -1390,15 +1390,33 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
   };
 
   const getMasteryBadge = (level: number) => {
-    if (level >= 4) return { label: 'Thuộc làu', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
-    if (level >= 2) return { label: 'Đang nhớ', cls: 'bg-sky-50 text-sky-700 border-sky-200' };
-    if (level === 1) return { label: 'Mới ôn', cls: 'bg-amber-50 text-amber-700 border-amber-200' };
-    return { label: 'Từ mới', cls: 'bg-slate-100 text-slate-600 border-slate-200' };
+    if (level >= 4) {
+      return {
+        label: 'Thuộc làu',
+        cls: isDark ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30' : 'bg-[#DCFCE7] text-[#15803D] border-[#0F172A]',
+      };
+    }
+    if (level >= 2) {
+      return {
+        label: 'Đang nhớ',
+        cls: isDark ? 'bg-sky-500/15 text-sky-300 border-sky-400/30' : 'bg-[#DBEAFE] text-[#1D4ED8] border-[#0F172A]',
+      };
+    }
+    if (level === 1) {
+      return {
+        label: 'Mới ôn',
+        cls: isDark ? 'bg-amber-500/15 text-amber-300 border-amber-400/30' : 'bg-[#FEF08A] text-[#0F172A] border-[#0F172A]',
+      };
+    }
+    return {
+      label: 'Từ mới',
+      cls: isDark ? 'bg-white/10 text-slate-300 border-white/15' : 'bg-[#FFE4E6] text-[#E11D48] border-[#0F172A]',
+    };
   };
 
   const surfaceCls = isDark
-    ? 'bg-[#12151E] border-white/[0.08] text-slate-100'
-    : 'bg-white border-slate-200/80 text-slate-900';
+    ? 'bg-[#12151E] border border-white/[0.08] text-slate-100'
+    : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A]';
 
   return (
     <div className="flex-1 min-h-0 flex flex-col space-y-4">
@@ -1406,22 +1424,22 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 shrink-0">
         {/* Compact Stats Pills */}
         <div className="flex items-center gap-2 flex-wrap">
-          <div className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 ${surfaceCls}`}>
-            <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
+          <div className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-2 ${surfaceCls}`}>
+            <BookOpen className="w-3.5 h-3.5 text-[#E11D48]" />
             <span>{words.length} từ trong kho</span>
           </div>
-          <div className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 ${
+          <div className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-2 ${
             dueWords.length > 0
               ? isDark
-                ? 'bg-rose-500/15 border-rose-500/30 text-rose-300'
-                : 'bg-rose-50 border-rose-200 text-rose-700'
+                ? 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
+                : 'bg-[#FFE4E6] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#E11D48]'
               : surfaceCls
           }`}>
-            <Brain className="w-3.5 h-3.5 text-rose-500" />
+            <Brain className="w-3.5 h-3.5 text-[#E11D48]" />
             <span>{dueWords.length} từ cần Review</span>
           </div>
-          <div className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 ${surfaceCls}`}>
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+          <div className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-2 ${surfaceCls}`}>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             <span>{masteredCount} đã nhớ vững</span>
           </div>
         </div>
@@ -1429,8 +1447,8 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
         {/* 2 Primary Modes + Quick Actions */}
         <div className="flex items-center gap-2 flex-wrap">
           <div
-            className={`inline-flex items-center p-0.5 rounded-xl border text-xs font-bold ${
-              isDark ? 'bg-[#12151E] border-white/[0.08]' : 'bg-slate-200/70 border-slate-200'
+            className={`inline-flex items-center p-1 rounded-2xl border-2 text-xs font-extrabold ${
+              isDark ? 'bg-[#12151E] border-white/[0.08]' : 'bg-[#FFF1F2] border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
             }`}
           >
             <button
@@ -1438,14 +1456,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 soundEngine.playSoftClick();
                 setMode('learn');
               }}
-              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
                 mode === 'learn'
                   ? isDark
                     ? 'bg-[#1DB954] text-[#090A0F]'
-                    : 'bg-white text-slate-900 shadow-2xs'
+                    : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                   : isDark
                   ? 'text-slate-400 hover:text-white'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-[#0F172A] hover:bg-white/70'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -1456,18 +1474,18 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 soundEngine.playSoftClick();
                 setMode('saved');
               }}
-              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
                 mode === 'saved'
                   ? isDark
                     ? 'bg-amber-400 text-[#090A0F]'
-                    : 'bg-white text-amber-600 shadow-2xs'
+                    : 'bg-[#FEF08A] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                   : isDark
                   ? 'text-slate-400 hover:text-white'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-[#0F172A] hover:bg-white/70'
               }`}
               title="Xem riêng các từ đã đánh dấu sao hoặc lưu từ Từ Điển / Gia sư AI"
             >
-              <Star className={`w-3.5 h-3.5 ${mode === 'saved' ? 'fill-current' : 'text-amber-500'}`} />
+              <Star className={`w-3.5 h-3.5 ${mode === 'saved' ? 'fill-current text-[#E11D48]' : 'text-amber-500'}`} />
               <span>Đã Lưu ({savedCount})</span>
             </button>
             <button
@@ -1475,14 +1493,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 soundEngine.playSoftClick();
                 setMode('review');
               }}
-              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
                 mode === 'review'
                   ? isDark
                     ? 'bg-[#1DB954] text-[#090A0F]'
-                    : 'bg-white text-slate-900 shadow-2xs'
+                    : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                   : isDark
                   ? 'text-slate-400 hover:text-white'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-[#0F172A] hover:bg-white/70'
               }`}
             >
               <Brain className="w-3.5 h-3.5" />
@@ -1496,20 +1514,20 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               soundEngine.playSoftClick();
               setIsDictOpen(true);
             }}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all ${
+            className={`px-3 py-1.5 rounded-xl border-2 text-xs font-black flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all ${
               isDark
                 ? 'bg-amber-500/15 border-amber-400/30 text-amber-300 hover:bg-amber-500/25'
-                : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
+                : 'bg-[#FEF9C3] border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A] hover:bg-[#FDE047]'
             }`}
             title="Tra từ điển, Modal Verbs, Idioms (IDM) & Phrasal Verbs"
           >
-            <BookMarked className="w-3.5 h-3.5" />
+            <BookMarked className="w-3.5 h-3.5 text-[#E11D48]" />
             <span>Từ Điển</span>
           </button>
 
           <button
             onClick={openImportModal}
-            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer active:scale-95 transition-all"
+            className="px-3.5 py-1.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs font-black border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Import Tự Động</span>
@@ -1517,9 +1535,13 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
           <button
             onClick={openAddWordModal}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-all ${surfaceCls}`}
+            className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer active:scale-95 transition-all ${
+              isDark
+                ? surfaceCls
+                : 'bg-white hover:bg-[#FFF1F2] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+            }`}
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5 text-[#E11D48]" />
             <span>Thêm Từ</span>
           </button>
 
@@ -1527,10 +1549,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             <button
               type="button"
               onClick={handleClearAllWords}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer active:scale-95 transition-all ${
                 isDark
-                  ? 'bg-rose-500/10 border-rose-500/25 text-rose-300 hover:bg-rose-500/20'
-                  : 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100'
+                  ? 'bg-rose-500/10 border border-rose-500/25 text-rose-300 hover:bg-rose-500/20'
+                  : 'bg-[#FFE4E6] hover:bg-[#FECDD3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#E11D48]'
               }`}
               title="Xóa toàn bộ dữ liệu từ vựng"
             >
@@ -1546,7 +1568,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
       {/* ===================================================================== */}
       <div className="flex-1 min-h-0 flex flex-col space-y-3.5">
           {/* Search & Filters: Topic-level on Learn mode, Word-level on Saved mode */}
-          <div className={`p-3 rounded-2xl border flex flex-col gap-2.5 shrink-0 min-w-0 w-full relative z-20 ${surfaceCls}`}>
+          <div className={`p-3 rounded-2xl flex flex-col gap-2.5 shrink-0 min-w-0 w-full relative z-20 ${surfaceCls}`}>
             {mode === 'learn' ? (
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
@@ -1557,17 +1579,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       value={deckSearchQuery}
                       onChange={(e) => setDeckSearchQuery(e.target.value)}
                       placeholder="Tìm tên chủ đề (vd: IT, IELTS, Kinh doanh...)"
-                      className={`w-full pl-8 pr-7 py-1.5 rounded-xl border text-xs outline-none transition-all ${
+                      className={`w-full pl-8 pr-7 py-1.5 rounded-xl text-xs font-semibold outline-none transition-all ${
                         isDark
-                          ? 'bg-[#181C28] border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500'
-                          : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white focus:border-indigo-400'
+                          ? 'bg-[#181C28] border border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500'
+                          : 'bg-white border-2 border-[#0F172A] text-[#0F172A] placeholder:text-slate-400 focus:bg-[#FFF1F2] focus:outline-none'
                       }`}
                     />
                     {deckSearchQuery && (
                       <button
                         type="button"
                         onClick={() => setDeckSearchQuery('')}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-[#E11D48] cursor-pointer"
                         title="Xóa từ khóa"
                       >
                         <X className="w-3 h-3" />
@@ -1581,10 +1603,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     <select
                       value={deckFilter}
                       onChange={(e) => setDeckFilter(e.target.value as any)}
-                      className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                      className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
                         isDark
-                          ? 'bg-[#181C28] border-white/10 text-slate-200'
-                          : 'bg-slate-50 border-slate-200 text-slate-700'
+                          ? 'bg-[#181C28] border border-white/10 text-slate-200'
+                          : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                       }`}
                       title="Lọc chủ đề theo tiến độ"
                     >
@@ -1601,10 +1623,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     <select
                       value={deckSort}
                       onChange={(e) => setDeckSort(e.target.value as any)}
-                      className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                      className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
                         isDark
-                          ? 'bg-[#181C28] border-white/10 text-slate-200'
-                          : 'bg-slate-50 border-slate-200 text-slate-700'
+                          ? 'bg-[#181C28] border border-white/10 text-slate-200'
+                          : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                       }`}
                       title="Sắp xếp chủ đề"
                     >
@@ -1619,10 +1641,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     <button
                       type="button"
                       onClick={resetDeckFilters}
-                      className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
+                      className={`px-2.5 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1 cursor-pointer ${
                         isDark
-                          ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                          : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
+                          ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
+                          : 'bg-white hover:bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                       }`}
                     >
                       <RotateCcw className="w-3 h-3" />
@@ -1636,14 +1658,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   type="button"
                   disabled={words.length === 0}
                   onClick={() => openStudyPopupAt(0)}
-                  className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 shrink-0 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                  className={`px-3 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1.5 shrink-0 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                     isDark
-                      ? 'bg-[#1DB954]/15 border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
-                      : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                      ? 'bg-[#1DB954]/15 border border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
+                      : 'bg-[#FEF9C3] hover:bg-[#FDE047] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                   }`}
                   title="Mở cửa sổ học lật thẻ lớn ở giữa màn hình"
                 >
-                  <Maximize2 className="w-3.5 h-3.5" />
+                  <Maximize2 className="w-3.5 h-3.5 text-[#E11D48]" />
                   <span>Học Thẻ Lớn (Popup)</span>
                 </button>
               </div>
@@ -1658,17 +1680,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Tìm từ, nghĩa, ví dụ, phiên âm..."
-                    className={`w-full pl-8 pr-7 py-1.5 rounded-xl border text-xs outline-none transition-all ${
+                    className={`w-full pl-8 pr-7 py-1.5 rounded-xl text-xs font-semibold outline-none transition-all ${
                       isDark
-                        ? 'bg-[#181C28] border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500'
-                        : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white focus:border-indigo-400'
+                        ? 'bg-[#181C28] border border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500'
+                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] placeholder:text-slate-400 focus:bg-[#FFF1F2] focus:outline-none'
                     }`}
                   />
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-[#E11D48] cursor-pointer"
                       title="Xóa từ khóa"
                     >
                       <X className="w-3 h-3" />
@@ -1682,10 +1704,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                    className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
                       isDark
-                        ? 'bg-[#181C28] border-white/10 text-slate-200'
-                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                        ? 'bg-[#181C28] border border-white/10 text-slate-200'
+                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                     }`}
                     title="Lọc theo mức độ ghi nhớ"
                   >
@@ -1702,10 +1724,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   <select
                     value={posFilter}
                     onChange={(e) => setPosFilter(e.target.value)}
-                    className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                    className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
                       isDark
-                        ? 'bg-[#181C28] border-white/10 text-slate-200'
-                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                        ? 'bg-[#181C28] border border-white/10 text-slate-200'
+                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                     }`}
                     title="Lọc theo từ loại"
                   >
@@ -1724,10 +1746,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
-                    className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                    className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
                       isDark
-                        ? 'bg-[#181C28] border-white/10 text-slate-200'
-                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                        ? 'bg-[#181C28] border border-white/10 text-slate-200'
+                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                     }`}
                     title="Sắp xếp danh sách"
                   >
@@ -1743,10 +1765,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   <button
                     type="button"
                     onClick={resetAllFilters}
-                    className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
+                    className={`px-2.5 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1 cursor-pointer ${
                       isDark
-                        ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                        : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
+                        ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
+                        : 'bg-white hover:bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                     }`}
                     title="Đặt lại tất cả bộ lọc"
                   >
@@ -1761,14 +1783,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 type="button"
                 disabled={filteredWords.length === 0}
                 onClick={() => openStudyPopupAt((safePage - 1) * pageSize)}
-                className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 shrink-0 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1.5 shrink-0 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                   isDark
-                    ? 'bg-[#1DB954]/15 border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
-                    : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                    ? 'bg-[#1DB954]/15 border border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
+                    : 'bg-[#FEF9C3] hover:bg-[#FDE047] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                 }`}
                 title="Mở cửa sổ học lật thẻ lớn ở giữa màn hình"
               >
-                <Maximize2 className="w-3.5 h-3.5" />
+                <Maximize2 className="w-3.5 h-3.5 text-[#E11D48]" />
                 <span>Học Thẻ Lớn (Popup)</span>
               </button>
             </div>
@@ -1781,32 +1803,36 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   setSelectedTopic('all');
                   setIsMoreTopicsOpen(false);
                 }}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 ${
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all shrink-0 cursor-pointer flex items-center gap-1 ${
                   selectedTopic === 'all'
-                    ? 'bg-indigo-600 text-white'
+                    ? isDark
+                      ? 'bg-[#1DB954] text-[#090A0F]'
+                      : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                     : isDark
                     ? 'bg-white/5 text-slate-400 hover:text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    : 'bg-white border border-[#0F172A] text-[#0F172A] hover:bg-[#FFF1F2]'
                 }`}
               >
                 <span>Tất cả</span>
-                <span className="opacity-75 text-[10px]">({words.length})</span>
+                <span className="opacity-80 text-[10px]">({words.length})</span>
               </button>
 
               {topTopics.map((tp) => (
                 <button
                   key={tp}
                   onClick={() => openTopicPopup(tp)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 border ${
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1 ${
                     selectedTopic === tp
-                      ? 'bg-indigo-600 text-white border-indigo-600'
+                      ? isDark
+                        ? 'bg-[#1DB954] text-[#090A0F] border border-[#1DB954]'
+                        : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
                       : isDark
-                      ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                      : 'bg-slate-100 border-transparent text-slate-700 hover:bg-slate-200'
+                      ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
+                      : 'bg-white border border-[#0F172A] text-[#0F172A] hover:bg-[#FEF9C3]'
                   }`}
                 >
                   <span>{tp}</span>
-                  <span className="opacity-70 text-[10px]">({topicCounts[tp] || 0})</span>
+                  <span className="opacity-75 text-[10px]">({topicCounts[tp] || 0})</span>
                 </button>
               ))}
 
@@ -1815,7 +1841,11 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 <button
                   type="button"
                   onClick={() => setSelectedTopic('all')}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white border border-indigo-600 shrink-0 cursor-pointer flex items-center gap-1"
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black shrink-0 cursor-pointer flex items-center gap-1 ${
+                    isDark
+                      ? 'bg-[#1DB954] text-[#090A0F]'
+                      : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                  }`}
                   title="Bấm để bỏ lọc chủ đề này"
                 >
                   <span>{selectedTopic}</span>
@@ -1829,10 +1859,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   <button
                     type="button"
                     onClick={() => setIsMoreTopicsOpen((prev) => !prev)}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 border ${
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-colors shrink-0 cursor-pointer flex items-center gap-1 ${
                       isDark
-                        ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                        : 'bg-slate-100 border-slate-200/80 text-slate-700 hover:bg-slate-200'
+                        ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
+                        : 'bg-[#FEF9C3] hover:bg-[#FDE047] border border-[#0F172A] text-[#0F172A]'
                     }`}
                   >
                     <span>+{extraTopics.length} chủ đề khác</span>
@@ -1841,8 +1871,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
                   {isMoreTopicsOpen && (
                     <div
-                      className={`absolute left-0 top-full mt-1.5 w-64 rounded-2xl border shadow-xl p-2.5 space-y-2 z-40 ${
-                        isDark ? 'bg-[#181C28] border-white/15 text-white' : 'bg-white border-slate-200 text-slate-800'
+                      className={`absolute left-0 top-full mt-1.5 w-64 rounded-2xl p-2.5 space-y-2 z-40 ${
+                        isDark
+                          ? 'bg-[#181C28] border border-white/15 shadow-xl text-white'
+                          : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[6px_6px_0px_#0F172A] text-[#0F172A]'
                       }`}
                     >
                       <input
@@ -1850,10 +1882,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                         value={topicSearchQuery}
                         onChange={(e) => setTopicSearchQuery(e.target.value)}
                         placeholder="Tìm chủ đề..."
-                        className={`w-full px-2.5 py-1.5 rounded-xl border text-xs outline-none ${
+                        className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold outline-none ${
                           isDark
-                            ? 'bg-[#12151E] border-white/10 text-white placeholder:text-slate-500'
-                            : 'bg-slate-50 border-slate-200 text-slate-800'
+                            ? 'bg-[#12151E] border border-white/10 text-white placeholder:text-slate-500'
+                            : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                         }`}
                       />
                       <div className="max-h-48 overflow-y-auto space-y-1">
@@ -1865,12 +1897,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                               key={tp}
                               type="button"
                               onClick={() => openTopicPopup(tp)}
-                              className={`w-full px-2.5 py-1.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between cursor-pointer ${
+                              className={`w-full px-2.5 py-1.5 rounded-xl text-left text-xs font-bold flex items-center justify-between cursor-pointer ${
                                 selectedTopic === tp
-                                  ? 'bg-indigo-600 text-white'
+                                  ? isDark
+                                    ? 'bg-[#1DB954] text-[#090A0F]'
+                                    : 'bg-[#E11D48] text-white border border-[#0F172A]'
                                   : isDark
                                   ? 'hover:bg-white/10 text-slate-200'
-                                  : 'hover:bg-slate-100 text-slate-700'
+                                  : 'hover:bg-[#FFF1F2] text-[#0F172A]'
                               }`}
                             >
                               <span className="truncate">{tp}</span>
@@ -1892,10 +1926,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   disabled={isAutoTagging}
                   onClick={handleAutoTagAll}
                   title="Tự động phân loại các từ đang ở mục Chung / Tự động sang chủ đề chuẩn"
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 border ${
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-colors shrink-0 cursor-pointer flex items-center gap-1 ${
                     isDark
-                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30 hover:bg-emerald-500/25'
-                      : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                      ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-500/25'
+                      : 'bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#15803D] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                   } disabled:opacity-50`}
                 >
                   {isAutoTagging ? (
@@ -1912,12 +1946,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
           {/* Empty State / Empty Filter State */}
           {isLoading ? (
             <div className="flex-1 flex items-center justify-center py-16">
-              <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+              <Loader2 className="w-6 h-6 animate-spin text-[#E11D48]" />
             </div>
           ) : mode === 'saved' && filteredWords.length === 0 && !hasActiveFilters ? (
-            <div className={`flex-1 rounded-2xl border p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
-              <div className="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-500 flex items-center justify-center">
-                <Star className="w-7 h-7" />
+            <div className={`flex-1 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+                isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-[#FEF08A] text-[#0F172A] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
+              }`}>
+                <Star className="w-7 h-7 fill-amber-400 text-amber-500" />
               </div>
               <div className="max-w-md space-y-1.5">
                 <h3 className="font-extrabold text-base">Kho Đã Lưu của bạn đang trống</h3>
@@ -1928,14 +1964,16 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               <button
                 type="button"
                 onClick={() => setMode('learn')}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black cursor-pointer"
               >
                 Quay lại Học & Kho Từ
               </button>
             </div>
           ) : words.length > 0 && filteredWords.length === 0 ? (
-            <div className={`flex-1 rounded-2xl border p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+            <div className={`flex-1 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-[#FEF08A] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+              }`}>
                 <Search className="w-6 h-6" />
               </div>
               <div className="max-w-md space-y-1">
@@ -1947,34 +1985,40 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               <button
                 type="button"
                 onClick={resetAllFilters}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black flex items-center gap-1.5 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Xóa tất cả bộ lọc</span>
               </button>
             </div>
           ) : filteredWords.length === 0 ? (
-            <div className={`flex-1 rounded-2xl border p-8 flex flex-col items-center justify-center text-center space-y-4 ${surfaceCls}`}>
-              <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+            <div className={`flex-1 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-4 ${surfaceCls}`}>
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+                isDark ? 'bg-rose-500/15 text-rose-400' : 'bg-[#FFE4E6] text-[#E11D48] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
+              }`}>
                 <Sparkles className="w-7 h-7" />
               </div>
               <div className="max-w-md space-y-1.5">
                 <h3 className="font-extrabold text-base">Kho từ vựng của bạn đang trống</h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Chỉ cần dán một danh sách từ, một đoạn văn tiếng Anh, file <code>.csv</code> hoặc ảnh chụp trang sách — <strong>Gencoore AI</strong> sẽ tự động điền phiên âm IPA, nghĩa tiếng Việt và ví dụ cho bạn.
+                  Chỉ cần dán một danh sách từ, một đoạn văn tiếng Anh, file <code>.csv</code> hoặc ảnh chụp trang sách — <strong>Genncore AI</strong> sẽ tự động điền phiên âm IPA, nghĩa tiếng Việt và ví dụ cho bạn.
                 </p>
               </div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 flex-wrap justify-center">
                 <button
                   onClick={openImportModal}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black flex items-center gap-1.5 cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Import Tự Động Ngay</span>
                 </button>
                 <button
                   onClick={openAddWordModal}
-                  className={`px-4 py-2 rounded-xl border text-xs font-bold cursor-pointer ${surfaceCls}`}
+                  className={`px-4 py-2 rounded-xl text-xs font-black cursor-pointer ${
+                    isDark
+                      ? surfaceCls
+                      : 'bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                  }`}
                 >
                   + Thêm thủ công
                 </button>
@@ -1985,16 +2029,16 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             <div className="space-y-3 pb-6">
               <div className="flex items-center justify-between px-0.5">
                 <p className="text-xs font-bold text-slate-500">
-                  Chọn một <strong className={isDark ? 'text-white' : 'text-slate-800'}>chủ đề</strong> để mở popup từ vựng ({filteredTopicDecks.length}/{topicDecks.length} chủ đề)
+                  Chọn một <strong className={isDark ? 'text-white' : 'text-[#0F172A]'}>chủ đề</strong> để mở popup từ vựng ({filteredTopicDecks.length}/{topicDecks.length} chủ đề)
                 </p>
               </div>
               {filteredTopicDecks.length === 0 ? (
-                <div className={`rounded-2xl border p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
+                <div className={`rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
                   <p className="text-sm font-bold">Không tìm thấy chủ đề phù hợp</p>
                   <button
                     type="button"
                     onClick={resetDeckFilters}
-                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black flex items-center gap-1.5 cursor-pointer"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Xóa bộ lọc chủ đề</span>
@@ -2009,19 +2053,19 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   <div
                     key={deck.topic}
                     onClick={() => openTopicPopup(deck.topic)}
-                    className={`rounded-2xl border p-4 flex flex-col justify-between gap-3.5 cursor-pointer transition-all hover:-translate-y-0.5 group ${deckTheme.card}`}
+                    className={`rounded-2xl p-4 flex flex-col justify-between gap-3.5 cursor-pointer transition-all hover:-translate-y-0.5 group ${deckTheme.card}`}
                   >
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between gap-2">
                         <span
-                          className={`text-[10.5px] font-bold px-2.5 py-0.5 rounded-lg border truncate ${getTopicBadgeCls(
+                          className={`text-[10.5px] font-black px-2.5 py-0.5 rounded-lg border truncate ${getTopicBadgeCls(
                             deck.topic
                           )}`}
                         >
                           {deck.topic}
                         </span>
                         <span className={`text-[11px] font-mono font-bold shrink-0 ${
-                          isDark ? 'text-slate-300' : 'text-slate-500'
+                          isDark ? 'text-slate-300' : 'text-slate-600'
                         }`}>
                           {deck.total} từ
                         </span>
@@ -2046,15 +2090,15 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     <div className="space-y-2">
                       {/* Mastery progress bar */}
                       <div className="space-y-1">
-                        <div className={`flex items-center justify-between text-[10.5px] font-semibold ${
-                          isDark ? 'text-slate-400' : 'text-slate-500'
+                        <div className={`flex items-center justify-between text-[10.5px] font-bold ${
+                          isDark ? 'text-slate-400' : 'text-slate-600'
                         }`}>
                           <span>Thuộc {deck.mastered}/{deck.total}</span>
                           {deck.due > 0 && (
-                            <span className="text-rose-500 font-bold">{deck.due} cần ôn</span>
+                            <span className="text-[#E11D48] font-black">{deck.due} cần ôn</span>
                           )}
                         </div>
-                        <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-white/10' : 'bg-slate-200/70'}`}>
+                        <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-white/10' : 'bg-[#FFF1F2] border border-[#0F172A]'}`}>
                           <div
                             className={`h-full rounded-full transition-all ${deckTheme.bar}`}
                             style={{ width: `${deck.pct}%` }}
@@ -2063,8 +2107,8 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       </div>
 
                       <div
-                        className={`pt-2 border-t flex items-center justify-between text-[11px] font-bold ${
-                          isDark ? 'border-white/[0.08]' : 'border-slate-200/60'
+                        className={`pt-2 border-t flex items-center justify-between text-[11px] font-black ${
+                          isDark ? 'border-white/[0.08]' : 'border-[#0F172A]/15'
                         }`}
                       >
                         <span className={`inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform ${deckTheme.link}`}>
@@ -2078,10 +2122,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             setMode('review');
                             startReviewSession('all', deck.topic);
                           }}
-                          className={`px-2.5 py-0.5 rounded-lg text-[10.5px] cursor-pointer ${
+                          className={`px-2.5 py-0.5 rounded-lg text-[10.5px] font-black cursor-pointer ${
                             isDark
                               ? 'bg-white/10 hover:bg-white/15 text-slate-200'
-                              : 'bg-white/80 border border-slate-200/80 hover:bg-white text-slate-700'
+                              : 'bg-[#FEF9C3] hover:bg-[#FDE047] border border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                           }`}
                         >
                           Ôn tập
@@ -2096,28 +2140,30 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               {/* Topic Decks Pagination Bar */}
               {filteredTopicDecks.length > 0 && (
                 <div
-                  className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-2xl border text-xs ${
+                  className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-2xl text-xs ${
                     isDark
-                      ? 'bg-[#12151E] border-white/[0.08] text-slate-300'
-                      : 'bg-white border-slate-200/80 text-slate-600 shadow-2xs'
+                      ? 'bg-[#12151E] border border-white/[0.08] text-slate-300'
+                      : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A]'
                   }`}
                 >
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="font-medium">
+                    <span className="font-semibold">
                       Hiển thị{' '}
-                      <strong className={isDark ? 'text-white' : 'text-slate-900'}>
+                      <strong className={isDark ? 'text-white' : 'text-[#0F172A]'}>
                         {(safeDeckPage - 1) * deckPageSize + 1}–{Math.min(safeDeckPage * deckPageSize, filteredTopicDecks.length)}
                       </strong>{' '}
-                      / <strong className={isDark ? 'text-white' : 'text-slate-900'}>{filteredTopicDecks.length}</strong> chủ đề
+                      / <strong className={isDark ? 'text-white' : 'text-[#0F172A]'}>{filteredTopicDecks.length}</strong> chủ đề
                     </span>
 
                     <label className="flex items-center gap-1.5 text-[11px]">
-                      <span className="text-slate-400">Mỗi trang:</span>
+                      <span className="text-slate-500 font-semibold">Mỗi trang:</span>
                       <select
                         value={deckPageSize}
                         onChange={(e) => setDeckPageSize(Number(e.target.value))}
-                        className={`px-2 py-1 rounded-lg border font-bold outline-none cursor-pointer ${
-                          isDark ? 'bg-[#181C28] border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'
+                        className={`px-2 py-1 rounded-xl font-bold outline-none cursor-pointer ${
+                          isDark
+                            ? 'bg-[#181C28] border border-white/10 text-white'
+                            : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                         }`}
                       >
                         <option value={8}>8 chủ đề</option>
@@ -2136,10 +2182,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                         soundEngine.playSoftClick();
                         setDeckPage((p) => Math.max(1, p - 1));
                       }}
-                      className={`px-2.5 py-1.5 rounded-xl border font-bold flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                      className={`px-2.5 py-1.5 rounded-xl font-black flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
                         isDark
-                          ? 'bg-[#181C28] border-white/10 hover:bg-white/10 text-slate-200'
-                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700'
+                          ? 'bg-[#181C28] border border-white/10 hover:bg-white/10 text-slate-200'
+                          : 'bg-white hover:bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                       }`}
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
@@ -2173,12 +2219,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                               soundEngine.playSoftClick();
                               setDeckPage(entry);
                             }}
-                            className={`min-w-[30px] h-7 px-2 rounded-xl font-bold text-xs cursor-pointer transition-colors ${
+                            className={`min-w-[30px] h-7 px-2 rounded-xl font-black text-xs cursor-pointer transition-colors ${
                               safeDeckPage === entry
-                                ? 'bg-indigo-600 text-white shadow-2xs'
+                                ? isDark
+                                  ? 'bg-[#1DB954] text-[#090A0F]'
+                                  : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                                 : isDark
                                 ? 'hover:bg-white/10 text-slate-300'
-                                : 'hover:bg-slate-100 text-slate-600'
+                                : 'hover:bg-[#FFF1F2] text-[#0F172A]'
                             }`}
                           >
                             {entry}
@@ -2193,10 +2241,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                         soundEngine.playSoftClick();
                         setDeckPage((p) => Math.min(deckTotalPages, p + 1));
                       }}
-                      className={`px-2.5 py-1.5 rounded-xl border font-bold flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                      className={`px-2.5 py-1.5 rounded-xl font-black flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
                         isDark
-                          ? 'bg-[#181C28] border-white/10 hover:bg-white/10 text-slate-200'
-                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700'
+                          ? 'bg-[#181C28] border border-white/10 hover:bg-white/10 text-slate-200'
+                          : 'bg-white hover:bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                       }`}
                     >
                       <span className="hidden sm:inline">Sau</span>
@@ -2211,7 +2259,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
           ) : (
             /* GRID OF VOCAB CARDS + PAGINATION */
             <div className="space-y-4 pb-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
                 {paginatedWords.map((item) => {
                   const isFlipped = Boolean(flippedIds[item.id]);
                   const badge = getMasteryBadge(item.srsLevel);
@@ -2224,10 +2272,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                         const idx = filteredWords.findIndex((w) => w.id === item.id);
                         openStudyPopupAt(idx >= 0 ? idx : 0);
                       }}
-                      className={`rounded-2xl border p-4 flex flex-col justify-between gap-3 cursor-pointer transition-all hover:-translate-y-0.5 select-none ${
+                      className={`rounded-2xl p-4 flex flex-col justify-between gap-3 cursor-pointer transition-all hover:-translate-y-0.5 select-none ${
                         isDark
-                          ? 'bg-[#12151E] border-white/[0.08] hover:border-indigo-400/40'
-                          : 'bg-white border-slate-200/80 hover:border-indigo-300 shadow-2xs'
+                          ? 'bg-[#12151E] border border-white/[0.08] hover:border-rose-400/40'
+                          : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7] text-[#0F172A]'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -2237,7 +2285,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             e.stopPropagation();
                             openTopicPopup(topicLabel);
                           }}
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md border truncate cursor-pointer hover:opacity-80 ${getTopicBadgeCls(
+                          className={`text-[10px] font-black px-2 py-0.5 rounded-md border truncate cursor-pointer hover:opacity-85 ${getTopicBadgeCls(
                             topicLabel
                           )}`}
                           title={`Lọc theo chủ đề ${topicLabel}`}
@@ -2253,16 +2301,16 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             }}
                             className={`p-1 rounded-lg transition-colors cursor-pointer ${
                               item.isSaved
-                                ? 'text-amber-500 hover:bg-amber-50'
+                                ? 'text-amber-500 hover:bg-[#FEF9C3]'
                                 : isDark
                                 ? 'text-slate-500 hover:text-amber-400 hover:bg-white/10'
-                                : 'text-slate-300 hover:text-amber-500 hover:bg-slate-100'
+                                : 'text-slate-400 hover:text-amber-500 hover:bg-[#FEF9C3]'
                             }`}
                             title={item.isSaved ? 'Bỏ khỏi Kho Đã Lưu' : 'Lưu vào Kho Đã Lưu ⭐'}
                           >
                             <Star className={`w-3.5 h-3.5 ${item.isSaved ? 'fill-amber-400 text-amber-500' : ''}`} />
                           </button>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${badge.cls}`}>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border shrink-0 ${badge.cls}`}>
                             {badge.label}
                           </span>
                         </div>
@@ -2274,7 +2322,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                           <h3 className="text-base font-extrabold tracking-tight">{item.word}</h3>
                           <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400 mt-0.5">
                             {item.partOfSpeech && (
-                              <span className="text-indigo-500 font-bold">{item.partOfSpeech}</span>
+                              <span className="text-[#E11D48] font-black">{item.partOfSpeech}</span>
                             )}
                             {item.phonetic && <span>{item.phonetic}</span>}
                           </div>
@@ -2288,8 +2336,8 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                           }}
                           className={`p-2 rounded-xl transition-colors shrink-0 cursor-pointer ${
                             isDark
-                              ? 'bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/30'
-                              : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                              ? 'bg-rose-500/15 text-rose-300 hover:bg-rose-500/30'
+                              : 'bg-[#FFE4E6] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FECDD3]'
                           }`}
                           title="Nghe phát âm"
                         >
@@ -2299,7 +2347,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
                       {isFlipped ? (
                         <div className={`pt-2 mt-2 border-t space-y-1 animate-in fade-in duration-150 ${
-                          isDark ? 'border-white/10' : 'border-slate-100'
+                          isDark ? 'border-white/10' : 'border-[#0F172A]/15'
                         }`}>
                           <p className="text-xs font-bold text-emerald-600">{item.meaning}</p>
                           {item.example && (
@@ -2312,13 +2360,13 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                           )}
                         </div>
                       ) : (
-                        <p className="text-[11px] text-slate-400 pt-1 italic">Chạm thẻ để xem nghĩa...</p>
+                        <p className="text-[11px] text-slate-500 pt-1 italic">Chạm thẻ để xem nghĩa...</p>
                       )}
                     </div>
 
                     <div
-                      className={`pt-2 border-t flex items-center justify-between text-[10.5px] text-slate-400 ${
-                        isDark ? 'border-white/[0.06]' : 'border-slate-100'
+                      className={`pt-2 border-t flex items-center justify-between text-[10.5px] font-semibold text-slate-500 ${
+                        isDark ? 'border-white/[0.06]' : 'border-[#0F172A]/15'
                       }`}
                     >
                       <span>Ôn: {item.reviewCount || 0} lần</span>
@@ -2333,7 +2381,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                           className={`p-1 rounded-lg cursor-pointer ${
                             isDark
                               ? 'hover:bg-white/10 hover:text-emerald-400'
-                              : 'hover:bg-indigo-50 hover:text-indigo-600'
+                              : 'hover:bg-[#FEF9C3] hover:text-[#0F172A]'
                           }`}
                           title="Mở popup học thẻ lớn"
                         >
@@ -2345,7 +2393,9 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             e.stopPropagation();
                             openEditWordModal(item);
                           }}
-                          className="p-1 rounded-lg hover:bg-slate-100 hover:text-indigo-600 cursor-pointer"
+                          className={`p-1 rounded-lg cursor-pointer ${
+                            isDark ? 'hover:bg-white/10 hover:text-sky-400' : 'hover:bg-[#DBEAFE] hover:text-[#1D4ED8]'
+                          }`}
                           title="Chỉnh sửa"
                         >
                           <Edit3 className="w-3 h-3" />
@@ -2356,7 +2406,9 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             e.stopPropagation();
                             handleDeleteWord(item.id);
                           }}
-                          className="p-1 rounded-lg hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+                          className={`p-1 rounded-lg cursor-pointer ${
+                            isDark ? 'hover:bg-rose-500/20 hover:text-rose-400' : 'hover:bg-[#FFE4E6] hover:text-[#E11D48]'
+                          }`}
                           title="Xóa từ"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -2371,30 +2423,30 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               {/* Pagination Controls */}
               {filteredWords.length > 0 && (
                 <div
-                  className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-2xl border text-xs ${
+                  className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-2xl text-xs ${
                     isDark
-                      ? 'bg-[#12151E] border-white/[0.08] text-slate-300'
-                      : 'bg-white border-slate-200/80 text-slate-600 shadow-2xs'
+                      ? 'bg-[#12151E] border border-white/[0.08] text-slate-300'
+                      : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A]'
                   }`}
                 >
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="font-medium">
+                    <span className="font-semibold">
                       Hiển thị{' '}
-                      <strong className={isDark ? 'text-white' : 'text-slate-900'}>
+                      <strong className={isDark ? 'text-white' : 'text-[#0F172A]'}>
                         {(safePage - 1) * pageSize + 1}–{Math.min(safePage * pageSize, filteredWords.length)}
                       </strong>{' '}
-                      / <strong className={isDark ? 'text-white' : 'text-slate-900'}>{filteredWords.length}</strong> từ
+                      / <strong className={isDark ? 'text-white' : 'text-[#0F172A]'}>{filteredWords.length}</strong> từ
                     </span>
 
                     <label className="flex items-center gap-1.5 text-[11px]">
-                      <span className="text-slate-400">Mỗi trang:</span>
+                      <span className="text-slate-500 font-semibold">Mỗi trang:</span>
                       <select
                         value={pageSize}
                         onChange={(e) => setPageSize(Number(e.target.value))}
-                        className={`px-2 py-1 rounded-lg border font-bold outline-none cursor-pointer ${
+                        className={`px-2 py-1 rounded-xl font-bold outline-none cursor-pointer ${
                           isDark
-                            ? 'bg-[#181C28] border-white/10 text-white'
-                            : 'bg-slate-50 border-slate-200 text-slate-800'
+                            ? 'bg-[#181C28] border border-white/10 text-white'
+                            : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                         }`}
                       >
                         <option value={8}>8 từ</option>
@@ -2413,10 +2465,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                         soundEngine.playSoftClick();
                         setCurrentPage((p) => Math.max(1, p - 1));
                       }}
-                      className={`px-2.5 py-1.5 rounded-xl border font-bold flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                      className={`px-2.5 py-1.5 rounded-xl font-black flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
                         isDark
-                          ? 'bg-[#181C28] border-white/10 hover:bg-white/10 text-slate-200'
-                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700'
+                          ? 'bg-[#181C28] border border-white/10 hover:bg-white/10 text-slate-200'
+                          : 'bg-white hover:bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                       }`}
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
@@ -2450,12 +2502,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                               soundEngine.playSoftClick();
                               setCurrentPage(entry);
                             }}
-                            className={`min-w-[30px] h-7 px-2 rounded-xl font-bold text-xs cursor-pointer transition-colors ${
+                            className={`min-w-[30px] h-7 px-2 rounded-xl font-black text-xs cursor-pointer transition-colors ${
                               safePage === entry
-                                ? 'bg-indigo-600 text-white shadow-2xs'
+                                ? isDark
+                                  ? 'bg-[#1DB954] text-[#090A0F]'
+                                  : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                                 : isDark
                                 ? 'hover:bg-white/10 text-slate-300'
-                                : 'hover:bg-slate-100 text-slate-600'
+                                : 'hover:bg-[#FFF1F2] text-[#0F172A]'
                             }`}
                           >
                             {entry}
@@ -2470,10 +2524,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                         soundEngine.playSoftClick();
                         setCurrentPage((p) => Math.min(totalPages, p + 1));
                       }}
-                      className={`px-2.5 py-1.5 rounded-xl border font-bold flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                      className={`px-2.5 py-1.5 rounded-xl font-black flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
                         isDark
-                          ? 'bg-[#181C28] border-white/10 hover:bg-white/10 text-slate-200'
-                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700'
+                          ? 'bg-[#181C28] border border-white/10 hover:bg-white/10 text-slate-200'
+                          : 'bg-white hover:bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                       }`}
                     >
                       <span className="hidden sm:inline">Sau</span>
@@ -2496,27 +2550,33 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`w-full max-w-2xl max-h-[92dvh] overflow-y-auto rounded-3xl border shadow-2xl p-4 sm:p-6 space-y-4 ${
+            className={`w-full max-w-2xl max-h-[92dvh] overflow-hidden rounded-3xl flex flex-col ${
               isDark
-                ? 'bg-[#12151E] border-white/10 text-white'
-                : 'bg-white border-slate-200 text-slate-900'
+                ? 'bg-[#12151E] border border-white/10 shadow-2xl text-white'
+                : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[6px_6px_0px_#0F172A] text-[#0F172A]'
             }`}
           >
             {/* Review Popup Header & Toolbar */}
-            <div className={`pb-3 border-b flex flex-wrap items-center justify-between gap-2.5 ${
-              isDark ? 'border-white/[0.08]' : 'border-slate-100'
+            <div className={`px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-2.5 shrink-0 ${
+              isDark ? 'bg-[#181C28]/80 border-b border-white/[0.08]' : 'bg-[#FFF1F2] border-b-2 border-[#0F172A]'
             }`}>
               <div className="flex items-center gap-2 flex-wrap">
-                <div className={`inline-flex p-0.5 rounded-xl border text-xs font-bold ${
-                  isDark ? 'bg-[#181C28] border-white/10' : 'bg-slate-100 border-slate-200'
+                <div className={`inline-flex p-1 rounded-xl text-xs font-black ${
+                  isDark ? 'bg-[#181C28] border border-white/10' : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                 }`}>
                   <button
                     onClick={() => {
                       setReviewStyle('flashcard');
                       setShowReviewAnswer(false);
                     }}
-                    className={`px-3 py-1 rounded-lg cursor-pointer ${
-                      reviewStyle === 'flashcard' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500'
+                    className={`px-3 py-1 rounded-lg cursor-pointer transition-colors ${
+                      reviewStyle === 'flashcard'
+                        ? isDark
+                          ? 'bg-[#1DB954] text-[#090A0F]'
+                          : 'bg-[#E11D48] text-white border border-[#0F172A]'
+                        : isDark
+                        ? 'text-slate-400 hover:text-white'
+                        : 'text-[#0F172A] hover:bg-[#FFF1F2]'
                     }`}
                   >
                     Lật Thẻ SRS
@@ -2526,8 +2586,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       setReviewStyle('quiz');
                       setQuizSelectedIdx(null);
                     }}
-                    className={`px-3 py-1 rounded-lg cursor-pointer flex items-center gap-1 ${
-                      reviewStyle === 'quiz' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500'
+                    className={`px-3 py-1 rounded-lg cursor-pointer flex items-center gap-1 transition-colors ${
+                      reviewStyle === 'quiz'
+                        ? isDark
+                          ? 'bg-[#1DB954] text-[#090A0F]'
+                          : 'bg-[#E11D48] text-white border border-[#0F172A]'
+                        : isDark
+                        ? 'text-slate-400 hover:text-white'
+                        : 'text-[#0F172A] hover:bg-[#FFF1F2]'
                     }`}
                   >
                     <HelpCircle className="w-3 h-3" />
@@ -2538,7 +2604,11 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 <select
                   value={reviewTopic}
                   onChange={(e) => startReviewSession(reviewScope, e.target.value)}
-                  className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold outline-none cursor-pointer ${surfaceCls}`}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-black outline-none cursor-pointer ${
+                    isDark
+                      ? 'bg-[#181C28] border border-white/10 text-slate-200'
+                      : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                  }`}
                   title="Chọn chủ đề ôn tập"
                 >
                   <option value="all">Tất cả ({words.length})</option>
@@ -2551,9 +2621,13 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
                 <button
                   onClick={() => startReviewSession(reviewScope === 'due' ? 'all' : 'due', reviewTopic)}
-                  className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold cursor-pointer flex items-center gap-1.5 ${surfaceCls}`}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-black cursor-pointer flex items-center gap-1.5 ${
+                    isDark
+                      ? surfaceCls
+                      : 'bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                  }`}
                 >
-                  <RefreshCw className="w-3 h-3 text-indigo-500" />
+                  <RefreshCw className="w-3 h-3 text-[#E11D48]" />
                   <span>
                     {reviewScope === 'due'
                       ? `Đến hạn (${dueWords.length})`
@@ -2565,8 +2639,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               <button
                 type="button"
                 onClick={() => setMode('learn')}
-                className={`p-2 rounded-xl transition-colors cursor-pointer ${
-                  isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-500'
+                className={`p-2 transition-colors cursor-pointer ${
+                  isDark
+                    ? 'rounded-xl hover:bg-white/10 text-slate-300'
+                    : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FFE4E6] text-[#0F172A] rounded-xl'
                 }`}
                 title="Đóng phòng ôn tập (Esc)"
               >
@@ -2574,20 +2650,25 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               </button>
             </div>
 
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4">
           {/* Review Stage */}
           {words.length === 0 ? (
-            <div className={`flex-1 rounded-2xl border p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
+            <div className={`flex-1 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
               <p className="text-sm font-bold">Chưa có từ vựng nào để ôn tập</p>
               <button
                 onClick={() => setMode('learn')}
-                className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black cursor-pointer"
               >
                 Quay lại thêm / import từ vựng
               </button>
             </div>
           ) : !currentReviewWord ? (
-            <div className={`flex-1 rounded-2xl border p-8 flex flex-col items-center justify-center text-center space-y-4 ${surfaceCls}`}>
-              <div className="w-16 h-16 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center">
+            <div className={`flex-1 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-4 ${surfaceCls}`}>
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                isDark
+                  ? 'bg-emerald-500/15 text-emerald-400'
+                  : 'bg-[#DCFCE7] text-[#15803D] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
+              }`}>
                 <CheckCircle2 className="w-9 h-9" />
               </div>
               <div className="space-y-1">
@@ -2601,13 +2682,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               <div className="flex items-center gap-2.5 flex-wrap justify-center">
                 <button
                   onClick={() => startReviewSession('all')}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black cursor-pointer"
                 >
                   Ôn tập tự do toàn bộ kho ({words.length} từ)
                 </button>
                 <button
                   onClick={() => setMode('learn')}
-                  className={`px-4 py-2 rounded-xl border text-xs font-bold cursor-pointer ${surfaceCls}`}
+                  className={`px-4 py-2 rounded-xl text-xs font-black cursor-pointer ${
+                    isDark
+                      ? surfaceCls
+                      : 'bg-white hover:bg-[#FFF1F2] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                  }`}
                 >
                   Về Kho Từ Vựng
                 </button>
@@ -2618,15 +2703,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               <div className="w-full max-w-lg space-y-4">
                 {/* Progress bar */}
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+                  <div className="flex items-center justify-between text-[11px] font-black text-slate-600">
                     <span>Tiến độ phiên ôn</span>
                     <span>
                       {Math.min(reviewPos + 1, reviewQueue.length)} / {reviewQueue.length}
                     </span>
                   </div>
-                  <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                  <div className={`w-full h-2.5 rounded-full overflow-hidden ${
+                    isDark ? 'bg-white/10' : 'bg-white border-2 border-[#0F172A]'
+                  }`}>
                     <div
-                      className="h-full bg-indigo-600 transition-all duration-300"
+                      className={`h-full transition-all duration-300 ${isDark ? 'bg-[#1DB954]' : 'bg-[#E11D48]'}`}
                       style={{
                         width: `${Math.round(((reviewPos + 1) / Math.max(1, reviewQueue.length)) * 100)}%`,
                       }}
@@ -2636,17 +2723,25 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
                 {/* Flashcard Review Card */}
                 {reviewStyle === 'flashcard' ? (
-                  <div className={`rounded-3xl border p-6 sm:p-8 shadow-lg space-y-5 ${surfaceCls}`}>
+                  <div className={`rounded-3xl p-6 sm:p-8 space-y-5 ${
+                    isDark
+                      ? 'bg-[#12151E] border border-white/10 shadow-lg text-slate-100'
+                      : 'bg-white border-2 border-[#0F172A] shadow-[4px_4px_0px_#0F172A] text-[#0F172A]'
+                  }`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+                      <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full border ${getTopicBadgeCls(currentReviewWord.topic || 'Chung')}`}>
                         {currentReviewWord.topic || 'Chung'}
                       </span>
                       <button
                         type="button"
                         onClick={() => speakEnglishWord(currentReviewWord.word, false)}
-                        className="px-3 py-1 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                        className={`px-3 py-1 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer ${
+                          isDark
+                            ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300'
+                            : 'bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                        }`}
                       >
-                        <Volume2 className="w-3.5 h-3.5" />
+                        <Volume2 className="w-3.5 h-3.5 text-[#E11D48]" />
                         <span>Nghe</span>
                       </button>
                     </div>
@@ -2655,7 +2750,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
                         {currentReviewWord.word}
                       </h2>
-                      <p className="text-xs font-mono text-slate-400">
+                      <p className="text-xs font-mono text-slate-500">
                         {currentReviewWord.partOfSpeech ? `(${currentReviewWord.partOfSpeech}) ` : ''}
                         {currentReviewWord.phonetic}
                       </p>
@@ -2668,7 +2763,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             soundEngine.playSoftClick();
                             setShowReviewAnswer(true);
                           }}
-                          className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer transition-all"
+                          className="flex-1 py-3 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black cursor-pointer transition-all"
                         >
                           Hiện nghĩa & ví dụ
                         </button>
@@ -2680,7 +2775,11 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                               setShowReviewAnswer(false);
                               setReviewPos((prev) => (prev + 1) % reviewQueue.length);
                             }}
-                            className={`px-4 py-3 rounded-2xl border text-xs font-bold flex items-center gap-1 cursor-pointer shrink-0 ${surfaceCls}`}
+                            className={`px-4 py-3 rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer shrink-0 ${
+                              isDark
+                                ? surfaceCls
+                                : 'bg-white hover:bg-[#FFF1F2] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                            }`}
                             title="Chuyển sang từ tiếp theo"
                           >
                             <span>Next</span>
@@ -2690,19 +2789,21 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       </div>
                     ) : (
                       <div className="space-y-4 animate-in fade-in duration-150">
-                        <div className={`p-4 rounded-2xl border text-center space-y-2 ${
-                          isDark ? 'bg-[#181C28] border-white/10' : 'bg-slate-50 border-slate-200/80'
+                        <div className={`p-4 rounded-2xl text-center space-y-2 ${
+                          isDark
+                            ? 'bg-[#181C28] border border-white/10'
+                            : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                         }`}>
                           <p className="text-xl font-extrabold text-emerald-600">
                             {currentReviewWord.meaning}
                           </p>
                           {currentReviewWord.example && (
-                            <p className="text-xs italic text-slate-500">
+                            <p className="text-xs italic text-slate-600">
                               &ldquo;{currentReviewWord.example}&rdquo;
                             </p>
                           )}
                           {currentReviewWord.exampleTranslation && (
-                            <p className="text-[11px] text-slate-400">
+                            <p className="text-[11px] text-slate-500">
                               {currentReviewWord.exampleTranslation}
                             </p>
                           )}
@@ -2713,34 +2814,50 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                           <button
                             disabled={isSubmittingReview}
                             onClick={() => handleRateReview('again')}
-                            className="py-2.5 px-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold cursor-pointer flex flex-col items-center"
+                            className={`py-2.5 px-2 rounded-xl text-xs font-black cursor-pointer flex flex-col items-center ${
+                              isDark
+                                ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-400/30'
+                                : 'bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                            }`}
                           >
                             <span>Quên</span>
-                            <span className="text-[9.5px] opacity-75">Ôn lại ngay</span>
+                            <span className="text-[9.5px] opacity-80">Ôn lại ngay</span>
                           </button>
                           <button
                             disabled={isSubmittingReview}
                             onClick={() => handleRateReview('hard')}
-                            className="py-2.5 px-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold cursor-pointer flex flex-col items-center"
+                            className={`py-2.5 px-2 rounded-xl text-xs font-black cursor-pointer flex flex-col items-center ${
+                              isDark
+                                ? 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/30'
+                                : 'bg-[#FEF08A] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                            }`}
                           >
                             <span>Mờ mờ</span>
-                            <span className="text-[9.5px] opacity-75">1 ngày</span>
+                            <span className="text-[9.5px] opacity-80">1 ngày</span>
                           </button>
                           <button
                             disabled={isSubmittingReview}
                             onClick={() => handleRateReview('good')}
-                            className="py-2.5 px-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold cursor-pointer flex flex-col items-center"
+                            className={`py-2.5 px-2 rounded-xl text-xs font-black cursor-pointer flex flex-col items-center ${
+                              isDark
+                                ? 'bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-400/30'
+                                : 'bg-[#DBEAFE] hover:bg-[#BFDBFE] text-[#1D4ED8] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                            }`}
                           >
                             <span>Nhớ tốt</span>
-                            <span className="text-[9.5px] opacity-75">3–14 ngày</span>
+                            <span className="text-[9.5px] opacity-80">3–14 ngày</span>
                           </button>
                           <button
                             disabled={isSubmittingReview}
                             onClick={() => handleRateReview('easy')}
-                            className="py-2.5 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold cursor-pointer flex flex-col items-center"
+                            className={`py-2.5 px-2 rounded-xl text-xs font-black cursor-pointer flex flex-col items-center ${
+                              isDark
+                                ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-400/30'
+                                : 'bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#15803D] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                            }`}
                           >
                             <span>Quá dễ</span>
-                            <span className="text-[9.5px] opacity-75">Giãn xa</span>
+                            <span className="text-[9.5px] opacity-80">Giãn xa</span>
                           </button>
                         </div>
                       </div>
@@ -2748,17 +2865,25 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   </div>
                 ) : (
                   /* 4-CHOICE QUIZ REVIEW */
-                  <div className={`rounded-3xl border p-6 sm:p-8 shadow-lg space-y-5 ${surfaceCls}`}>
+                  <div className={`rounded-3xl p-6 sm:p-8 space-y-5 ${
+                    isDark
+                      ? 'bg-[#12151E] border border-white/10 shadow-lg text-slate-100'
+                      : 'bg-white border-2 border-[#0F172A] shadow-[4px_4px_0px_#0F172A] text-[#0F172A]'
+                  }`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-indigo-500 uppercase tracking-wider">
+                      <span className="text-[11px] font-black text-[#E11D48] uppercase tracking-wider">
                         Chọn nghĩa đúng
                       </span>
                       <button
                         type="button"
                         onClick={() => speakEnglishWord(currentReviewWord.word, false)}
-                        className="px-3 py-1 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                        className={`px-3 py-1 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer ${
+                          isDark
+                            ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300'
+                            : 'bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                        }`}
                       >
-                        <Volume2 className="w-3.5 h-3.5" />
+                        <Volume2 className="w-3.5 h-3.5 text-[#E11D48]" />
                         <span>Phát âm</span>
                       </button>
                     </div>
@@ -2766,23 +2891,27 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     <div className="text-center py-3 space-y-1">
                       <h2 className="text-3xl font-black">{currentReviewWord.word}</h2>
                       {currentReviewWord.phonetic && (
-                        <p className="text-xs font-mono text-slate-400">{currentReviewWord.phonetic}</p>
+                        <p className="text-xs font-mono text-slate-500">{currentReviewWord.phonetic}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       {quizChoices.map((choice, idx) => {
                         const isPicked = quizSelectedIdx === idx;
                         const answered = quizSelectedIdx !== null;
                         let btnStyle = isDark
-                          ? 'bg-[#181C28] border-white/10 hover:border-indigo-400'
-                          : 'bg-slate-50 border-slate-200 hover:border-indigo-300';
+                          ? 'bg-[#181C28] border border-white/10 hover:border-emerald-400 text-slate-100'
+                          : 'bg-white hover:bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]';
 
                         if (answered) {
                           if (choice.isCorrect) {
-                            btnStyle = 'bg-emerald-50 border-emerald-400 text-emerald-800';
+                            btnStyle = isDark
+                              ? 'bg-emerald-500/20 border border-emerald-400 text-emerald-300'
+                              : 'bg-[#DCFCE7] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#15803D]';
                           } else if (isPicked && !choice.isCorrect) {
-                            btnStyle = 'bg-rose-50 border-rose-400 text-rose-800';
+                            btnStyle = isDark
+                              ? 'bg-rose-500/20 border border-rose-400 text-rose-300'
+                              : 'bg-[#FFE4E6] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#E11D48]';
                           }
                         }
 
@@ -2796,11 +2925,11 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                                 handleRateReview(choice.isCorrect ? 'good' : 'again');
                               }, 650);
                             }}
-                            className={`w-full p-3.5 rounded-2xl border text-left text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${btnStyle}`}
+                            className={`w-full p-3.5 rounded-2xl text-left text-xs font-black transition-all cursor-pointer flex items-center justify-between ${btnStyle}`}
                           >
                             <span>{choice.meaning}</span>
                             {answered && choice.isCorrect && <Check className="w-4 h-4 text-emerald-600" />}
-                            {answered && isPicked && !choice.isCorrect && <X className="w-4 h-4 text-rose-600" />}
+                            {answered && isPicked && !choice.isCorrect && <X className="w-4 h-4 text-[#E11D48]" />}
                           </button>
                         );
                       })}
@@ -2811,6 +2940,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             </div>
           )}
           </div>
+          </div>
         </div>,
         document.body
       )}
@@ -2820,33 +2950,54 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
       {/* ===================================================================== */}
       {typeof document !== 'undefined' && isWordModalOpen && createPortal(
         <div className="fixed inset-0 z-[160] bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="font-extrabold text-sm">
+          <div
+            className={`rounded-3xl max-w-md w-full overflow-hidden ${
+              isDark
+                ? 'bg-[#12151E] border border-white/10 shadow-2xl text-white'
+                : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[6px_6px_0px_#0F172A] text-[#0F172A]'
+            }`}
+          >
+            <div
+              className={`px-6 py-4 flex items-center justify-between ${
+                isDark ? 'bg-[#181C28] border-b border-white/10' : 'bg-[#FFF1F2] border-b-2 border-[#0F172A]'
+              }`}
+            >
+              <h3 className="font-black text-sm">
                 {editingWord ? 'Chỉnh Sửa Từ Vựng' : 'Thêm Từ Vựng Mới'}
               </h3>
               <button
+                type="button"
                 onClick={() => setIsWordModalOpen(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400"
+                className={`p-1.5 cursor-pointer transition-colors ${
+                  isDark
+                    ? 'rounded-xl hover:bg-white/10 text-slate-300'
+                    : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FFE4E6] text-[#0F172A] rounded-xl'
+                }`}
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveWord} className="space-y-3">
+            <form onSubmit={handleSaveWord} className="p-6 space-y-3">
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-bold text-slate-600">Từ tiếng Anh *</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className={`text-xs font-black ${isDark ? 'text-slate-300' : 'text-[#0F172A]'}`}>
+                    Từ tiếng Anh *
+                  </label>
                   <button
                     type="button"
                     disabled={isAutoFillingSingle}
                     onClick={handleAiAutoFillSingle}
-                    className="text-[11px] font-bold text-indigo-600 hover:underline flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-black flex items-center gap-1 cursor-pointer disabled:opacity-50 ${
+                      isDark
+                        ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-500/25'
+                        : 'bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                    }`}
                   >
                     {isAutoFillingSingle ? (
                       <Loader2 className="w-3 h-3 animate-spin" />
                     ) : (
-                      <Sparkles className="w-3 h-3" />
+                      <Sparkles className="w-3 h-3 text-[#E11D48]" />
                     )}
                     <span>AI Điền Nhanh IPA & Nghĩa</span>
                   </button>
@@ -2857,91 +3008,135 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   value={formWord}
                   onChange={(e) => setFormWord(e.target.value)}
                   placeholder="VD: resilient"
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold outline-none focus:border-indigo-500"
+                  className={`w-full px-3.5 py-2 rounded-xl text-xs font-bold outline-none ${
+                    isDark
+                      ? 'bg-[#181C28] border border-white/10 text-white focus:border-[#1DB954]'
+                      : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                  }`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">Phiên âm IPA</label>
+                  <label className={`text-xs font-black block mb-1 ${isDark ? 'text-slate-300' : 'text-[#0F172A]'}`}>
+                    Phiên âm IPA
+                  </label>
                   <input
                     type="text"
                     value={formPhonetic}
                     onChange={(e) => setFormPhonetic(e.target.value)}
                     placeholder="/rɪˈzɪl.jənt/"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono outline-none focus:border-indigo-500"
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-mono outline-none ${
+                      isDark
+                        ? 'bg-[#181C28] border border-white/10 text-white focus:border-[#1DB954]'
+                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">Loại từ</label>
+                  <label className={`text-xs font-black block mb-1 ${isDark ? 'text-slate-300' : 'text-[#0F172A]'}`}>
+                    Loại từ
+                  </label>
                   <input
                     type="text"
                     value={formPos}
                     onChange={(e) => setFormPos(e.target.value)}
                     placeholder="adj, noun, verb..."
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-indigo-500"
+                    className={`w-full px-3 py-2 rounded-xl text-xs font-semibold outline-none ${
+                      isDark
+                        ? 'bg-[#181C28] border border-white/10 text-white focus:border-[#1DB954]'
+                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                    }`}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-600 block mb-1">Nghĩa tiếng Việt *</label>
+                <label className={`text-xs font-black block mb-1 ${isDark ? 'text-slate-300' : 'text-[#0F172A]'}`}>
+                  Nghĩa tiếng Việt *
+                </label>
                 <input
                   type="text"
                   required
                   value={formMeaning}
                   onChange={(e) => setFormMeaning(e.target.value)}
                   placeholder="VD: Kiên cường, mau phục hồi"
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-indigo-500"
+                  className={`w-full px-3.5 py-2 rounded-xl text-xs font-semibold outline-none ${
+                    isDark
+                      ? 'bg-[#181C28] border border-white/10 text-white focus:border-[#1DB954]'
+                      : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-600 block mb-1">Câu ví dụ</label>
+                <label className={`text-xs font-black block mb-1 ${isDark ? 'text-slate-300' : 'text-[#0F172A]'}`}>
+                  Câu ví dụ
+                </label>
                 <input
                   type="text"
                   value={formExample}
                   onChange={(e) => setFormExample(e.target.value)}
                   placeholder="VD: She remained resilient despite setbacks."
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-indigo-500"
+                  className={`w-full px-3.5 py-2 rounded-xl text-xs outline-none ${
+                    isDark
+                      ? 'bg-[#181C28] border border-white/10 text-white focus:border-[#1DB954]'
+                      : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                  }`}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">Dịch ví dụ</label>
+                  <label className={`text-xs font-black block mb-1 ${isDark ? 'text-slate-300' : 'text-[#0F172A]'}`}>
+                    Dịch ví dụ
+                  </label>
                   <input
                     type="text"
                     value={formExampleTrans}
                     onChange={(e) => setFormExampleTrans(e.target.value)}
                     placeholder="Cô ấy vẫn kiên cường..."
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-indigo-500"
+                    className={`w-full px-3 py-2 rounded-xl text-xs outline-none ${
+                      isDark
+                        ? 'bg-[#181C28] border border-white/10 text-white focus:border-[#1DB954]'
+                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">Chủ đề / Bộ thẻ</label>
+                  <label className={`text-xs font-black block mb-1 ${isDark ? 'text-slate-300' : 'text-[#0F172A]'}`}>
+                    Chủ đề / Bộ thẻ
+                  </label>
                   <input
                     type="text"
                     value={formTopic}
                     onChange={(e) => setFormTopic(e.target.value)}
                     placeholder="Để 'Tự động' để AI tự phân loại..."
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:border-indigo-500"
+                    className={`w-full px-3 py-2 rounded-xl text-xs outline-none ${
+                      isDark
+                        ? 'bg-[#181C28] border border-white/10 text-white focus:border-[#1DB954]'
+                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                    }`}
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3">
                 <button
                   type="button"
                   onClick={() => setIsWordModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
+                  className={`px-4 py-2 rounded-xl text-xs font-black cursor-pointer ${
+                    isDark
+                      ? 'text-slate-300 hover:bg-white/10'
+                      : 'bg-white hover:bg-[#FFF1F2] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                  }`}
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingWord}
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black cursor-pointer disabled:opacity-50"
                 >
                   {isSavingWord ? 'Đang lưu...' : 'Lưu Từ Vựng'}
                 </button>
@@ -2957,23 +3152,38 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
       {/* ===================================================================== */}
       {typeof document !== 'undefined' && isImportModalOpen && createPortal(
         <div className="fixed inset-0 z-[160] bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white text-slate-900 rounded-3xl max-w-2xl w-full max-h-[90dvh] flex flex-col overflow-hidden shadow-2xl border border-slate-200">
+          <div
+            className={`rounded-3xl max-w-2xl w-full max-h-[90dvh] flex flex-col overflow-hidden ${
+              isDark
+                ? 'bg-[#12151E] border border-white/10 shadow-2xl text-white'
+                : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[6px_6px_0px_#0F172A] text-[#0F172A]'
+            }`}
+          >
             {/* Header */}
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-indigo-50/70 via-white to-violet-50/70 shrink-0">
+            <div
+              className={`px-5 py-4 flex items-center justify-between shrink-0 ${
+                isDark ? 'bg-[#181C28] border-b border-white/10' : 'bg-[#FFF1F2] border-b-2 border-[#0F172A]'
+              }`}
+            >
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] flex items-center justify-center shrink-0">
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm">Import Từ Vựng Tự Động</h3>
+                  <h3 className="font-black text-sm">Import Từ Vựng Tự Động</h3>
                   <p className="text-[11px] text-slate-500">
                     Dán danh sách từ, đoạn văn, file CSV/TXT hoặc ảnh chụp — AI tự động điền đầy đủ nghĩa & IPA
                   </p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setIsImportModalOpen(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400"
+                className={`p-1.5 cursor-pointer transition-colors ${
+                  isDark
+                    ? 'rounded-xl hover:bg-white/10 text-slate-300'
+                    : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FFE4E6] text-[#0F172A] rounded-xl'
+                }`}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2982,29 +3192,56 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             {/* Body */}
             <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4">
               {/* Source Tabs */}
-              <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+              <div
+                className={`flex items-center gap-1.5 p-1 rounded-xl text-xs font-black ${
+                  isDark
+                    ? 'bg-[#181C28] border border-white/10'
+                    : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                }`}
+              >
                 <button
+                  type="button"
                   onClick={() => setImportTab('text')}
-                  className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer ${
-                    importTab === 'text' ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600'
+                  className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                    importTab === 'text'
+                      ? isDark
+                        ? 'bg-[#1DB954] text-[#090A0F]'
+                        : 'bg-[#E11D48] text-white border border-[#0F172A]'
+                      : isDark
+                      ? 'text-slate-400 hover:text-white'
+                      : 'text-[#0F172A] hover:bg-[#FFF1F2]'
                   }`}
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span>Dán Chữ / Đoạn Văn</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => setImportTab('file')}
-                  className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer ${
-                    importTab === 'file' ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600'
+                  className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                    importTab === 'file'
+                      ? isDark
+                        ? 'bg-[#1DB954] text-[#090A0F]'
+                        : 'bg-[#E11D48] text-white border border-[#0F172A]'
+                      : isDark
+                      ? 'text-slate-400 hover:text-white'
+                      : 'text-[#0F172A] hover:bg-[#FFF1F2]'
                   }`}
                 >
                   <Upload className="w-3.5 h-3.5" />
                   <span>File CSV / TXT</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => setImportTab('image')}
-                  className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer ${
-                    importTab === 'image' ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600'
+                  className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                    importTab === 'image'
+                      ? isDark
+                        ? 'bg-[#1DB954] text-[#090A0F]'
+                        : 'bg-[#E11D48] text-white border border-[#0F172A]'
+                      : isDark
+                      ? 'text-slate-400 hover:text-white'
+                      : 'text-[#0F172A] hover:bg-[#FFF1F2]'
                   }`}
                 >
                   <ImageIcon className="w-3.5 h-3.5" />
@@ -3014,13 +3251,19 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
               {/* Topic input */}
               <div className="flex items-center gap-2">
-                <label className="text-xs font-bold text-slate-600 shrink-0">Gắn nhãn chủ đề:</label>
+                <label className={`text-xs font-black shrink-0 ${isDark ? 'text-slate-300' : 'text-[#0F172A]'}`}>
+                  Gắn nhãn chủ đề:
+                </label>
                 <input
                   type="text"
                   value={importTopic}
                   onChange={(e) => setImportTopic(e.target.value)}
                   placeholder="Để 'Tự động' để hệ thống tự bắt key chia tag theo từng từ..."
-                  className="flex-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-indigo-500"
+                  className={`flex-1 px-3 py-1.5 rounded-xl text-xs font-semibold outline-none ${
+                    isDark
+                      ? 'bg-[#181C28] border border-white/10 text-white focus:border-[#1DB954]'
+                      : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                  }`}
                 />
               </div>
 
@@ -3031,13 +3274,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     value={importText}
                     onChange={(e) => setImportText(e.target.value)}
                     placeholder={`Bạn có thể nhập theo bất kỳ kiểu nào:\n• Danh sách từ: resilient, procrastinate, streamline\n• Dán cả đoạn bài báo tiếng Anh (AI tự lọc từ hay)\n• Hoặc dạng: word - nghĩa tiếng Việt\n• Hoặc yêu cầu AI: "10 từ vựng tiếng Anh chủ đề phỏng vấn IT"`}
-                    className="w-full p-3.5 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white text-xs leading-relaxed outline-none focus:border-indigo-500 resize-none"
+                    className={`w-full p-3.5 rounded-2xl text-xs leading-relaxed outline-none resize-none ${
+                      isDark
+                        ? 'bg-[#181C28] border border-white/10 text-white focus:border-[#1DB954]'
+                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                    }`}
                   />
                   <button
                     type="button"
                     disabled={isExtracting || !importText.trim()}
                     onClick={() => handleRunAutoExtract()}
-                    className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    className="w-full py-2.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     {isExtracting ? (
                       <>
@@ -3065,10 +3312,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   />
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-2xl p-6 text-center space-y-2 cursor-pointer bg-slate-50/70 hover:bg-indigo-50/30 transition-all"
+                    className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 cursor-pointer transition-all ${
+                      isDark
+                        ? 'border-white/20 hover:border-emerald-400 bg-[#181C28]/60 hover:bg-[#181C28]'
+                        : 'border-[#0F172A] bg-white hover:bg-[#FFF1F2]'
+                    }`}
                   >
-                    <Upload className="w-7 h-7 text-indigo-500 mx-auto" />
-                    <p className="text-xs font-bold text-slate-700">
+                    <Upload className="w-7 h-7 text-[#E11D48] mx-auto" />
+                    <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>
                       Bấm để chọn file <code>.xlsx</code>, <code>.csv</code> hoặc <code>.txt</code>
                     </p>
                     <p className="text-[11px] text-slate-500">
@@ -3077,16 +3328,26 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   </div>
 
                   {/* Excel / CSV Column Guide */}
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 space-y-2.5">
+                  <div
+                    className={`rounded-2xl p-3.5 space-y-2.5 ${
+                      isDark
+                        ? 'bg-[#181C28] border border-white/10'
+                        : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
+                    }`}
+                  >
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className="text-xs font-extrabold text-slate-800">
+                      <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>
                         Cấu trúc 7 cột chuẩn trên Excel / Google Sheets
                       </span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={handleCopySpreadsheetSample}
-                          className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-black inline-flex items-center gap-1 cursor-pointer ${
+                            isDark
+                              ? 'bg-white/10 hover:bg-white/15 text-slate-200 border border-white/10'
+                              : 'bg-[#FEF9C3] hover:bg-[#FDE047] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
+                          }`}
                         >
                           <Copy className="w-3 h-3" />
                           <span>Copy bảng mẫu</span>
@@ -3094,7 +3355,11 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                         <button
                           type="button"
                           onClick={handleDownloadExcelTemplate}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-black inline-flex items-center gap-1 cursor-pointer ${
+                            isDark
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                              : 'bg-[#DCFCE7] hover:bg-[#BBF7D0] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#15803D]'
+                          }`}
                         >
                           <Download className="w-3 h-3" />
                           <span>Tải file Excel mẫu (.xlsx)</span>
@@ -3103,34 +3368,34 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
-                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
-                        <code className="font-bold text-indigo-600">word</code>{' '}
-                        <span className="text-rose-500 font-bold">*</span>{' '}
+                      <div className={`px-2.5 py-1.5 rounded-lg border ${isDark ? 'bg-[#12151E] border-white/10' : 'bg-[#FFFDF7] border-[#0F172A]'}`}>
+                        <code className="font-black text-[#E11D48]">word</code>{' '}
+                        <span className="text-[#E11D48] font-black">*</span>{' '}
                         <span className="text-slate-600">— Từ tiếng Anh (VD: resilient)</span>
                       </div>
-                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
-                        <code className="font-bold text-indigo-600">meaning</code>{' '}
-                        <span className="text-rose-500 font-bold">*</span>{' '}
+                      <div className={`px-2.5 py-1.5 rounded-lg border ${isDark ? 'bg-[#12151E] border-white/10' : 'bg-[#FFFDF7] border-[#0F172A]'}`}>
+                        <code className="font-black text-[#E11D48]">meaning</code>{' '}
+                        <span className="text-[#E11D48] font-black">*</span>{' '}
                         <span className="text-slate-600">— Nghĩa tiếng Việt</span>
                       </div>
-                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
-                        <code className="font-bold text-slate-700">phonetic</code>{' '}
+                      <div className={`px-2.5 py-1.5 rounded-lg border ${isDark ? 'bg-[#12151E] border-white/10' : 'bg-[#FFFDF7] border-[#0F172A]'}`}>
+                        <code className={`font-bold ${isDark ? 'text-slate-200' : 'text-[#0F172A]'}`}>phonetic</code>{' '}
                         <span className="text-slate-500">— Phiên âm IPA (VD: /rɪˈzɪliənt/)</span>
                       </div>
-                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
-                        <code className="font-bold text-slate-700">partOfSpeech</code>{' '}
+                      <div className={`px-2.5 py-1.5 rounded-lg border ${isDark ? 'bg-[#12151E] border-white/10' : 'bg-[#FFFDF7] border-[#0F172A]'}`}>
+                        <code className={`font-bold ${isDark ? 'text-slate-200' : 'text-[#0F172A]'}`}>partOfSpeech</code>{' '}
                         <span className="text-slate-500">— Từ loại (noun, verb, adj...)</span>
                       </div>
-                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
-                        <code className="font-bold text-slate-700">example</code>{' '}
+                      <div className={`px-2.5 py-1.5 rounded-lg border ${isDark ? 'bg-[#12151E] border-white/10' : 'bg-[#FFFDF7] border-[#0F172A]'}`}>
+                        <code className={`font-bold ${isDark ? 'text-slate-200' : 'text-[#0F172A]'}`}>example</code>{' '}
                         <span className="text-slate-500">— Câu ví dụ tiếng Anh</span>
                       </div>
-                      <div className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
-                        <code className="font-bold text-slate-700">exampleTranslation</code>{' '}
+                      <div className={`px-2.5 py-1.5 rounded-lg border ${isDark ? 'bg-[#12151E] border-white/10' : 'bg-[#FFFDF7] border-[#0F172A]'}`}>
+                        <code className={`font-bold ${isDark ? 'text-slate-200' : 'text-[#0F172A]'}`}>exampleTranslation</code>{' '}
                         <span className="text-slate-500">— Dịch nghĩa ví dụ</span>
                       </div>
-                      <div className="sm:col-span-2 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200/80">
-                        <code className="font-bold text-slate-700">topic</code>{' '}
+                      <div className={`sm:col-span-2 px-2.5 py-1.5 rounded-lg border ${isDark ? 'bg-[#12151E] border-white/10' : 'bg-[#FFFDF7] border-[#0F172A]'}`}>
+                        <code className={`font-bold ${isDark ? 'text-slate-200' : 'text-[#0F172A]'}`}>topic</code>{' '}
                         <span className="text-slate-500">
                           — Chủ đề / Tag (để trống hệ thống sẽ tự động bắt keyword chia chủ đề)
                         </span>
@@ -3155,7 +3420,11 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   />
                   <div
                     onClick={() => imageInputRef.current?.click()}
-                    className="border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-2xl p-6 text-center space-y-2 cursor-pointer bg-slate-50/70 hover:bg-indigo-50/30 transition-all"
+                    className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 cursor-pointer transition-all ${
+                      isDark
+                        ? 'border-white/20 hover:border-emerald-400 bg-[#181C28]/60 hover:bg-[#181C28]'
+                        : 'border-[#0F172A] bg-white hover:bg-[#FFF1F2]'
+                    }`}
                   >
                     {importImagePreview ? (
                       <img
@@ -3165,10 +3434,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       />
                     ) : (
                       <>
-                        <ImageIcon className="w-7 h-7 text-indigo-500 mx-auto" />
-                        <p className="text-xs font-bold text-slate-700">
+                        <ImageIcon className="w-7 h-7 text-[#E11D48] mx-auto" />
+                        <p className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>
                           Bấm chọn ảnh hoặc nhấn{' '}
-                          <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-300 text-indigo-600 font-mono text-[11px]">
+                          <kbd className="px-1.5 py-0.5 rounded bg-[#FEF9C3] border border-[#0F172A] text-[#0F172A] font-mono font-black text-[11px]">
                             Ctrl + V
                           </kbd>{' '}
                           để dán ảnh chụp màn hình
@@ -3188,14 +3457,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                           setImportImagePreview('');
                           setExtractedDrafts([]);
                         }}
-                        className="text-rose-500 font-bold hover:underline cursor-pointer"
+                        className="text-[#E11D48] font-black hover:underline cursor-pointer"
                       >
                         Xóa ảnh
                       </button>
                     )}
                   </div>
                   {isExtracting && (
-                    <div className="flex items-center justify-center gap-2 text-xs font-bold text-indigo-600">
+                    <div className="flex items-center justify-center gap-2 text-xs font-black text-[#E11D48]">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       <span>AI đang đọc ảnh và tạo thẻ từ vựng...</span>
                     </div>
@@ -3205,15 +3474,15 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
               {/* Preview Extracted Words */}
               {extractedDrafts.length > 0 && (
-                <div className="space-y-2.5 pt-2 border-t border-slate-100">
+                <div className={`space-y-2.5 pt-3 border-t-2 ${isDark ? 'border-white/10' : 'border-[#0F172A]/15'}`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold text-slate-800">
+                    <span className={`text-xs font-black ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>
                       Xem trước ({extractedDrafts.filter((d) => d.selected !== false).length}/{extractedDrafts.length} từ được chọn)
                     </span>
                     <button
                       type="button"
                       onClick={() => setExtractedDrafts([])}
-                      className="text-[11px] text-rose-500 font-bold hover:underline cursor-pointer"
+                      className="text-[11px] text-[#E11D48] font-black hover:underline cursor-pointer"
                     >
                       Xóa danh sách
                     </button>
@@ -3223,10 +3492,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     {extractedDrafts.map((draft, idx) => (
                       <div
                         key={idx}
-                        className={`p-3 rounded-xl border text-xs flex items-start gap-2.5 ${
+                        className={`p-3 rounded-xl text-xs flex items-start gap-2.5 ${
                           draft.selected === false
-                            ? 'bg-slate-50 border-slate-200 opacity-50'
-                            : 'bg-indigo-50/40 border-indigo-100'
+                            ? isDark
+                              ? 'bg-[#181C28]/50 border border-white/10 opacity-50'
+                              : 'bg-slate-100 border-2 border-[#0F172A]/40 opacity-60'
+                            : isDark
+                            ? 'bg-[#181C28] border border-emerald-400/30'
+                            : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                         }`}
                       >
                         <input
@@ -3238,18 +3511,18 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                               prev.map((item, i) => (i === idx ? { ...item, selected: checked } : item))
                             );
                           }}
-                          className="mt-1 rounded border-slate-300 text-indigo-600"
+                          className="mt-1 rounded border-[#0F172A] accent-[#E11D48]"
                         />
                         <div className="flex-1 min-w-0 space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-extrabold text-slate-900">{draft.word}</span>
+                            <span className={`font-extrabold ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>{draft.word}</span>
                             {draft.topic && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 border border-emerald-200 text-emerald-700">
+                              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-[#DCFCE7] border border-[#0F172A] text-[#15803D]">
                                 {draft.topic}
                               </span>
                             )}
                             {draft.partOfSpeech && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white border border-slate-200 text-indigo-600">
+                              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-[#FFE4E6] border border-[#0F172A] text-[#E11D48]">
                                 {draft.partOfSpeech}
                               </span>
                             )}
@@ -3257,7 +3530,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                               <span className="text-[11px] font-mono text-slate-500">{draft.phonetic}</span>
                             )}
                           </div>
-                          <p className="font-semibold text-emerald-700">{draft.meaning}</p>
+                          <p className="font-bold text-emerald-700">{draft.meaning}</p>
                           {draft.example && (
                             <p className="text-[11px] text-slate-500 italic">&ldquo;{draft.example}&rdquo;</p>
                           )}
@@ -3270,11 +3543,19 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-3.5 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2 shrink-0">
+            <div
+              className={`px-5 py-3.5 flex items-center justify-end gap-2 shrink-0 ${
+                isDark ? 'border-t border-white/10 bg-[#181C28]' : 'border-t-2 border-[#0F172A] bg-[#FFF1F2]'
+              }`}
+            >
               <button
                 type="button"
                 onClick={() => setIsImportModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200/70"
+                className={`px-4 py-2 rounded-xl text-xs font-black cursor-pointer ${
+                  isDark
+                    ? 'text-slate-300 hover:bg-white/10'
+                    : 'bg-white hover:bg-[#FFE4E6] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                }`}
               >
                 Đóng
               </button>
@@ -3283,7 +3564,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   type="button"
                   disabled={isSavingImport}
                   onClick={handleSaveExtractedBatch}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   {isSavingImport ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -3315,17 +3596,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-2xl max-h-[90dvh] rounded-3xl border shadow-2xl overflow-hidden flex flex-col transition-all ${
+              className={`w-full max-w-2xl max-h-[90dvh] rounded-3xl overflow-hidden flex flex-col transition-all ${
                 isDark
-                  ? 'bg-[#12151E] border-white/10 text-white'
-                  : 'bg-white border-slate-200 text-slate-900'
+                  ? 'bg-[#12151E] border border-white/10 shadow-2xl text-white'
+                  : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[6px_6px_0px_#0F172A] text-[#0F172A]'
               }`}
             >
               {/* Top Progress Bar */}
-              <div className={`h-1.5 w-full shrink-0 ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
+              <div className={`h-2 w-full shrink-0 ${isDark ? 'bg-white/5' : 'bg-white border-b-2 border-[#0F172A]'}`}>
                 <div
                   className={`h-full transition-all duration-300 ${
-                    isDark ? 'bg-[#1DB954]' : 'bg-indigo-600'
+                    isDark ? 'bg-[#1DB954]' : 'bg-[#E11D48]'
                   }`}
                   style={{ width: `${progressPct}%` }}
                 />
@@ -3333,19 +3614,19 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
               {/* Popup Header */}
               <div
-                className={`px-4 sm:px-6 py-3.5 border-b flex items-center justify-between gap-3 shrink-0 ${
-                  isDark ? 'border-white/[0.08] bg-[#181C28]/70' : 'border-slate-100 bg-slate-50/70'
+                className={`px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 shrink-0 ${
+                  isDark ? 'border-b border-white/[0.08] bg-[#181C28]/70' : 'border-b-2 border-[#0F172A] bg-[#FFF1F2]'
                 }`}
               >
                 <div className="flex items-center gap-2 flex-wrap">
                   <span
-                    className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg border ${getTopicBadgeCls(
+                    className={`text-[11px] font-black px-2.5 py-0.5 rounded-lg border ${getTopicBadgeCls(
                       topicLabel
                     )}`}
                   >
                     {topicLabel}
                   </span>
-                  <span className={`text-[10.5px] font-bold px-2.5 py-0.5 rounded-full border ${badge.cls}`}>
+                  <span className={`text-[10.5px] font-black px-2.5 py-0.5 rounded-full border ${badge.cls}`}>
                     {badge.label}
                   </span>
                 </div>
@@ -3358,18 +3639,20 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       setIsDeckFlipped(false);
                       setDeckIndex((prev) => (prev - 1 + filteredWords.length) % filteredWords.length);
                     }}
-                    className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                    className={`p-1.5 rounded-xl transition-colors cursor-pointer ${
                       isDark
-                        ? 'border-white/10 hover:bg-white/10 text-slate-300'
-                        : 'border-slate-200 bg-white hover:bg-slate-100 text-slate-600'
+                        ? 'border border-white/10 hover:bg-white/10 text-slate-300'
+                        : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FEF9C3] text-[#0F172A]'
                     }`}
                     title="Từ trước (←)"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
                   <span
-                    className={`text-xs font-mono font-bold px-2 py-1 rounded-lg ${
-                      isDark ? 'bg-white/5 text-slate-300' : 'bg-white border border-slate-200 text-slate-600'
+                    className={`text-xs font-mono font-black px-2.5 py-1 rounded-xl ${
+                      isDark
+                        ? 'bg-white/5 text-slate-300'
+                        : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                     }`}
                   >
                     {deckIndex + 1} / {filteredWords.length}
@@ -3381,10 +3664,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       setIsDeckFlipped(false);
                       setDeckIndex((prev) => (prev + 1) % filteredWords.length);
                     }}
-                    className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                    className={`p-1.5 rounded-xl transition-colors cursor-pointer ${
                       isDark
-                        ? 'border-white/10 hover:bg-white/10 text-slate-300'
-                        : 'border-slate-200 bg-white hover:bg-slate-100 text-slate-600'
+                        ? 'border border-white/10 hover:bg-white/10 text-slate-300'
+                        : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FEF9C3] text-[#0F172A]'
                     }`}
                     title="Từ tiếp / Next (→)"
                   >
@@ -3395,10 +3678,12 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     onClick={() => handleToggleSaved(card)}
                     className={`p-2 rounded-xl transition-colors cursor-pointer ${
                       card.isSaved
-                        ? 'text-amber-500 bg-amber-500/10'
+                        ? isDark
+                          ? 'text-amber-400 bg-amber-500/15'
+                          : 'bg-[#FEF08A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-amber-600'
                         : isDark
                         ? 'hover:bg-white/10 text-slate-300'
-                        : 'hover:bg-slate-200/70 text-slate-500'
+                        : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FEF9C3] text-[#0F172A]'
                     }`}
                     title={card.isSaved ? 'Bỏ khỏi Kho Đã Lưu' : 'Lưu vào Kho Đã Lưu ⭐'}
                   >
@@ -3408,7 +3693,9 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     type="button"
                     onClick={() => openEditWordModal(card)}
                     className={`p-2 rounded-xl transition-colors cursor-pointer ${
-                      isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-200/70 text-slate-500'
+                      isDark
+                        ? 'hover:bg-white/10 text-slate-300'
+                        : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FEF9C3] text-[#0F172A]'
                     }`}
                     title="Chỉnh sửa từ này"
                   >
@@ -3418,7 +3705,9 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     type="button"
                     onClick={() => setIsStudyPopupOpen(false)}
                     className={`p-2 rounded-xl transition-colors cursor-pointer ${
-                      isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-200/70 text-slate-500'
+                      isDark
+                        ? 'hover:bg-white/10 text-slate-300'
+                        : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FFE4E6] text-[#0F172A]'
                     }`}
                     title="Đóng (Esc)"
                   >
@@ -3446,15 +3735,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     <div className="flex items-center justify-center gap-2.5 text-sm font-mono">
                       {card.partOfSpeech && (
                         <span
-                          className={`px-2.5 py-0.5 rounded-lg font-bold text-xs ${
-                            isDark ? 'bg-white/10 text-indigo-300' : 'bg-indigo-50 text-indigo-700'
+                          className={`px-2.5 py-0.5 rounded-lg font-black text-xs ${
+                            isDark
+                              ? 'bg-white/10 text-rose-300'
+                              : 'bg-[#FFE4E6] text-[#E11D48] border border-[#0F172A]'
                           }`}
                         >
                           {card.partOfSpeech}
                         </span>
                       )}
                       {card.phonetic && (
-                        <span className={isDark ? 'text-slate-300' : 'text-slate-500'}>
+                        <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>
                           {card.phonetic}
                         </span>
                       )}
@@ -3467,13 +3758,13 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                           e.stopPropagation();
                           speakEnglishWord(card.word, false);
                         }}
-                        className={`px-4 py-2 rounded-full text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer transition-colors ${
+                        className={`px-4 py-2 rounded-xl text-xs font-black inline-flex items-center gap-1.5 cursor-pointer transition-colors ${
                           isDark
-                            ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/35 border border-indigo-400/30'
-                            : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
+                            ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/35 border border-rose-400/30'
+                            : 'bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                         }`}
                       >
-                        <Volume2 className="w-4 h-4" />
+                        <Volume2 className="w-4 h-4 text-[#E11D48]" />
                         <span>Phát âm chuẩn (S)</span>
                       </button>
                       <button
@@ -3482,10 +3773,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                           e.stopPropagation();
                           speakEnglishWord(card.word, true);
                         }}
-                        className={`px-4 py-2 rounded-full text-xs font-bold cursor-pointer transition-colors ${
+                        className={`px-4 py-2 rounded-xl text-xs font-black cursor-pointer transition-colors ${
                           isDark
                             ? 'bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10'
-                            : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                            : 'bg-white hover:bg-[#FFF1F2] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                         }`}
                       >
                         Đọc chậm
@@ -3496,14 +3787,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   <div className="text-center space-y-5 animate-in fade-in duration-150">
                     <div className="flex items-center justify-center gap-2 flex-wrap">
                       <span
-                        className={`text-sm font-extrabold uppercase tracking-wider ${
-                          isDark ? 'text-indigo-300' : 'text-indigo-600'
+                        className={`text-sm font-black uppercase tracking-wider ${
+                          isDark ? 'text-rose-300' : 'text-[#E11D48]'
                         }`}
                       >
                         {card.word}
                       </span>
                       {card.phonetic && (
-                        <span className="text-xs font-mono text-slate-400">{card.phonetic}</span>
+                        <span className="text-xs font-mono text-slate-500">{card.phonetic}</span>
                       )}
                       <button
                         type="button"
@@ -3511,8 +3802,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                           e.stopPropagation();
                           speakEnglishWord(card.word, false);
                         }}
-                        className={`p-1.5 rounded-full cursor-pointer ${
-                          isDark ? 'hover:bg-white/10 text-indigo-300' : 'hover:bg-indigo-50 text-indigo-600'
+                        className={`p-1.5 rounded-xl cursor-pointer ${
+                          isDark
+                            ? 'hover:bg-white/10 text-rose-300'
+                            : 'bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border border-[#0F172A]'
                         }`}
                         title="Nghe phát âm"
                       >
@@ -3522,7 +3815,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
                     <h3
                       className={`text-2xl sm:text-4xl font-extrabold leading-snug ${
-                        isDark ? 'text-[#1DB954]' : 'text-emerald-600'
+                        isDark ? 'text-[#1DB954]' : 'text-emerald-700'
                       }`}
                     >
                       {card.meaning}
@@ -3530,14 +3823,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
                     {card.example && (
                       <div
-                        className={`p-4 sm:p-5 rounded-2xl text-left space-y-1.5 border max-w-xl mx-auto ${
+                        className={`p-4 sm:p-5 rounded-2xl text-left space-y-1.5 max-w-xl mx-auto ${
                           isDark
-                            ? 'bg-[#181C28] border-white/10'
-                            : 'bg-slate-50 border-slate-200/80'
+                            ? 'bg-[#181C28] border border-white/10'
+                            : 'bg-white border-2 border-[#0F172A] shadow-[4px_4px_0px_#0F172A]'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <p className="text-sm font-semibold italic leading-relaxed">
+                          <p className="text-sm font-bold italic leading-relaxed">
                             &ldquo;{card.example}&rdquo;
                           </p>
                           <button
@@ -3548,16 +3841,16 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             }}
                             className={`p-1.5 rounded-xl shrink-0 cursor-pointer ${
                               isDark
-                                ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/35'
-                                : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-600'
+                                ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/35'
+                                : 'bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                             }`}
                             title="Nghe câu ví dụ"
                           >
-                            <Volume2 className="w-4 h-4" />
+                            <Volume2 className="w-4 h-4 text-[#E11D48]" />
                           </button>
                         </div>
                         {card.exampleTranslation && (
-                          <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                          <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                             {card.exampleTranslation}
                           </p>
                         )}
@@ -3566,7 +3859,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   </div>
                 )}
 
-                <div className="text-center text-xs text-slate-400 flex items-center justify-center gap-1.5 pt-4">
+                <div className="text-center text-xs font-semibold text-slate-500 flex items-center justify-center gap-1.5 pt-4">
                   <RotateCw className="w-3.5 h-3.5" />
                   <span>
                     {isDeckFlipped
@@ -3578,8 +3871,8 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 {/* Sentence Making Practice Section */}
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className={`mt-5 pt-4 border-t ${
-                    isDark ? 'border-white/[0.08]' : 'border-slate-100'
+                  className={`mt-5 pt-4 border-t-2 ${
+                    isDark ? 'border-white/[0.08]' : 'border-[#0F172A]/15'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -3589,14 +3882,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                         soundEngine.playSoftClick();
                         setIsSentenceBoxOpen((prev) => !prev);
                       }}
-                      className={`text-xs font-extrabold flex items-center gap-1.5 cursor-pointer ${
-                        isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-indigo-600 hover:text-indigo-700'
+                      className={`text-xs font-black flex items-center gap-1.5 cursor-pointer ${
+                        isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-[#E11D48] hover:text-[#BE123C]'
                       }`}
                     >
                       <PenLine className="w-3.5 h-3.5" />
                       <span>Luyện đặt câu với &ldquo;{card.word}&rdquo;</span>
                     </button>
-                    <span className="text-[10.5px] text-slate-400">
+                    <span className="text-[10.5px] font-semibold text-slate-500">
                       {isSentenceBoxOpen ? 'Thu gọn' : 'Bấm để tự đặt câu & nhờ AI sửa'}
                     </span>
                   </div>
@@ -3615,20 +3908,20 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             }
                           }}
                           placeholder={`Viết 1 câu tiếng Anh có dùng từ "${card.word}"...`}
-                          className={`flex-1 px-3.5 py-2 rounded-xl border text-xs outline-none transition-all ${
+                          className={`flex-1 px-3.5 py-2 rounded-xl text-xs font-semibold outline-none transition-all ${
                             isDark
-                              ? 'bg-[#181C28] border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
-                              : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white focus:border-indigo-500'
+                              ? 'bg-[#181C28] border border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
+                              : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                           }`}
                         />
                         <button
                           type="button"
                           disabled={isCheckingSentence || !userSentence.trim()}
                           onClick={() => handleCheckSentence(card)}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50 ${
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50 ${
                             isDark
                               ? 'bg-[#1DB954] text-[#090A0F] hover:brightness-110'
-                              : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                              : 'bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
                           }`}
                         >
                           {isCheckingSentence ? (
@@ -3642,59 +3935,59 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
                       {sentenceFeedback && (
                         <div
-                          className={`p-3.5 rounded-2xl border text-xs space-y-2 ${
+                          className={`p-3.5 rounded-2xl text-xs space-y-2 ${
                             sentenceFeedback.isCorrect
                               ? isDark
-                                ? 'bg-emerald-500/10 border-emerald-500/25'
-                                : 'bg-emerald-50/70 border-emerald-200'
+                                ? 'bg-emerald-500/10 border border-emerald-500/25'
+                                : 'bg-[#DCFCE7] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
                               : isDark
-                              ? 'bg-amber-500/10 border-amber-500/25'
-                              : 'bg-amber-50/70 border-amber-200'
+                              ? 'bg-amber-500/10 border border-amber-500/25'
+                              : 'bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span
-                              className={`font-extrabold ${
+                              className={`font-black ${
                                 sentenceFeedback.isCorrect
                                   ? isDark
                                     ? 'text-emerald-300'
-                                    : 'text-emerald-700'
+                                    : 'text-[#15803D]'
                                   : isDark
                                   ? 'text-amber-300'
-                                  : 'text-amber-700'
+                                  : 'text-[#0F172A]'
                               }`}
                             >
                               {sentenceFeedback.isCorrect ? '✨ Đặt câu rất tự nhiên!' : '💡 Góp ý chỉnh nhẹ:'}
                             </span>
-                            <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/80 text-slate-800 border border-slate-200/70">
+                            <span className="text-[11px] font-mono font-black px-2 py-0.5 rounded-full bg-white text-[#0F172A] border border-[#0F172A]">
                               {sentenceFeedback.score}/10
                             </span>
                           </div>
 
-                          <p className={`leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                          <p className={`leading-relaxed font-medium ${isDark ? 'text-slate-200' : 'text-[#0F172A]'}`}>
                             {sentenceFeedback.feedbackVi}
                           </p>
 
                           <div
-                            className={`p-2.5 rounded-xl border space-y-1 ${
-                              isDark ? 'bg-[#12151E] border-white/10' : 'bg-white border-slate-200/80'
+                            className={`p-2.5 rounded-xl space-y-1 ${
+                              isDark ? 'bg-[#12151E] border border-white/10' : 'bg-white border-2 border-[#0F172A]'
                             }`}
                           >
                             <div className="flex items-start justify-between gap-2">
-                              <p className="font-bold text-indigo-500 leading-relaxed">
+                              <p className="font-black text-[#E11D48] leading-relaxed">
                                 &ldquo;{sentenceFeedback.correctedSentence}&rdquo;
                               </p>
                               <button
                                 type="button"
                                 onClick={() => speakEnglishWord(sentenceFeedback.correctedSentence, false)}
-                                className="p-1 rounded-lg hover:bg-indigo-100 text-indigo-500 shrink-0 cursor-pointer"
+                                className="p-1 rounded-lg bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border border-[#0F172A] shrink-0 cursor-pointer"
                                 title="Nghe phát âm câu gợi ý"
                               >
                                 <Volume2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                             {sentenceFeedback.naturalTranslationVi && (
-                              <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                              <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                                 {sentenceFeedback.naturalTranslationVi}
                               </p>
                             )}
@@ -3705,13 +3998,13 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                               type="button"
                               disabled={isSavingSentenceExample}
                               onClick={() => handleSaveSentenceAsExample(card)}
-                              className={`px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer disabled:opacity-50 ${
+                              className={`px-3 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1 cursor-pointer disabled:opacity-50 ${
                                 isDark
                                   ? 'bg-white/10 hover:bg-white/15 text-white'
-                                  : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-700'
+                                  : 'bg-white hover:bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                               }`}
                             >
-                              <Check className="w-3 h-3 text-emerald-500" />
+                              <Check className="w-3 h-3 text-emerald-600" />
                               <span>{isSavingSentenceExample ? 'Đang lưu...' : 'Lưu làm ví dụ của thẻ'}</span>
                             </button>
                           </div>
@@ -3724,8 +4017,8 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
               {/* Popup Footer Controls */}
               <div
-                className={`px-4 sm:px-6 py-3.5 border-t flex flex-col gap-2 shrink-0 ${
-                  isDark ? 'border-white/[0.08] bg-[#181C28]/70' : 'border-slate-100 bg-slate-50/70'
+                className={`px-4 sm:px-6 py-3.5 flex flex-col gap-2 shrink-0 ${
+                  isDark ? 'border-t border-white/[0.08] bg-[#181C28]/70' : 'border-t-2 border-[#0F172A] bg-[#FFF1F2]'
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -3736,10 +4029,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       setIsDeckFlipped(false);
                       setDeckIndex((prev) => (prev - 1 + filteredWords.length) % filteredWords.length);
                     }}
-                    className={`px-4 py-2.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer ${
+                    className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer ${
                       isDark
-                        ? 'bg-[#12151E] border-white/10 hover:bg-white/10 text-white'
-                        : 'bg-white border-slate-200 hover:bg-slate-100 text-slate-700'
+                        ? 'bg-[#12151E] border border-white/10 hover:bg-white/10 text-white'
+                        : 'bg-white hover:bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                     }`}
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -3752,10 +4045,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       soundEngine.playSoftClick();
                       setIsDeckFlipped((prev) => !prev);
                     }}
-                    className={`px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 cursor-pointer shadow-sm transition-transform active:scale-95 ${
+                    className={`px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 cursor-pointer transition-transform active:scale-95 ${
                       isDark
                         ? 'bg-[#1DB954] text-[#090A0F] hover:brightness-110'
-                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                        : 'bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
                     }`}
                   >
                     <RotateCw className="w-3.5 h-3.5" />
@@ -3769,10 +4062,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       setIsDeckFlipped(false);
                       setDeckIndex((prev) => (prev + 1) % filteredWords.length);
                     }}
-                    className={`px-4 py-2.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer ${
+                    className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer ${
                       isDark
-                        ? 'bg-[#12151E] border-white/10 hover:bg-white/10 text-white'
-                        : 'bg-white border-slate-200 hover:bg-slate-100 text-slate-700'
+                        ? 'bg-[#12151E] border border-white/10 hover:bg-white/10 text-white'
+                        : 'bg-white hover:bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                     }`}
                   >
                     <span>Từ tiếp</span>
@@ -3780,7 +4073,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   </button>
                 </div>
 
-                <p className="hidden sm:block text-center text-[10.5px] text-slate-400">
+                <p className="hidden sm:block text-center text-[10.5px] font-semibold text-slate-500">
                   Phím tắt: <strong>← / →</strong> chuyển từ • <strong>Space</strong> lật thẻ •{' '}
                   <strong>S</strong> phát âm • <strong>Esc</strong> đóng
                 </p>
@@ -3800,24 +4093,24 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`w-full max-w-2xl max-h-[90dvh] rounded-3xl border shadow-2xl overflow-hidden flex flex-col ${
+            className={`w-full max-w-2xl max-h-[90dvh] rounded-3xl overflow-hidden flex flex-col ${
               isDark
-                ? 'bg-[#12151E] border-white/10 text-white'
-                : 'bg-white border-slate-200 text-slate-900'
+                ? 'bg-[#12151E] border border-white/10 shadow-2xl text-white'
+                : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[6px_6px_0px_#0F172A] text-[#0F172A]'
             }`}
           >
             {/* Header */}
             <div
-              className={`px-5 py-4 border-b flex items-center justify-between gap-3 shrink-0 ${
-                isDark ? 'border-white/[0.08] bg-[#181C28]/80' : 'border-slate-100 bg-amber-50/40'
+              className={`px-5 py-4 flex items-center justify-between gap-3 shrink-0 ${
+                isDark ? 'border-b border-white/[0.08] bg-[#181C28]/80' : 'border-b-2 border-[#0F172A] bg-[#FFF1F2]'
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-sm">
-                  <BookMarked className="w-4 h-4" />
+                <div className="w-9 h-9 rounded-xl bg-[#FEF08A] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] flex items-center justify-center shrink-0">
+                  <BookMarked className="w-4 h-4 text-[#E11D48]" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm">Từ Điển Song Ngữ Thông Minh (Anh ↔ Việt)</h3>
+                  <h3 className="font-black text-sm">Từ Điển Song Ngữ Thông Minh (Anh ↔ Việt)</h3>
                   <p className="text-[11px] text-slate-500">
                     Tra 2 chiều Anh-Việt & Việt-Anh cho Từ vựng, Modal Verbs, Idioms (IDM) & Phrasal Verbs
                   </p>
@@ -3826,8 +4119,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               <button
                 type="button"
                 onClick={() => setIsDictOpen(false)}
-                className={`p-1.5 rounded-full cursor-pointer ${
-                  isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-500'
+                className={`p-1.5 cursor-pointer transition-colors ${
+                  isDark
+                    ? 'rounded-xl hover:bg-white/10 text-slate-300'
+                    : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FFE4E6] text-[#0F172A] rounded-xl'
                 }`}
               >
                 <X className="w-4 h-4" />
@@ -3851,14 +4146,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     key={tab.id}
                     type="button"
                     onClick={() => setDictCategory(tab.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black cursor-pointer transition-all ${
                       dictCategory === tab.id
                         ? isDark
                           ? 'bg-[#1DB954] text-[#090A0F]'
-                          : 'bg-amber-500 text-white shadow-2xs'
+                          : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                         : isDark
                         ? 'bg-white/5 text-slate-300 hover:bg-white/10'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        : 'bg-white hover:bg-[#FEF9C3] text-[#0F172A] border-2 border-[#0F172A]'
                     }`}
                   >
                     {tab.label}
@@ -3881,20 +4176,20 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     value={dictQuery}
                     onChange={(e) => setDictQuery(e.target.value)}
                     placeholder="Nhập tiếng Anh hoặc tiếng Việt (vd: resilient, bỏ cuộc, nên làm gì, may mắn)..."
-                    className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border text-xs font-semibold outline-none ${
+                    className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl text-xs font-bold outline-none ${
                       isDark
-                        ? 'bg-[#181C28] border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
-                        : 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-amber-500'
+                        ? 'bg-[#181C28] border border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
+                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                     }`}
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={isLookingUpDict || !dictQuery.trim()}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 ${
+                  className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 ${
                     isDark
                       ? 'bg-[#1DB954] text-[#090A0F] hover:brightness-110'
-                      : 'bg-amber-500 hover:bg-amber-600 text-white'
+                      : 'bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
                   }`}
                 >
                   {isLookingUpDict ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
@@ -3904,16 +4199,16 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
               {/* Quick Chips */}
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[11px] font-bold text-slate-400 mr-1">Gợi ý nhanh:</span>
+                <span className="text-[11px] font-black text-slate-500 mr-1">Gợi ý nhanh:</span>
                 {DICT_QUICK_CHIPS[dictCategory].map((chip) => (
                   <button
                     key={chip}
                     type="button"
                     onClick={() => handleLookupDictionary(chip, dictCategory)}
-                    className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold cursor-pointer transition-colors ${
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-colors ${
                       isDark
-                        ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-amber-50 hover:border-amber-200'
+                        ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
+                        : 'bg-[#FEF9C3] hover:bg-[#FDE047] border border-[#0F172A] text-[#0F172A]'
                     }`}
                   >
                     {chip}
@@ -3923,28 +4218,30 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
               {/* Lookup Result Card */}
               {isLookingUpDict && (
-                <div className="py-10 flex flex-col items-center justify-center gap-2 text-xs text-slate-400">
-                  <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+                <div className="py-10 flex flex-col items-center justify-center gap-2 text-xs font-semibold text-slate-500">
+                  <Loader2 className="w-6 h-6 animate-spin text-[#E11D48]" />
                   <span>Đang tra cứu chi tiết nghĩa, công thức và ví dụ...</span>
                 </div>
               )}
 
               {!isLookingUpDict && dictResult && (
                 <div
-                  className={`rounded-2xl border p-4 sm:p-5 space-y-4 animate-in fade-in duration-150 ${
-                    isDark ? 'bg-[#181C28] border-white/10' : 'bg-slate-50/70 border-slate-200/80'
+                  className={`rounded-2xl p-4 sm:p-5 space-y-4 animate-in fade-in duration-150 ${
+                    isDark
+                      ? 'bg-[#181C28] border border-white/10'
+                      : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="text-xl sm:text-2xl font-black tracking-tight">{dictResult.term}</h4>
-                        <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 border border-amber-400/30">
+                        <span className="text-[10.5px] font-black px-2 py-0.5 rounded-full bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]">
                           {dictResult.partOfSpeech || dictResult.category}
                         </span>
                       </div>
                       {dictResult.phonetic && (
-                        <p className="text-xs font-mono text-slate-400 mt-0.5">{dictResult.phonetic}</p>
+                        <p className="text-xs font-mono text-slate-500 mt-0.5">{dictResult.phonetic}</p>
                       )}
                     </div>
 
@@ -3952,13 +4249,13 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       <button
                         type="button"
                         onClick={() => speakEnglishWord(dictResult.term, false)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer ${
                           isDark
-                            ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/35'
-                            : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                            ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/35'
+                            : 'bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                         }`}
                       >
-                        <Volume2 className="w-3.5 h-3.5" />
+                        <Volume2 className="w-3.5 h-3.5 text-[#E11D48]" />
                         <span>Phát âm</span>
                       </button>
 
@@ -3966,7 +4263,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                         type="button"
                         disabled={isSavingDictWord}
                         onClick={handleSaveDictEntryToVocab}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black flex items-center gap-1 cursor-pointer disabled:opacity-50"
                       >
                         {isSavingDictWord ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                         <span>Lưu vào kho</span>
@@ -3989,19 +4286,19 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   {/* Grammar Formula / Usage Notes */}
                   {(dictResult.grammarFormula || dictResult.usageNotesVi) && (
                     <div
-                      className={`p-3 rounded-xl border text-xs space-y-1.5 ${
-                        isDark ? 'bg-[#12151E] border-white/10' : 'bg-white border-slate-200/80'
+                      className={`p-3 rounded-xl text-xs space-y-1.5 ${
+                        isDark ? 'bg-[#12151E] border border-white/10' : 'bg-[#FFFDF7] border-2 border-[#0F172A]'
                       }`}
                     >
                       {dictResult.grammarFormula && (
                         <p>
-                          <strong className="text-indigo-500">Cấu trúc / Cách dùng:</strong>{' '}
-                          <span className="font-mono text-[11.5px]">{dictResult.grammarFormula}</span>
+                          <strong className="text-[#E11D48]">Cấu trúc / Cách dùng:</strong>{' '}
+                          <span className="font-mono font-bold text-[11.5px]">{dictResult.grammarFormula}</span>
                         </p>
                       )}
                       {dictResult.usageNotesVi && (
-                        <p className={isDark ? 'text-slate-300' : 'text-slate-600'}>
-                          <strong className="text-amber-500">Lưu ý ngữ cảnh:</strong> {dictResult.usageNotesVi}
+                        <p className={isDark ? 'text-slate-300' : 'text-slate-700'}>
+                          <strong className="text-amber-600">Lưu ý ngữ cảnh:</strong> {dictResult.usageNotesVi}
                         </p>
                       )}
                     </div>
@@ -4012,13 +4309,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     <div className="flex flex-wrap gap-3 text-[11px]">
                       {dictResult.synonyms.length > 0 && (
                         <div className="flex items-center gap-1 flex-wrap">
-                          <span className="font-bold text-slate-400">Đồng nghĩa:</span>
+                          <span className="font-black text-slate-500">Đồng nghĩa:</span>
                           {dictResult.synonyms.map((s) => (
                             <button
                               key={s}
                               type="button"
                               onClick={() => handleLookupDictionary(s, 'auto')}
-                              className="px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-600 font-semibold hover:underline cursor-pointer"
+                              className={`px-2 py-0.5 rounded-md font-bold hover:underline cursor-pointer ${
+                                isDark
+                                  ? 'bg-sky-500/15 text-sky-300'
+                                  : 'bg-[#DBEAFE] text-[#1D4ED8] border border-[#0F172A]'
+                              }`}
                             >
                               {s}
                             </button>
@@ -4027,13 +4328,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       )}
                       {dictResult.antonyms.length > 0 && (
                         <div className="flex items-center gap-1 flex-wrap">
-                          <span className="font-bold text-slate-400">Trái nghĩa:</span>
+                          <span className="font-black text-slate-500">Trái nghĩa:</span>
                           {dictResult.antonyms.map((a) => (
                             <button
                               key={a}
                               type="button"
                               onClick={() => handleLookupDictionary(a, 'auto')}
-                              className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 font-semibold hover:underline cursor-pointer"
+                              className={`px-2 py-0.5 rounded-md font-bold hover:underline cursor-pointer ${
+                                isDark
+                                  ? 'bg-rose-500/15 text-rose-300'
+                                  : 'bg-[#FFE4E6] text-[#E11D48] border border-[#0F172A]'
+                              }`}
                             >
                               {a}
                             </button>
@@ -4046,24 +4351,30 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   {/* Bilingual Examples */}
                   {dictResult.examples.length > 0 && (
                     <div className="space-y-2">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
                         Ví dụ thực tế
                       </span>
                       {dictResult.examples.map((ex, i) => (
                         <div
                           key={i}
-                          className={`p-3 rounded-xl border flex items-start justify-between gap-2 text-xs ${
-                            isDark ? 'bg-[#12151E] border-white/10' : 'bg-white border-slate-200/80'
+                          className={`p-3 rounded-xl flex items-start justify-between gap-2 text-xs ${
+                            isDark
+                              ? 'bg-[#12151E] border border-white/10'
+                              : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                           }`}
                         >
                           <div className="space-y-0.5">
-                            <p className="font-semibold italic">&ldquo;{ex.en}&rdquo;</p>
+                            <p className="font-bold italic">&ldquo;{ex.en}&rdquo;</p>
                             {ex.vi && <p className="text-[11px] text-slate-500">{ex.vi}</p>}
                           </div>
                           <button
                             type="button"
                             onClick={() => speakEnglishWord(ex.en, false)}
-                            className="p-1.5 rounded-lg hover:bg-indigo-100 text-indigo-500 shrink-0 cursor-pointer"
+                            className={`p-1.5 rounded-lg shrink-0 cursor-pointer ${
+                              isDark
+                                ? 'hover:bg-white/10 text-rose-300'
+                                : 'bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border border-[#0F172A]'
+                            }`}
                             title="Nghe câu ví dụ"
                           >
                             <Volume2 className="w-3.5 h-3.5" />
@@ -4090,27 +4401,27 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`w-full max-w-5xl max-h-[90dvh] rounded-3xl border shadow-2xl overflow-hidden flex flex-col ${
+            className={`w-full max-w-5xl max-h-[90dvh] rounded-3xl overflow-hidden flex flex-col ${
               isDark
-                ? 'bg-[#0E1118] border-white/10 text-white'
-                : 'bg-[#F8FAFC] border-slate-200 text-slate-900'
+                ? 'bg-[#0E1118] border border-white/10 shadow-2xl text-white'
+                : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[6px_6px_0px_#0F172A] text-[#0F172A]'
             }`}
           >
             {/* Topic Popup Header */}
             <div
-              className={`px-5 py-4 border-b flex flex-wrap items-center justify-between gap-3 shrink-0 ${
-                isDark ? 'bg-[#12151E] border-white/[0.08]' : 'bg-white border-slate-200/80'
+              className={`px-5 py-4 flex flex-wrap items-center justify-between gap-3 shrink-0 ${
+                isDark ? 'bg-[#12151E] border-b border-white/[0.08]' : 'bg-[#FFF1F2] border-b-2 border-[#0F172A]'
               }`}
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 <span
-                  className={`text-xs font-extrabold px-3 py-1 rounded-xl border ${getTopicBadgeCls(
+                  className={`text-xs font-black px-3 py-1 rounded-xl border ${getTopicBadgeCls(
                     topicPopupName
                   )}`}
                 >
                   {topicPopupName}
                 </span>
-                <span className="text-xs font-bold text-slate-400">
+                <span className="text-xs font-black text-slate-500">
                   ({filteredWords.length} từ)
                 </span>
               </div>
@@ -4120,13 +4431,13 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   type="button"
                   disabled={filteredWords.length === 0}
                   onClick={() => openStudyPopupAt(0)}
-                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-40 ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer disabled:opacity-40 ${
                     isDark
-                      ? 'bg-[#1DB954]/15 border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
-                      : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                      ? 'bg-[#1DB954]/15 border border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
+                      : 'bg-[#FEF9C3] hover:bg-[#FDE047] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
                   }`}
                 >
-                  <Maximize2 className="w-3.5 h-3.5" />
+                  <Maximize2 className="w-3.5 h-3.5 text-[#E11D48]" />
                   <span>Học Thẻ Lớn</span>
                 </button>
                 <button
@@ -4138,7 +4449,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     setMode('review');
                     startReviewSession('all', tp);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+                  className="px-3 py-1.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
                 >
                   <Brain className="w-3.5 h-3.5" />
                   <span>Ôn chủ đề này</span>
@@ -4146,8 +4457,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 <button
                   type="button"
                   onClick={closeTopicPopup}
-                  className={`p-2 rounded-xl cursor-pointer ${
-                    isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-500'
+                  className={`p-2 cursor-pointer transition-colors ${
+                    isDark
+                      ? 'rounded-xl hover:bg-white/10 text-slate-300'
+                      : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FFE4E6] text-[#0F172A] rounded-xl'
                   }`}
                   title="Đóng (Esc)"
                 >
@@ -4158,8 +4471,8 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
             {/* Topic Popup Quick Filter Bar */}
             <div
-              className={`px-5 py-2.5 border-b flex flex-wrap items-center gap-2 shrink-0 ${
-                isDark ? 'bg-[#12151E]/60 border-white/[0.06]' : 'bg-white/70 border-slate-100'
+              className={`px-5 py-2.5 flex flex-wrap items-center gap-2 shrink-0 ${
+                isDark ? 'bg-[#12151E]/60 border-b border-white/[0.06]' : 'bg-white border-b-2 border-[#0F172A]'
               }`}
             >
               <div className="relative flex-1 min-w-[180px]">
@@ -4169,18 +4482,20 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={`Tìm từ trong chủ đề ${topicPopupName}...`}
-                  className={`w-full pl-8 pr-3 py-1.5 rounded-xl border text-xs outline-none ${
+                  className={`w-full pl-8 pr-3 py-1.5 rounded-xl text-xs font-semibold outline-none ${
                     isDark
-                      ? 'bg-[#181C28] border-white/10 text-white placeholder:text-slate-500'
-                      : 'bg-slate-50 border-slate-200 text-slate-800'
+                      ? 'bg-[#181C28] border border-white/10 text-white placeholder:text-slate-500'
+                      : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                   }`}
                 />
               </div>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
-                  isDark ? 'bg-[#181C28] border-white/10 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'
+                className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
+                  isDark
+                    ? 'bg-[#181C28] border border-white/10 text-slate-200'
+                    : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                 }`}
               >
                 <option value="all">Mọi trạng thái</option>
@@ -4192,8 +4507,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
-                  isDark ? 'bg-[#181C28] border-white/10 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'
+                className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
+                  isDark
+                    ? 'bg-[#181C28] border border-white/10 text-slate-200'
+                    : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                 }`}
               >
                 <option value="newest">Mới thêm nhất</option>
@@ -4207,12 +4524,12 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             {/* Topic Popup Scrollable Cards + Pagination */}
             <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-4">
               {paginatedWords.length === 0 ? (
-                <div className="py-12 text-center text-xs text-slate-400">
+                <div className="py-12 text-center text-xs font-semibold text-slate-500">
                   Không có từ vựng nào khớp bộ lọc trong chủ đề này.
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                     {paginatedWords.map((item) => {
                       const badge = getMasteryBadge(item.srsLevel);
                       return (
@@ -4222,10 +4539,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             const idx = filteredWords.findIndex((w) => w.id === item.id);
                             openStudyPopupAt(idx >= 0 ? idx : 0);
                           }}
-                          className={`rounded-2xl border p-4 flex flex-col justify-between gap-2.5 cursor-pointer transition-all hover:-translate-y-0.5 select-none ${
+                          className={`rounded-2xl p-4 flex flex-col justify-between gap-2.5 cursor-pointer transition-all hover:-translate-y-0.5 select-none ${
                             isDark
-                              ? 'bg-[#12151E] border-white/[0.08] hover:border-emerald-400/40'
-                              : 'bg-white border-slate-200/80 hover:border-indigo-300 shadow-2xs'
+                              ? 'bg-[#12151E] border border-white/[0.08] hover:border-emerald-400/40'
+                              : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7] text-[#0F172A]'
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2">
@@ -4233,7 +4550,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                               <h4 className="text-base font-extrabold tracking-tight truncate">{item.word}</h4>
                               <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400 mt-0.5">
                                 {item.partOfSpeech && (
-                                  <span className="text-indigo-500 font-bold">{item.partOfSpeech}</span>
+                                  <span className="text-[#E11D48] font-black">{item.partOfSpeech}</span>
                                 )}
                                 {item.phonetic && <span className="truncate">{item.phonetic}</span>}
                               </div>
@@ -4246,7 +4563,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                                   handleToggleSaved(item);
                                 }}
                                 className={`p-1 rounded-lg cursor-pointer ${
-                                  item.isSaved ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'
+                                  item.isSaved ? 'text-amber-500' : 'text-slate-400 hover:text-amber-500'
                                 }`}
                                 title={item.isSaved ? 'Bỏ khỏi Đã Lưu' : 'Lưu vào Đã Lưu ⭐'}
                               >
@@ -4259,7 +4576,9 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                                   speakEnglishWord(item.word, false);
                                 }}
                                 className={`p-1.5 rounded-xl cursor-pointer ${
-                                  isDark ? 'bg-indigo-500/15 text-indigo-300' : 'bg-indigo-50 text-indigo-600'
+                                  isDark
+                                    ? 'bg-rose-500/15 text-rose-300'
+                                    : 'bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border border-[#0F172A]'
                                 }`}
                                 title="Nghe phát âm"
                               >
@@ -4272,10 +4591,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             {item.meaning}
                           </p>
 
-                          <div className={`pt-2 border-t flex items-center justify-between text-[10.5px] text-slate-400 ${
-                            isDark ? 'border-white/[0.06]' : 'border-slate-100'
+                          <div className={`pt-2 border-t flex items-center justify-between text-[10.5px] text-slate-500 ${
+                            isDark ? 'border-white/[0.06]' : 'border-[#0F172A]/15'
                           }`}>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.cls}`}>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${badge.cls}`}>
                               {badge.label}
                             </span>
                             <div className="flex items-center gap-1">
@@ -4285,7 +4604,9 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                                   e.stopPropagation();
                                   openEditWordModal(item);
                                 }}
-                                className="p-1 rounded-lg hover:bg-slate-100 hover:text-indigo-600 cursor-pointer"
+                                className={`p-1 rounded-lg cursor-pointer ${
+                                  isDark ? 'hover:bg-white/10 hover:text-sky-400' : 'hover:bg-[#FEF9C3] hover:text-[#0F172A]'
+                                }`}
                                 title="Sửa"
                               >
                                 <Edit3 className="w-3 h-3" />
@@ -4296,7 +4617,9 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                                   e.stopPropagation();
                                   handleDeleteWord(item.id);
                                 }}
-                                className="p-1 rounded-lg hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+                                className={`p-1 rounded-lg cursor-pointer ${
+                                  isDark ? 'hover:bg-rose-500/20 hover:text-rose-400' : 'hover:bg-[#FFE4E6] hover:text-[#E11D48]'
+                                }`}
                                 title="Xóa"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -4311,15 +4634,15 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   {/* Topic Popup Pagination */}
                   {totalPages > 1 && (
                     <div className="flex items-center justify-between gap-2 pt-2">
-                      <span className="text-xs text-slate-400">
-                        Trang <strong className={isDark ? 'text-white' : 'text-slate-800'}>{safePage}</strong> / {totalPages}
+                      <span className="text-xs font-semibold text-slate-500">
+                        Trang <strong className={isDark ? 'text-white' : 'text-[#0F172A]'}>{safePage}</strong> / {totalPages}
                       </span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           disabled={safePage <= 1}
                           onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                          className={`px-3 py-1.5 rounded-xl border text-xs font-bold cursor-pointer disabled:opacity-40 ${surfaceCls}`}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-black cursor-pointer disabled:opacity-40 ${surfaceCls}`}
                         >
                           ← Trước
                         </button>
@@ -4327,7 +4650,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                           type="button"
                           disabled={safePage >= totalPages}
                           onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                          className={`px-3 py-1.5 rounded-xl border text-xs font-bold cursor-pointer disabled:opacity-40 ${surfaceCls}`}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-black cursor-pointer disabled:opacity-40 ${surfaceCls}`}
                         >
                           Sau →
                         </button>
@@ -4355,47 +4678,45 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 soundEngine.playSoftClick();
                 setIsTutorOpen(true);
               }}
-              className="fixed bottom-20 md:bottom-4 right-4 z-[165] w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500 via-violet-500 to-pink-500 p-[2px] shadow-lg shadow-indigo-500/25 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+              className="fixed bottom-20 md:bottom-4 right-4 z-[165] w-12 h-12 rounded-2xl bg-[#FFF1F2] hover:bg-[#FFE4E6] border-2 border-[#0F172A] shadow-[4px_4px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#0F172A] active:scale-95 transition-all cursor-pointer flex items-center justify-center p-2"
               title="Mở Gia sư Tiếng Anh IELTS 8.0+"
               aria-label="Mở Gia sư Tiếng Anh IELTS 8.0+"
             >
-              <div className="w-full h-full rounded-full bg-white flex items-center justify-center p-2 relative">
-                <img src="/images/logo-mark.png" alt="Tutor" className="w-full h-full object-contain" />
-                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white" />
-              </div>
+              <img src="/images/logo-mark.png" alt="Tutor" className="w-full h-full object-contain" />
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#0F172A]" />
             </button>
           )}
 
           {/* Mini Friendly Chat Popup on Right Side */}
           {isTutorOpen && (
             <div
-              className={`fixed bottom-20 md:bottom-5 right-3 sm:right-6 z-[165] w-[calc(100vw-1.5rem)] sm:w-[390px] h-[510px] max-h-[76dvh] rounded-3xl border shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200 ${
+              className={`fixed bottom-20 md:bottom-5 right-3 sm:right-6 z-[165] w-[calc(100vw-1.5rem)] sm:w-[390px] h-[510px] max-h-[76dvh] rounded-3xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200 ${
                 isDark
-                  ? 'bg-[#12151E] border-white/15 text-white'
-                  : 'bg-white border-indigo-100 text-slate-900'
+                  ? 'bg-[#12151E] border border-white/15 shadow-2xl text-white'
+                  : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[6px_6px_0px_#0F172A] text-[#0F172A]'
               }`}
             >
               {/* Cute Header */}
               <div
-                className={`px-4 py-3 border-b flex items-center justify-between gap-2 shrink-0 ${
+                className={`px-4 py-3 flex items-center justify-between gap-2 shrink-0 ${
                   isDark
-                    ? 'bg-[#181C28] border-white/[0.08]'
-                    : 'bg-gradient-to-r from-indigo-50/80 via-white to-pink-50/80 border-indigo-100/70'
+                    ? 'bg-[#181C28] border-b border-white/[0.08]'
+                    : 'bg-[#FFF1F2] border-b-2 border-[#0F172A]'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="relative w-9 h-9 rounded-2xl bg-white border border-indigo-200/80 p-1.5 shadow-xs shrink-0">
+                  <div className="relative w-9 h-9 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] p-1.5 shrink-0">
                     <img src="/images/logo-mark.png" alt="Genncore Tutor" className="w-full h-full object-contain" />
-                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white" />
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0F172A]" />
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <h4 className="text-xs font-extrabold">Genncore English Tutor</h4>
-                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white">
+                      <h4 className="text-xs font-black">Genncore English Tutor</h4>
+                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]">
                         IELTS 8.0+
                       </span>
                     </div>
-                    <p className="text-[10px] text-slate-400">Hỏi ngữ pháp, từ vựng & luyện chat 1-1</p>
+                    <p className="text-[10px] text-slate-500 font-semibold">Hỏi ngữ pháp, từ vựng & luyện chat 1-1</p>
                   </div>
                 </div>
 
@@ -4406,8 +4727,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       soundEngine.playSoftClick();
                       setTutorMessages((prev) => prev.slice(0, 1));
                     }}
-                    className={`p-1.5 rounded-xl text-[10px] font-bold cursor-pointer ${
-                      isDark ? 'hover:bg-white/10 text-slate-400' : 'hover:bg-slate-100 text-slate-400'
+                    className={`p-1.5 text-[10px] font-black cursor-pointer ${
+                      isDark
+                        ? 'rounded-xl hover:bg-white/10 text-slate-400'
+                        : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FEF9C3] text-[#0F172A] rounded-xl'
                     }`}
                     title="Làm mới cuộc trò chuyện"
                   >
@@ -4416,8 +4739,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   <button
                     type="button"
                     onClick={() => setIsTutorOpen(false)}
-                    className={`p-1.5 rounded-xl cursor-pointer ${
-                      isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-500'
+                    className={`p-1.5 cursor-pointer ${
+                      isDark
+                        ? 'rounded-xl hover:bg-white/10 text-slate-300'
+                        : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FFE4E6] text-[#0F172A] rounded-xl'
                     }`}
                     title="Thu nhỏ"
                   >
@@ -4434,7 +4759,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start items-start gap-2'}`}
                   >
                     {msg.role === 'assistant' && (
-                      <div className="w-6 h-6 rounded-xl bg-white border border-indigo-200/80 p-1 shrink-0 mt-0.5 shadow-2xs">
+                      <div className="w-6 h-6 rounded-xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] p-1 shrink-0 mt-0.5">
                         <img src="/images/logo-mark.png" alt="" className="w-full h-full object-contain" />
                       </div>
                     )}
@@ -4444,10 +4769,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                         msg.role === 'user'
                           ? isDark
                             ? 'bg-[#1DB954] text-[#090A0F] font-semibold rounded-tr-sm'
-                            : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-tr-sm shadow-xs'
+                            : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-bold rounded-tr-sm'
                           : isDark
                           ? 'bg-[#181C28] border border-white/10 text-slate-200 rounded-tl-sm'
-                          : 'bg-slate-50 border border-slate-200/70 text-slate-700 rounded-tl-sm'
+                          : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A] rounded-tl-sm'
                       }`}
                     >
                       {msg.role === 'user' ? (
@@ -4458,17 +4783,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             <>
                               {msg.replyEn && (
                                 <div
-                                  className={`p-2.5 rounded-xl border flex items-start justify-between gap-2 ${
+                                  className={`p-2.5 rounded-xl flex items-start justify-between gap-2 ${
                                     isDark
-                                      ? 'bg-[#12151E] border-emerald-400/25 text-emerald-300'
-                                      : 'bg-white border-indigo-200/80 text-indigo-800 shadow-2xs'
+                                      ? 'bg-[#12151E] border border-emerald-400/25 text-emerald-300'
+                                      : 'bg-[#FFFDF7] border-2 border-[#0F172A] text-[#0F172A]'
                                   }`}
                                 >
                                   <p className="font-bold leading-relaxed">{msg.replyEn}</p>
                                   <button
                                     type="button"
                                     onClick={() => speakEnglishWord(msg.replyEn || '', false)}
-                                    className="p-1 rounded-lg hover:bg-indigo-100/70 text-indigo-500 shrink-0 cursor-pointer"
+                                    className="p-1 rounded-lg bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border border-[#0F172A] shrink-0 cursor-pointer"
                                     title="Nghe phát âm"
                                   >
                                     <Volume2 className="w-3.5 h-3.5" />
@@ -4482,14 +4807,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                               {msg.explanationVi && renderHighlightedTutorText(msg.explanationVi)}
                               {msg.replyEn && (
                                 <div
-                                  className={`p-2.5 rounded-xl border flex items-start justify-between gap-2 ${
+                                  className={`p-2.5 rounded-xl flex items-start justify-between gap-2 ${
                                     isDark
-                                      ? 'bg-[#12151E] border-white/10 text-emerald-300'
-                                      : 'bg-white border-indigo-100 text-indigo-700'
+                                      ? 'bg-[#12151E] border border-white/10 text-emerald-300'
+                                      : 'bg-[#FFFDF7] border-2 border-[#0F172A] text-[#0F172A]'
                                   }`}
                                 >
                                   <div className="space-y-0.5">
-                                    <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-slate-400 block">
+                                    <span className="text-[9.5px] font-black uppercase tracking-wider text-[#E11D48] block">
                                       Ví dụ minh họa
                                     </span>
                                     <p className="font-bold italic leading-relaxed">&ldquo;{msg.replyEn}&rdquo;</p>
@@ -4497,7 +4822,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                                   <button
                                     type="button"
                                     onClick={() => speakEnglishWord(msg.replyEn || '', false)}
-                                    className="p-1 rounded-lg hover:bg-indigo-100/70 text-indigo-500 shrink-0 cursor-pointer mt-1"
+                                    className="p-1 rounded-lg bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border border-[#0F172A] shrink-0 cursor-pointer mt-1"
                                     title="Nghe phát âm"
                                   >
                                     <Volume2 className="w-3.5 h-3.5" />
@@ -4509,23 +4834,25 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
                           {msg.bonusVocab && (
                             <div
-                              className={`p-2 rounded-xl border flex items-center justify-between gap-2 ${
-                                isDark ? 'bg-emerald-500/10 border-emerald-500/25' : 'bg-emerald-50/70 border-emerald-200'
+                              className={`p-2 rounded-xl flex items-center justify-between gap-2 ${
+                                isDark
+                                  ? 'bg-emerald-500/10 border border-emerald-500/25'
+                                  : 'bg-[#FEF9C3] border-2 border-[#0F172A] text-[#0F172A]'
                               }`}
                             >
                               <div className="min-w-0">
-                                <p className="font-extrabold text-[11px] truncate">
+                                <p className="font-black text-[11px] truncate">
                                   ✨ {msg.bonusVocab.word}{' '}
                                   {msg.bonusVocab.phonetic && (
                                     <span className="font-mono font-normal opacity-75">{msg.bonusVocab.phonetic}</span>
                                   )}
                                 </p>
-                                <p className="text-[10.5px] opacity-85 truncate">{msg.bonusVocab.meaning}</p>
+                                <p className="text-[10.5px] font-semibold opacity-90 truncate">{msg.bonusVocab.meaning}</p>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => handleSaveBonusVocabFromTutor(msg.bonusVocab!)}
-                                className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold shrink-0 cursor-pointer"
+                                className="px-2.5 py-1 rounded-lg bg-[#E11D48] hover:bg-[#BE123C] text-white border border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[10px] font-black shrink-0 cursor-pointer"
                               >
                                 + Lưu
                               </button>
@@ -4538,15 +4865,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 ))}
 
                 {isTutorTyping && (
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    <div className="w-6 h-6 rounded-xl bg-white border border-indigo-200/80 p-1">
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <div className="w-6 h-6 rounded-xl bg-white border-2 border-[#0F172A] p-1">
                       <img src="/images/logo-mark.png" alt="" className="w-full h-full object-contain" />
                     </div>
-                    <div className={`px-3 py-2 rounded-2xl border flex items-center gap-1.5 ${
-                      isDark ? 'bg-[#181C28] border-white/10' : 'bg-slate-50 border-slate-200/70'
+                    <div className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 ${
+                      isDark
+                        ? 'bg-[#181C28] border border-white/10'
+                        : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                     }`}>
-                      <Loader2 className="w-3 h-3 animate-spin text-indigo-500" />
-                      <span className="text-[11px]">Gia sư đang soạn câu trả lời...</span>
+                      <Loader2 className="w-3 h-3 animate-spin text-[#E11D48]" />
+                      <span className="text-[11px] font-semibold">Gia sư đang soạn câu trả lời...</span>
                     </div>
                   </div>
                 )}
@@ -4566,10 +4895,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     key={q}
                     type="button"
                     onClick={() => handleSendTutorMessage(q)}
-                    className={`px-2.5 py-1 rounded-full border text-[10.5px] font-semibold shrink-0 cursor-pointer transition-colors ${
+                    className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold shrink-0 cursor-pointer transition-colors ${
                       isDark
-                        ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                        : 'bg-indigo-50/60 border-indigo-100 text-indigo-700 hover:bg-indigo-100'
+                        ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
+                        : 'bg-[#FEF9C3] hover:bg-[#FDE047] border border-[#0F172A] text-[#0F172A]'
                     }`}
                   >
                     {q}
@@ -4583,8 +4912,8 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   e.preventDefault();
                   handleSendTutorMessage();
                 }}
-                className={`p-3 border-t flex items-center gap-2 shrink-0 ${
-                  isDark ? 'border-white/[0.08] bg-[#181C28]/60' : 'border-slate-100 bg-slate-50/70'
+                className={`p-3 flex items-center gap-2 shrink-0 ${
+                  isDark ? 'border-t border-white/[0.08] bg-[#181C28]/60' : 'border-t-2 border-[#0F172A] bg-[#FFF1F2]'
                 }`}
               >
                 <input
@@ -4592,10 +4921,10 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   value={tutorInput}
                   onChange={(e) => setTutorInput(e.target.value)}
                   placeholder="Hỏi ngữ pháp, từ vựng hoặc chat tiếng Anh..."
-                  className={`flex-1 px-3.5 py-2 rounded-xl border text-xs outline-none ${
+                  className={`flex-1 px-3.5 py-2 rounded-xl text-xs font-semibold outline-none ${
                     isDark
-                      ? 'bg-[#12151E] border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
-                      : 'bg-white border-slate-200 text-slate-800 focus:border-indigo-500'
+                      ? 'bg-[#12151E] border border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
+                      : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                   }`}
                 />
                 <button
@@ -4604,7 +4933,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   className={`p-2 rounded-xl cursor-pointer disabled:opacity-45 shrink-0 ${
                     isDark
                       ? 'bg-[#1DB954] text-[#090A0F] hover:brightness-110'
-                      : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                      : 'bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
                   }`}
                   title="Gửi"
                 >

@@ -224,30 +224,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-[24px] max-w-md w-full shadow-2xl border border-[#EEF2F8] overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[120] bg-black/55 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-[#FFFDF7] rounded-3xl max-w-md w-full shadow-[6px_6px_0px_#0F172A] border-2 border-[#0F172A] overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
         
         {/* Brand Header Banner */}
-        <div className="bg-gradient-to-r from-[#1E293B] via-[#0F172A] to-[#1E2433] p-5 text-white relative">
+        <div className="bg-[#E11D48] border-b-2 border-[#0F172A] p-5 text-white relative">
           <button
+            type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="absolute top-4 right-4 p-1.5 rounded-xl bg-white text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FEF9C3] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
 
-          <div className="space-y-1.5 pr-8">
+          <div className="space-y-1.5 pr-10">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <img
-                src="/images/logo-wordmark.png"
-                alt="Genncore"
-                className="block h-6 w-auto object-contain brightness-0 invert"
-              />
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+              <div className="px-2.5 py-1 rounded-xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]">
+                <img
+                  src="/images/logo-wordmark.png"
+                  alt="Genncore"
+                  className="block h-5 w-auto object-contain"
+                />
+              </div>
+              <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]">
                 Cloud Sync
               </span>
             </div>
-            <p className="text-[11px] text-slate-300">
+            <p className="text-[11px] text-[#FFE4E6] font-bold">
               {tab === 'forgot'
                 ? 'Khôi phục quyền truy cập tài khoản'
                 : tab === 'reset'
@@ -256,20 +259,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </p>
           </div>
 
-          {/* Tab Selector for Login / Register */}
+          {/* Crisp Cartoon Tab Selector for Login / Register */}
           {tab === 'login' || tab === 'register' ? (
-            <div className="flex items-center p-1 bg-white/10 rounded-xl mt-4 border border-white/10">
+            <div className="flex items-center gap-1.5 p-1.5 bg-white rounded-2xl mt-4 border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
               <button
+                type="button"
                 onClick={() => {
                   setTab('login');
                   setErrorMsg('');
                   setSuccessMsg('');
                   soundEngine.playSoftClick();
                 }}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                className={`flex-1 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   tab === 'login'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-300 hover:text-white'
+                    ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                    : 'text-[#0F172A] hover:bg-[#FEF9C3] font-bold border-2 border-transparent'
                 }`}
               >
                 <LogIn className="w-3.5 h-3.5" />
@@ -277,16 +281,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </button>
 
               <button
+                type="button"
                 onClick={() => {
                   setTab('register');
                   setErrorMsg('');
                   setSuccessMsg('');
                   soundEngine.playSoftClick();
                 }}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                className={`flex-1 py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   tab === 'register'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-300 hover:text-white'
+                    ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                    : 'text-[#0F172A] hover:bg-[#FEF9C3] font-bold border-2 border-transparent'
                 }`}
               >
                 <UserPlus className="w-3.5 h-3.5" />
@@ -294,8 +299,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </button>
             </div>
           ) : (
-            /* Navigation back button for Forgot / Reset */
-            <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/10">
+            /* Navigation back bar for Forgot / Reset */
+            <div className="flex items-center justify-between mt-4 p-2 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
               <button
                 type="button"
                 onClick={() => {
@@ -304,13 +309,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setSuccessMsg('');
                   soundEngine.playSoftClick();
                 }}
-                className="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 font-medium transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-xl bg-[#FFF1F2] hover:bg-[#FEF9C3] text-xs text-[#0F172A] border-2 border-[#0F172A] flex items-center gap-1.5 font-black transition-colors cursor-pointer"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
+                <ArrowLeft className="w-3.5 h-3.5 text-[#E11D48]" />
                 <span>{tab === 'reset' ? 'Nhập lại email' : 'Quay lại đăng nhập'}</span>
               </button>
-              <div className="flex items-center gap-1 text-[11px] text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-400/20">
-                <KeyRound className="w-3 h-3 text-blue-400" />
+              <div className="flex items-center gap-1 text-[11px] font-black text-[#0F172A] bg-[#FEF9C3] px-2.5 py-1 rounded-xl border-2 border-[#0F172A]">
+                <KeyRound className="w-3 h-3 text-[#E11D48]" />
                 <span>{tab === 'forgot' ? 'Bước 1/2' : 'Bước 2/2'}</span>
               </div>
             </div>
@@ -318,28 +323,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 bg-white">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 bg-[#FFFDF7]">
           
-          {/* Error / Success banners */}
+          {/* Error / Success Cartoon Alerts */}
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 animate-in fade-in">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+            <div className="p-3 rounded-2xl bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#BE123C] text-xs font-bold flex items-center gap-2 animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0 text-[#E11D48]" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2 animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
+            <div className="p-3 rounded-2xl bg-[#DCFCE7] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A] text-xs font-bold flex items-center gap-2 animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
               <span>{successMsg}</span>
             </div>
           )}
 
-          {/* TAB 1 & 2: REGISTER EXTRA FIELDS */}
+          {/* TAB REGISTER: NAME FIELD */}
           {tab === 'register' && (
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#475569] flex items-center gap-1.5">
-                <UserIcon className="w-3.5 h-3.5 text-[#3B82F6]" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-[#0F172A] flex items-center gap-1.5">
+                <UserIcon className="w-3.5 h-3.5 text-[#E11D48]" />
                 <span>Họ & Tên</span>
               </label>
               <input
@@ -348,16 +353,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="VD: Cao Bảo Phúc"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD5E1] text-xs font-medium text-[#1E2433] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                className="w-full px-3.5 py-2.5 bg-white border-2 border-[#0F172A] rounded-xl text-xs text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none transition-colors"
               />
             </div>
           )}
 
           {/* EMAIL FIELD (Used in Login, Register, Forgot) */}
           {tab !== 'reset' && (
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#475569] flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-[#3B82F6]" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-[#0F172A] flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-[#E11D48]" />
                 <span>Địa chỉ Email</span>
               </label>
               <input
@@ -365,18 +370,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="VD: user@atelier.io"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD5E1] text-xs font-medium text-[#1E2433] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                placeholder="VD: user@genncore.io"
+                className="w-full px-3.5 py-2.5 bg-white border-2 border-[#0F172A] rounded-xl text-xs text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none transition-colors"
               />
             </div>
           )}
 
           {/* PASSWORD FIELD (Only for Login & Register) */}
           {(tab === 'login' || tab === 'register') && (
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-[#475569] flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-[#3B82F6]" />
+                <label className="text-xs font-black text-[#0F172A] flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-[#E11D48]" />
                   <span>Mật khẩu</span>
                 </label>
                 <div className="flex items-center gap-3">
@@ -389,7 +394,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         setSuccessMsg('');
                         soundEngine.playSoftClick();
                       }}
-                      className="text-[11px] text-[#2563EB] hover:text-[#1D4ED8] hover:underline font-semibold transition-colors cursor-pointer"
+                      className="text-[11px] text-[#E11D48] hover:text-[#BE123C] hover:underline font-extrabold transition-colors cursor-pointer"
                     >
                       Quên mật khẩu?
                     </button>
@@ -397,7 +402,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-[11px] text-[#64748B] hover:text-[#2563EB] flex items-center gap-1"
+                    className="text-[11px] font-bold text-slate-600 hover:text-[#E11D48] flex items-center gap-1 cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                     <span>{showPassword ? 'Ẩn' : 'Hiện'}</span>
@@ -410,16 +415,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Tối thiểu 6 ký tự"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD5E1] text-xs font-medium text-[#1E2433] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                className="w-full px-3.5 py-2.5 bg-white border-2 border-[#0F172A] rounded-xl text-xs text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none transition-colors"
               />
             </div>
           )}
 
           {/* CONFIRM PASSWORD (Only on Register) */}
           {tab === 'register' && (
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#475569] flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#3B82F6]" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-[#0F172A] flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#E11D48]" />
                 <span>Xác nhận mật khẩu</span>
               </label>
               <input
@@ -428,16 +433,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Nhập lại mật khẩu ở trên"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD5E1] text-xs font-medium text-[#1E2433] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                className="w-full px-3.5 py-2.5 bg-white border-2 border-[#0F172A] rounded-xl text-xs text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none transition-colors"
               />
             </div>
           )}
 
           {/* TAB FORGOT: Description & Shortcut */}
           {tab === 'forgot' && (
-            <div className="space-y-2">
-              <p className="text-xs text-[#64748B] leading-relaxed">
-                Hệ thống sẽ gửi một mã xác nhận gồm <strong className="text-[#1E2433]">6 chữ số</strong> tới địa chỉ email trên để bạn thiết lập lại mật khẩu mới.
+            <div className="p-3.5 rounded-2xl bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2">
+              <p className="text-xs font-semibold text-[#0F172A] leading-relaxed">
+                Hệ thống sẽ gửi một mã xác nhận gồm <strong className="font-black text-[#E11D48]">6 chữ số</strong> tới địa chỉ email trên để bạn thiết lập lại mật khẩu mới.
               </p>
               <div className="flex items-center justify-between pt-1">
                 <button
@@ -447,9 +452,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     setErrorMsg('');
                     setSuccessMsg('');
                   }}
-                  className="text-[11px] text-[#2563EB] hover:underline font-medium flex items-center gap-1"
+                  className="text-[11px] text-[#E11D48] hover:underline font-black flex items-center gap-1 cursor-pointer"
                 >
-                  <KeyRound className="w-3 h-3 text-[#2563EB]" />
+                  <KeyRound className="w-3 h-3 text-[#E11D48]" />
                   <span>Đã có mã OTP? Nhập mã ngay</span>
                 </button>
               </div>
@@ -460,17 +465,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {tab === 'reset' && (
             <div className="space-y-3.5">
               {/* OTP Field */}
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-[#475569] flex items-center gap-1.5">
-                    <KeyRound className="w-3.5 h-3.5 text-[#3B82F6]" />
+                  <label className="text-xs font-black text-[#0F172A] flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-[#E11D48]" />
                     <span>Mã xác thực OTP (6 chữ số)</span>
                   </label>
                   <button
                     type="button"
                     disabled={resending}
                     onClick={handleResendOtp}
-                    className="text-[11px] text-[#2563EB] hover:underline font-medium flex items-center gap-1 disabled:opacity-50"
+                    className="text-[11px] text-[#E11D48] hover:underline font-black flex items-center gap-1 disabled:opacity-50 cursor-pointer"
                   >
                     <RotateCcw className={`w-3 h-3 ${resending ? 'animate-spin' : ''}`} />
                     <span>Gửi lại mã</span>
@@ -483,22 +488,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                   placeholder="------"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD5E1] text-base font-mono font-black text-center tracking-[0.4em] text-[#1E2433] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder:tracking-widest"
+                  className="w-full px-3.5 py-2.5 bg-white border-2 border-[#0F172A] rounded-xl text-base font-mono font-black text-center tracking-[0.4em] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none transition-colors placeholder:tracking-widest"
                 />
-                <p className="text-[10px] text-[#94A3B8] text-center">Mã có hiệu lực trong vòng 15 phút</p>
+                <p className="text-[10px] font-bold text-slate-500 text-center">Mã có hiệu lực trong vòng 15 phút</p>
               </div>
 
               {/* New Password */}
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-[#475569] flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-[#3B82F6]" />
+                  <label className="text-xs font-black text-[#0F172A] flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-[#E11D48]" />
                     <span>Mật khẩu mới</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="text-[11px] text-[#64748B] hover:text-[#2563EB] flex items-center gap-1"
+                    className="text-[11px] font-bold text-slate-600 hover:text-[#E11D48] flex items-center gap-1 cursor-pointer"
                   >
                     {showNewPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                     <span>{showNewPassword ? 'Ẩn' : 'Hiện'}</span>
@@ -510,14 +515,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Tối thiểu 6 ký tự"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD5E1] text-xs font-medium text-[#1E2433] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                  className="w-full px-3.5 py-2.5 bg-white border-2 border-[#0F172A] rounded-xl text-xs text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none transition-colors"
                 />
               </div>
 
               {/* Confirm New Password */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-[#475569] flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#3B82F6]" />
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-[#0F172A] flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#E11D48]" />
                   <span>Xác nhận mật khẩu mới</span>
                 </label>
                 <input
@@ -526,17 +531,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
                   placeholder="Nhập lại mật khẩu mới"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBD5E1] text-xs font-medium text-[#1E2433] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                  className="w-full px-3.5 py-2.5 bg-white border-2 border-[#0F172A] rounded-xl text-xs text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none transition-colors"
                 />
               </div>
             </div>
           )}
 
-          {/* Action Button */}
+          {/* Primary Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#4F46E5] hover:from-[#1D4ED8] hover:to-[#4338CA] text-white text-xs font-bold transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 mt-2"
+            className="w-full py-3 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 mt-2"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -562,47 +567,44 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </>
             )}
           </button>
+        </form>
 
-          {/* Fast Demo fill helper & Guest Mode (for login/register) */}
-          {(tab === 'login' || tab === 'register') && (
-            <div className="pt-2.5 border-t border-[#EEF2F8] flex items-center justify-between text-[11px] text-[#64748B]">
+        {/* Cartoon Modal Footer */}
+        <div className="px-6 py-3.5 bg-[#FFF1F2] border-t-2 border-[#0F172A] flex items-center justify-between gap-2">
+          {(tab === 'login' || tab === 'register') ? (
+            <>
               <button
                 type="button"
                 onClick={handleGuestLogin}
-                className="text-[#E11D48] hover:text-[#BE123C] font-bold flex items-center gap-1 hover:underline cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#FEF9C3] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[11px] font-black flex items-center gap-1.5 transition-all cursor-pointer"
                 title="Vào nhanh không gian làm việc mà không cần máy chủ backend"
               >
-                <Sparkles className="w-3 h-3 text-[#E11D48]" />
-                <span>Trải nghiệm Khách (Offline Demo)</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#E11D48]" />
+                <span>Trải nghiệm Khách (Demo)</span>
               </button>
               <button
                 type="button"
                 onClick={handleQuickDemo}
-                className="text-[#2563EB] hover:text-[#1D4ED8] font-bold flex items-center gap-1 hover:underline cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[11px] font-black transition-all cursor-pointer"
               >
-                <span>Điền mẫu</span>
+                Điền mẫu
               </button>
-            </div>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setTab('login');
+                setErrorMsg('');
+                setSuccessMsg('');
+                soundEngine.playSoftClick();
+              }}
+              className="w-full py-1.5 rounded-xl bg-white hover:bg-[#FEF9C3] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[11px] font-black transition-all cursor-pointer text-center"
+            >
+              Nhớ ra mật khẩu rồi? Đăng nhập ngay
+            </button>
           )}
-
-          {/* Return to Login link when in forgot/reset */}
-          {(tab === 'forgot' || tab === 'reset') && (
-            <div className="pt-2 border-t border-[#EEF2F8] text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setTab('login');
-                  setErrorMsg('');
-                  setSuccessMsg('');
-                  soundEngine.playSoftClick();
-                }}
-                className="text-[11px] text-[#64748B] hover:text-[#2563EB] font-medium hover:underline cursor-pointer"
-              >
-                Nhớ ra mật khẩu rồi? Đăng nhập ngay
-              </button>
-            </div>
-          )}
-        </form>
+        </div>
       </div>
     </div>
   );

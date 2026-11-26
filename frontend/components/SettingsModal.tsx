@@ -6,7 +6,6 @@ import {
   Settings,
   Volume2,
   VolumeX,
-  Sparkles,
   Calendar,
   Clock,
   Download,
@@ -32,7 +31,6 @@ import {
 import {
   AppSettings,
   THEME_OPTIONS,
-  CustomThemeConfig,
   DEFAULT_CUSTOM_THEME,
   VOCAB_VOICE_OPTIONS,
 } from '../lib/settingsStorage';
@@ -42,7 +40,6 @@ import { soundEngine } from '../lib/audio';
 import { authService, AuthUser } from '../lib/authService';
 import { PRESET_BACKGROUNDS } from '../lib/profileStorage';
 import { notify } from '../lib/notificationService';
-
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -193,25 +190,41 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     }
   };
 
+  const navItems: Array<{
+    id: 'theme' | 'wallpaper' | 'email' | 'audio' | 'calendar' | 'data' | 'help' | 'account';
+    label: string;
+    icon: React.FC<{ className?: string }>;
+  }> = [
+    { id: 'theme', label: 'Giao Diện & Theme', icon: Palette },
+    { id: 'wallpaper', label: 'Hình Nền Không Gian', icon: ImageIcon },
+    { id: 'email', label: 'Thư Bưu Thiếp', icon: Mail },
+    { id: 'audio', label: 'Âm Thanh & Hiệu Ứng', icon: Volume2 },
+    { id: 'calendar', label: 'Lịch Biểu & Giờ', icon: Calendar },
+    { id: 'data', label: 'Sao Lưu & Dữ Liệu', icon: Database },
+    { id: 'help', label: 'Phím Tắt & Trợ Giúp', icon: HelpCircle },
+    { id: 'account', label: 'Tài Khoản & Bảo Mật', icon: ShieldCheck },
+  ];
+
   return (
-    <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in duration-150">
-      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[88vh] shadow-2xl flex flex-col overflow-hidden border border-[#EEF2F8] animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-[110] bg-black/55 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in duration-150">
+      <div className="bg-[#FFFDF7] rounded-3xl max-w-2xl w-full max-h-[88vh] shadow-[6px_6px_0px_#0F172A] flex flex-col overflow-hidden border-2 border-[#0F172A] animate-in zoom-in-95 duration-150">
         
         {/* Header */}
-        <div className="px-5 py-4 shrink-0 flex items-center justify-between border-b border-[#EEF2F8] bg-[#FAFBFD]">
+        <div className="px-5 py-4 shrink-0 flex items-center justify-between border-b-2 border-[#0F172A] bg-[#FFF1F2]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#2563EB] to-[#7C3AED] text-white flex items-center justify-center shadow-md">
+            <div className="w-8 h-8 rounded-xl bg-[#E11D48] border-2 border-[#0F172A] text-white flex items-center justify-center shadow-[2px_2px_0px_#0F172A]">
               <Settings className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-extrabold text-sm text-[#1E2433]">Cài Đặt Hệ Thống</h3>
-              <p className="text-[10px] text-[#8F9CAE]">Trung tâm điều khiển & Tùy biến Gencoore</p>
+              <h3 className="font-black text-sm text-[#0F172A]">Cài Đặt Hệ Thống</h3>
+              <p className="text-[10px] text-slate-600 font-bold">Trung tâm điều khiển & Tùy biến Genncore</p>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-xl bg-white text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FEF9C3] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -220,127 +233,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Modal Main Layout: Left Tabs + Right Content */}
         <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
           
-          {/* Tab Sidebar Navigation */}
-          <div className="w-full sm:w-48 bg-[#FAFBFD] border-b sm:border-b-0 sm:border-r border-[#EEF2F8] p-2.5 space-y-1 shrink-0 flex sm:flex-col overflow-x-auto sm:overflow-visible">
-            <button
-              onClick={() => {
-                setActiveTab('theme');
-                soundEngine.playSoftClick();
-              }}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
-                activeTab === 'theme'
-                  ? 'bg-white text-[#2563EB] shadow-xs border border-[#EEF2F8]'
-                  : 'text-[#64748B] hover:bg-slate-100/60 hover:text-[#1E2433]'
-              }`}
-            >
-              <Palette className="w-3.5 h-3.5 shrink-0 text-[#2563EB]" />
-              <span>Giao Diện & Theme</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('wallpaper');
-                soundEngine.playSoftClick();
-              }}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
-                activeTab === 'wallpaper'
-                  ? 'bg-white text-[#2563EB] shadow-xs border border-[#EEF2F8]'
-                  : 'text-[#64748B] hover:bg-slate-100/60 hover:text-[#1E2433]'
-              }`}
-            >
-              <ImageIcon className="w-3.5 h-3.5 shrink-0 text-[#7C3AED]" />
-              <span>Hình Nền Không Gian</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('email');
-                soundEngine.playSoftClick();
-              }}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
-                activeTab === 'email'
-                  ? 'bg-white text-[#2563EB] shadow-xs border border-[#EEF2F8]'
-                  : 'text-[#64748B] hover:bg-slate-100/60 hover:text-[#1E2433]'
-              }`}
-            >
-              <Mail className="w-3.5 h-3.5 shrink-0 text-[#0284C7]" />
-              <span>Thư Bưu Thiếp</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('audio');
-                soundEngine.playSoftClick();
-              }}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
-                activeTab === 'audio'
-                  ? 'bg-white text-[#2563EB] shadow-xs border border-[#EEF2F8]'
-                  : 'text-[#64748B] hover:bg-slate-100/60 hover:text-[#1E2433]'
-              }`}
-            >
-              <Volume2 className="w-3.5 h-3.5 shrink-0" />
-              <span>Âm Thanh & Hiệu Ứng</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('calendar');
-                soundEngine.playSoftClick();
-              }}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
-                activeTab === 'calendar'
-                  ? 'bg-white text-[#2563EB] shadow-xs border border-[#EEF2F8]'
-                  : 'text-[#64748B] hover:bg-slate-100/60 hover:text-[#1E2433]'
-              }`}
-            >
-              <Calendar className="w-3.5 h-3.5 shrink-0" />
-              <span>Lịch Biểu & Giờ</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('data');
-                soundEngine.playSoftClick();
-              }}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
-                activeTab === 'data'
-                  ? 'bg-white text-[#2563EB] shadow-xs border border-[#EEF2F8]'
-                  : 'text-[#64748B] hover:bg-slate-100/60 hover:text-[#1E2433]'
-              }`}
-            >
-              <Database className="w-3.5 h-3.5 shrink-0" />
-              <span>Sao Lưu & Dữ Liệu</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('help');
-                soundEngine.playSoftClick();
-              }}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
-                activeTab === 'help'
-                  ? 'bg-white text-[#2563EB] shadow-xs border border-[#EEF2F8]'
-                  : 'text-[#64748B] hover:bg-slate-100/60 hover:text-[#1E2433]'
-              }`}
-            >
-              <HelpCircle className="w-3.5 h-3.5 shrink-0 text-[#10B981]" />
-              <span>Phím Tắt & Trợ Giúp</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setActiveTab('account');
-                soundEngine.playSoftClick();
-              }}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left ${
-                activeTab === 'account'
-                  ? 'bg-white text-[#2563EB] shadow-xs border border-[#EEF2F8]'
-                  : 'text-[#64748B] hover:bg-slate-100/60 hover:text-[#1E2433]'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-              <span>Tài Khoản & Bảo Mật</span>
-            </button>
+          {/* Cartoon Tab Sidebar Navigation */}
+          <div className="w-full sm:w-52 bg-[#FFF1F2]/65 border-b-2 sm:border-b-0 sm:border-r-2 border-[#0F172A] p-2.5 gap-1.5 shrink-0 flex sm:flex-col overflow-x-auto sm:overflow-visible">
+            {navItems.map((item) => {
+              const IconComp = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  type="button"
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    soundEngine.playSoftClick();
+                  }}
+                  className={`w-full shrink-0 sm:shrink flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all text-left cursor-pointer whitespace-nowrap sm:whitespace-normal ${
+                    isActive
+                      ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                      : 'text-[#0F172A] hover:bg-[#FFE4E6]/70 font-bold border-2 border-transparent'
+                  }`}
+                >
+                  <IconComp className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-[#E11D48]'}`} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Tab Content Panel */}
@@ -350,8 +266,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {activeTab === 'theme' && (
               <div className="space-y-4 animate-in fade-in duration-150">
                 <div>
-                  <h4 className="text-xs font-bold text-[#1E2433]">Bảng Màu & Giao Diện Hệ Thống (Theme)</h4>
-                  <p className="text-[11px] text-[#8F9CAE]">
+                  <h4 className="text-xs font-black text-[#0F172A]">Bảng Màu & Giao Diện Hệ Thống (Theme)</h4>
+                  <p className="text-[11px] font-semibold text-slate-600">
                     Tùy chọn tông màu chủ đạo, phân tách màu giữa Sidebar và Canvas chính giúp bảo vệ mắt
                   </p>
                 </div>
@@ -376,57 +292,55 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           onUpdateSettings({ ...settings, theme: opt.id });
                           soundEngine.playPentatonicChime(4);
                         }}
-                        className={`p-3 rounded-2xl border-2 cursor-pointer transition-all relative overflow-hidden group flex flex-col justify-between ${
+                        className={`p-3.5 rounded-2xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] cursor-pointer transition-all relative overflow-hidden group flex flex-col justify-between ${
                           isSelected
-                            ? 'border-[#2563EB] bg-[#EFF6FF]/40 shadow-xs ring-1 ring-blue-300'
-                            : 'border-[#EEF2F8] bg-white hover:border-slate-300 hover:bg-[#FAFBFD]'
+                            ? 'bg-[#FFF1F2] ring-2 ring-[#E11D48]'
+                            : 'bg-white hover:bg-[#FEF9C3]/45'
                         }`}
                       >
                         <div>
                           <div className="flex items-center justify-between mb-1.5">
                             <div className="flex items-center gap-2">
-                              <div className="flex items-center rounded-lg overflow-hidden border border-black/10 shadow-2xs">
+                              <div className="flex items-center rounded-lg overflow-hidden border-2 border-[#0F172A]">
                                 <span className="w-3.5 h-3.5 block" style={{ backgroundColor: swatches[0] }} title="Màu Sidebar" />
                                 <span className="w-4 h-3.5 block" style={{ backgroundColor: swatches[1] }} title="Màu Canvas" />
                                 <span className="w-3.5 h-3.5 block" style={{ backgroundColor: swatches[2] }} title="Màu Nhấn" />
                               </div>
-                              <span className="text-xs font-black text-[#1E2433]">{opt.name}</span>
+                              <span className="text-xs font-black text-[#0F172A]">{opt.name}</span>
                             </div>
 
                             {isSelected && (
-                              <div className="w-4 h-4 rounded-full bg-[#2563EB] text-white flex items-center justify-center">
-                                <Check className="w-2.5 h-2.5" />
+                              <div className="w-5 h-5 rounded-full bg-[#E11D48] border-2 border-[#0F172A] text-white flex items-center justify-center">
+                                <Check className="w-3 h-3" />
                               </div>
                             )}
                           </div>
 
-                          <p className="text-[10px] text-[#64748B] leading-relaxed">
+                          <p className="text-[10px] font-semibold text-slate-600 leading-relaxed">
                             {opt.subtitle}
                           </p>
                         </div>
 
                         {/* Interactive miniature preview bar */}
-                        <div className="mt-3 pt-2 border-t border-black/5 flex items-center gap-1.5 text-[8px] font-semibold">
+                        <div className="mt-3 pt-2 border-t-2 border-[#0F172A]/10 flex items-center gap-1.5 text-[8px] font-bold">
                           <div
-                            className="w-12 h-5 rounded flex items-center justify-center font-bold border"
+                            className="w-12 h-5 rounded-md flex items-center justify-center font-black border border-[#0F172A]"
                             style={{
                               backgroundColor: swatches[0],
-                              borderColor: swatches[0] === '#0E131F' || swatches[0] === '#1E1B4B' ? '#2A3448' : '#CBD5E1',
-                              color: swatches[0] === '#0E131F' || swatches[0] === '#1E1B4B' ? '#CBD5E1' : '#475569',
+                              color: swatches[0] === '#0E131F' || swatches[0] === '#1E1B4B' ? '#F8FAFC' : '#0F172A',
                             }}
                           >
                             Sidebar
                           </div>
                           <div
-                            className="flex-1 h-5 rounded flex items-center justify-between px-2 border"
+                            className="flex-1 h-5 rounded-md flex items-center justify-between px-2 border border-[#0F172A]"
                             style={{
                               backgroundColor: swatches[1],
-                              borderColor: '#E2E8F0',
-                              color: '#64748B',
+                              color: '#334155',
                             }}
                           >
                             <span>Canvas</span>
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: swatches[2] }} />
+                            <span className="w-2.5 h-2.5 rounded-full border border-[#0F172A]" style={{ backgroundColor: swatches[2] }} />
                           </div>
                         </div>
                       </div>
@@ -436,15 +350,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 {/* Custom Color Editor when 'custom' is active */}
                 {settings.theme === 'custom' && (
-                  <div className="p-4 rounded-2xl bg-[#F8FAFD] border-2 border-dashed border-[#2563EB]/40 space-y-4 animate-in fade-in duration-200">
-                    <div className="flex items-center justify-between">
+                  <div className="p-4 rounded-2xl bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-4 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-[#2563EB] text-white flex items-center justify-center font-black text-xs">
+                        <div className="w-7 h-7 rounded-xl bg-[#E11D48] border-2 border-[#0F172A] text-white flex items-center justify-center font-black text-xs shadow-[2px_2px_0px_#0F172A]">
                           🎨
                         </div>
                         <div>
-                          <h5 className="text-xs font-bold text-[#1E2433]">Studio Tự Phối Màu (Custom Palette)</h5>
-                          <p className="text-[10px] text-[#64748B]">Bấm vào ô màu để chọn hoặc chọn nhanh các mẫu gợi ý</p>
+                          <h5 className="text-xs font-black text-[#0F172A]">Studio Tự Phối Màu (Custom Palette)</h5>
+                          <p className="text-[10px] font-bold text-slate-700">Bấm vào ô màu để chọn hoặc chọn nhanh các mẫu gợi ý</p>
                         </div>
                       </div>
 
@@ -458,7 +372,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           });
                           soundEngine.playSoftClick();
                         }}
-                        className="text-[10px] font-bold text-[#2563EB] hover:underline"
+                        className="px-2.5 py-1 rounded-xl bg-white hover:bg-[#FFF1F2] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[10px] font-black cursor-pointer"
                       >
                         Đặt lại mặc định
                       </button>
@@ -466,7 +380,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     {/* Quick Presets for Custom Theme */}
                     <div>
-                      <span className="text-[10px] font-bold text-[#475569] block mb-1.5">
+                      <span className="text-[10px] font-black text-[#0F172A] block mb-1.5">
                         Bộ phối màu gợi ý nhanh:
                       </span>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -491,14 +405,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                               });
                               soundEngine.playPentatonicChime(4);
                             }}
-                            className="p-2 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#2563EB] transition-all text-left flex items-center gap-2 group shadow-2xs"
+                            className="p-2 rounded-xl bg-white hover:bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] transition-all text-left flex items-center gap-2 group cursor-pointer"
                           >
-                            <div className="flex rounded overflow-hidden border border-black/10 shrink-0">
+                            <div className="flex rounded overflow-hidden border border-[#0F172A] shrink-0">
                               <span className="w-2.5 h-5 block" style={{ backgroundColor: combo.sidebar }} />
                               <span className="w-2.5 h-5 block" style={{ backgroundColor: combo.canvas }} />
                               <span className="w-2.5 h-5 block" style={{ backgroundColor: combo.accent }} />
                             </div>
-                            <span className="text-[10px] font-bold text-[#1E2433] group-hover:text-[#2563EB] truncate">
+                            <span className="text-[10px] font-black text-[#0F172A] group-hover:text-[#E11D48] truncate">
                               {combo.name}
                             </span>
                           </button>
@@ -509,8 +423,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {/* 3 Main Color Pickers */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                       {/* 1. Sidebar Background Color */}
-                      <div className="p-3 rounded-xl bg-white border border-[#E2E8F0] space-y-2">
-                        <label className="text-[11px] font-bold text-[#1E2433] block">
+                      <div className="p-3 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] space-y-2">
+                        <label className="text-[11px] font-black text-[#0F172A] block">
                           Màu Nền Sidebar:
                         </label>
                         <div className="flex items-center gap-2">
@@ -526,13 +440,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 },
                               });
                             }}
-                            className="w-8 h-8 rounded-lg border border-slate-300 cursor-pointer p-0.5"
+                            className="w-8 h-8 rounded-xl border-2 border-[#0F172A] cursor-pointer p-0.5 bg-white"
                           />
-                          <span className="text-xs font-mono font-bold text-[#475569] uppercase">
+                          <span className="text-xs font-mono font-black text-[#0F172A] uppercase">
                             {settings.customTheme?.sidebarBg || DEFAULT_CUSTOM_THEME.sidebarBg}
                           </span>
                         </div>
-                        {/* Swatches */}
                         <div className="flex items-center gap-1.5 pt-1">
                           {['#1E1B4B', '#0F172A', '#064E3B', '#382218', '#F3E8FF', '#EDE4D5'].map((c) => (
                             <button
@@ -547,7 +460,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                   },
                                 });
                               }}
-                              className="w-4 h-4 rounded-full border border-black/10 hover:scale-125 transition-transform"
+                              className="w-4 h-4 rounded-full border border-[#0F172A] hover:scale-125 transition-transform cursor-pointer"
                               style={{ backgroundColor: c }}
                             />
                           ))}
@@ -555,8 +468,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       </div>
 
                       {/* 2. Canvas Background Color */}
-                      <div className="p-3 rounded-xl bg-white border border-[#E2E8F0] space-y-2">
-                        <label className="text-[11px] font-bold text-[#1E2433] block">
+                      <div className="p-3 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] space-y-2">
+                        <label className="text-[11px] font-black text-[#0F172A] block">
                           Màu Nền Workspace:
                         </label>
                         <div className="flex items-center gap-2">
@@ -572,13 +485,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 },
                               });
                             }}
-                            className="w-8 h-8 rounded-lg border border-slate-300 cursor-pointer p-0.5"
+                            className="w-8 h-8 rounded-xl border-2 border-[#0F172A] cursor-pointer p-0.5 bg-white"
                           />
-                          <span className="text-xs font-mono font-bold text-[#475569] uppercase">
+                          <span className="text-xs font-mono font-black text-[#0F172A] uppercase">
                             {settings.customTheme?.canvasBg || DEFAULT_CUSTOM_THEME.canvasBg}
                           </span>
                         </div>
-                        {/* Swatches */}
                         <div className="flex items-center gap-1.5 pt-1">
                           {['#F5F3FF', '#F0F9FF', '#FAF7F2', '#F8FAFC', '#141A24', '#0F172A'].map((c) => (
                             <button
@@ -593,7 +505,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                   },
                                 });
                               }}
-                              className="w-4 h-4 rounded-full border border-black/10 hover:scale-125 transition-transform"
+                              className="w-4 h-4 rounded-full border border-[#0F172A] hover:scale-125 transition-transform cursor-pointer"
                               style={{ backgroundColor: c }}
                             />
                           ))}
@@ -601,8 +513,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       </div>
 
                       {/* 3. Accent / Brand Color */}
-                      <div className="p-3 rounded-xl bg-white border border-[#E2E8F0] space-y-2">
-                        <label className="text-[11px] font-bold text-[#1E2433] block">
+                      <div className="p-3 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] space-y-2">
+                        <label className="text-[11px] font-black text-[#0F172A] block">
                           Màu Nút Bấm (Accent):
                         </label>
                         <div className="flex items-center gap-2">
@@ -618,15 +530,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 },
                               });
                             }}
-                            className="w-8 h-8 rounded-lg border border-slate-300 cursor-pointer p-0.5"
+                            className="w-8 h-8 rounded-xl border-2 border-[#0F172A] cursor-pointer p-0.5 bg-white"
                           />
-                          <span className="text-xs font-mono font-bold text-[#475569] uppercase">
+                          <span className="text-xs font-mono font-black text-[#0F172A] uppercase">
                             {settings.customTheme?.accentColor || DEFAULT_CUSTOM_THEME.accentColor}
                           </span>
                         </div>
-                        {/* Swatches */}
                         <div className="flex items-center gap-1.5 pt-1">
-                          {['#7C3AED', '#2563EB', '#10B981', '#E11D48', '#F59E0B', '#EC4899'].map((c) => (
+                          {['#E11D48', '#7C3AED', '#2563EB', '#10B981', '#F59E0B', '#EC4899'].map((c) => (
                             <button
                               key={c}
                               type="button"
@@ -639,7 +550,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                   },
                                 });
                               }}
-                              className="w-4 h-4 rounded-full border border-black/10 hover:scale-125 transition-transform"
+                              className="w-4 h-4 rounded-full border border-[#0F172A] hover:scale-125 transition-transform cursor-pointer"
                               style={{ backgroundColor: c }}
                             />
                           ))}
@@ -648,12 +559,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
 
                     {/* Dark / Light Sidebar Text Contrast Toggle */}
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                    <div className="flex items-center justify-between gap-3 pt-2 border-t-2 border-[#0F172A]/20">
                       <div>
-                        <span className="text-xs font-bold text-[#1E2433] block">Chữ Sidebar Màu Sáng (Dark Text Contrast)</span>
-                        <span className="text-[10px] text-[#8F9CAE]">Bật nếu bạn dùng nền Sidebar tối; tắt nếu bạn dùng nền sáng pastel</span>
+                        <span className="text-xs font-black text-[#0F172A] block">Chữ Sidebar Màu Sáng (Dark Text Contrast)</span>
+                        <span className="text-[10px] font-bold text-slate-700">Bật nếu bạn dùng nền Sidebar tối; tắt nếu bạn dùng nền sáng pastel</span>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input
                           type="checkbox"
                           checked={settings.customTheme?.isDark ?? true}
@@ -668,23 +579,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           }}
                           className="sr-only peer"
                         />
-                        <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#2563EB]" />
+                        <div className="w-11 h-6 bg-white border-2 border-[#0F172A] rounded-full peer peer-checked:bg-[#E11D48] after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#0F172A] peer-checked:after:bg-white after:border-2 after:border-[#0F172A] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
                       </label>
                     </div>
                   </div>
                 )}
 
                 {/* Sidebar Compact Mode Switch */}
-                <div className="p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] space-y-2">
-                  <div className="flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2">
+                  <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs font-bold text-[#1E2433]">Chế Độ Thu Gọn Thanh Bên (Compact Sidebar)</p>
-                      <p className="text-[10px] text-[#8F9CAE]">
+                      <p className="text-xs font-black text-[#0F172A]">Chế Độ Thu Gọn Thanh Bên (Compact Sidebar)</p>
+                      <p className="text-[10px] font-semibold text-slate-600">
                         Tự động thu nhỏ thanh bên thành icon (hoặc bấm biểu tượng 3 sọc trên đầu sidebar)
                       </p>
                     </div>
 
-                    <label className="relative inline-flex items-center cursor-pointer">
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
                       <input
                         type="checkbox"
                         checked={Boolean(settings.sidebarCollapsed)}
@@ -694,34 +605,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         }}
                         className="sr-only peer"
                       />
-                      <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#2563EB]" />
+                      <div className="w-11 h-6 bg-white border-2 border-[#0F172A] rounded-full peer peer-checked:bg-[#E11D48] after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#0F172A] peer-checked:after:bg-white after:border-2 after:border-[#0F172A] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
                     </label>
                   </div>
                 </div>
               </div>
             )}
             
-            {/* TAB 1: ÂM THANH & HIỆU ỨNG */}
+            {/* TAB: ÂM THANH & HIỆU ỨNG */}
             {activeTab === 'audio' && (
               <div className="space-y-4 animate-in fade-in duration-150">
                 <div>
-                  <h4 className="text-xs font-bold text-[#1E2433]">Tùy Biến Âm Thanh & Phản Hồi Tương Tác</h4>
-                  <p className="text-[11px] text-[#8F9CAE]">Điều chỉnh âm lượng và hiệu ứng chúc mừng khi hoàn thành công việc</p>
+                  <h4 className="text-xs font-black text-[#0F172A]">Tùy Biến Âm Thanh & Phản Hồi Tương Tác</h4>
+                  <p className="text-[11px] font-semibold text-slate-600">Điều chỉnh âm lượng và hiệu ứng chúc mừng khi hoàn thành công việc</p>
                 </div>
 
                 {/* Sound master toggle */}
-                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8]">
+                <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-blue-100 text-[#2563EB] flex items-center justify-center">
-                      {settings.soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
+                    <div className="w-9 h-9 rounded-xl bg-[#FFE4E6] border-2 border-[#0F172A] text-[#E11D48] flex items-center justify-center shrink-0">
+                      {settings.soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#1E2433]">Bật Hiệu Ứng Âm Thanh</p>
-                      <p className="text-[10px] text-[#8F9CAE]">Chuông ngũ âm khi xong việc & âm click nút</p>
+                      <p className="text-xs font-black text-[#0F172A]">Bật Hiệu Ứng Âm Thanh</p>
+                      <p className="text-[10px] font-semibold text-slate-600">Chuông ngũ âm khi xong việc & âm click nút</p>
                     </div>
                   </div>
 
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
                     <input
                       type="checkbox"
                       checked={settings.soundEnabled}
@@ -732,18 +643,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       }}
                       className="sr-only peer"
                     />
-                    <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#2563EB]" />
+                    <div className="w-11 h-6 bg-white border-2 border-[#0F172A] rounded-full peer peer-checked:bg-[#E11D48] after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#0F172A] peer-checked:after:bg-white after:border-2 after:border-[#0F172A] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
                   </label>
                 </div>
 
                 {/* Volume slider */}
-                <div className="p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] space-y-2">
-                  <div className="flex items-center justify-between text-xs font-bold text-[#475569]">
+                <div className="p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-black text-[#0F172A]">
                     <span className="flex items-center gap-1.5">
-                      <Sliders className="w-3.5 h-3.5 text-[#3B82F6]" />
+                      <Sliders className="w-3.5 h-3.5 text-[#E11D48]" />
                       <span>Âm Lượng Hệ Thống</span>
                     </span>
-                    <span className="text-[#2563EB]">{settings.soundVolume}%</span>
+                    <span className="text-[#E11D48]">{settings.soundVolume}%</span>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -759,12 +670,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         onUpdateSettings(updated);
                         soundEngine.setMasterVolume(val);
                       }}
-                      className="w-full accent-[#2563EB] disabled:opacity-40"
+                      className="w-full accent-[#E11D48] cursor-pointer disabled:opacity-40"
                     />
                     <button
+                      type="button"
                       onClick={handleTestSound}
                       disabled={!settings.soundEnabled}
-                      className="px-2.5 py-1 rounded-lg bg-white border border-[#CBD5E1] text-[#2563EB] hover:bg-blue-50 text-[11px] font-bold shrink-0 transition-colors shadow-2xs disabled:opacity-40"
+                      className="px-3 py-1.5 rounded-xl bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[11px] font-black shrink-0 transition-all cursor-pointer disabled:opacity-40"
                     >
                       Thử âm
                     </button>
@@ -772,18 +684,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Confetti celebration toggle */}
-                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8]">
+                <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
-                      <PartyPopper className="w-4 h-4" />
+                    <div className="w-9 h-9 rounded-xl bg-[#FEF9C3] border-2 border-[#0F172A] text-[#0F172A] flex items-center justify-center shrink-0">
+                      <PartyPopper className="w-4 h-4 text-[#E11D48]" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#1E2433]">Hiệu Ứng Pháo Hoa (Confetti)</p>
-                      <p className="text-[10px] text-[#8F9CAE]">Bắn pháo hoa rực rỡ khi ấn "Chốt xong" một nhiệm vụ</p>
+                      <p className="text-xs font-black text-[#0F172A]">Hiệu Ứng Pháo Hoa (Confetti)</p>
+                      <p className="text-[10px] font-semibold text-slate-600">Bắn pháo hoa rực rỡ khi ấn &ldquo;Chốt xong&rdquo; một nhiệm vụ</p>
                     </div>
                   </div>
 
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
                     <input
                       type="checkbox"
                       checked={settings.confettiEnabled}
@@ -793,16 +705,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       }}
                       className="sr-only peer"
                     />
-                    <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#2563EB]" />
+                    <div className="w-11 h-6 bg-white border-2 border-[#0F172A] rounded-full peer peer-checked:bg-[#E11D48] after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#0F172A] peer-checked:after:bg-white after:border-2 after:border-[#0F172A] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
                   </label>
                 </div>
 
                 {/* English Vocabulary Neural Voice Selection */}
-                <div className="p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] space-y-3">
+                <div className="p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-3">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div>
-                      <p className="text-xs font-bold text-[#1E2433]">Giọng Đọc Từ Vựng Tiếng Anh (Neural TTS)</p>
-                      <p className="text-[10px] text-[#8F9CAE]">
+                      <p className="text-xs font-black text-[#0F172A]">Giọng Đọc Từ Vựng Tiếng Anh (Neural TTS)</p>
+                      <p className="text-[10px] font-semibold text-slate-600">
                         Chọn giọng Mỹ, Anh (UK), Úc, Canada từ Edge Neural Voices để luyện nghe phát âm chuẩn
                       </p>
                     </div>
@@ -815,9 +727,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           settings.vocabVoice || 'en-US-AriaNeural'
                         )
                       }
-                      className="px-2.5 py-1.5 rounded-lg bg-white border border-[#CBD5E1] text-[#2563EB] hover:bg-blue-50 text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer shrink-0 shadow-2xs"
+                      className="px-3 py-1.5 rounded-xl bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[11px] font-black inline-flex items-center gap-1.5 cursor-pointer shrink-0 transition-all"
                     >
-                      <Volume2 className="w-3.5 h-3.5" />
+                      <Volume2 className="w-3.5 h-3.5 text-[#E11D48]" />
                       <span>Nghe thử giọng này</span>
                     </button>
                   </div>
@@ -829,7 +741,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onUpdateSettings({ ...settings, vocabVoice: nextVoice });
                       speakEnglishWord('Hello, welcome to Genncore vocabulary studio.', false, nextVoice);
                     }}
-                    className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] bg-white text-xs font-bold text-[#1E2433] outline-none focus:border-[#2563EB] cursor-pointer"
+                    className="w-full px-3 py-2 bg-white border-2 border-[#0F172A] rounded-xl text-xs text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none cursor-pointer"
                   >
                     {VOCAB_VOICE_OPTIONS.map((v) => (
                       <option key={v.id} value={v.id}>
@@ -840,9 +752,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                   {/* Speech Rate Slider */}
                   <div className="space-y-1 pt-1">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-[#475569]">
+                    <div className="flex items-center justify-between text-[11px] font-black text-[#0F172A]">
                       <span>Tốc độ đọc tiếng Anh</span>
-                      <span className="text-[#2563EB]">{(settings.vocabSpeechRate || 1).toFixed(2)}x</span>
+                      <span className="text-[#E11D48]">{(settings.vocabSpeechRate || 1).toFixed(2)}x</span>
                     </div>
                     <input
                       type="range"
@@ -854,48 +766,48 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         const rate = parseFloat(e.target.value);
                         onUpdateSettings({ ...settings, vocabSpeechRate: rate });
                       }}
-                      className="w-full accent-[#2563EB]"
+                      className="w-full accent-[#E11D48] cursor-pointer"
                     />
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 2: LỊCH BIỂU & THỜI GIAN */}
+            {/* TAB: LỊCH BIỂU & THỜI GIAN */}
             {activeTab === 'calendar' && (
               <div className="space-y-4 animate-in fade-in duration-150">
                 <div>
-                  <h4 className="text-xs font-bold text-[#1E2433]">Tùy Chỉnh Lưới Lịch Biểu & Định Dạng</h4>
-                  <p className="text-[11px] text-[#8F9CAE]">Cá nhân hóa cách hiển thị ngày giờ và các tuần làm việc</p>
+                  <h4 className="text-xs font-black text-[#0F172A]">Tùy Chỉnh Lưới Lịch Biểu & Định Dạng</h4>
+                  <p className="text-[11px] font-semibold text-slate-600">Cá nhân hóa cách hiển thị ngày giờ và các tuần làm việc</p>
                 </div>
 
                 {/* Time format selector */}
-                <div className="p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-bold text-[#1E2433]">Định Dạng Hiển Thị Giờ</p>
-                      <p className="text-[10px] text-[#8F9CAE]">Chọn kiểu 24 giờ (17:30) hoặc 12 giờ (05:30 PM)</p>
-                    </div>
+                <div className="p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2.5">
+                  <div>
+                    <p className="text-xs font-black text-[#0F172A]">Định Dạng Hiển Thị Giờ</p>
+                    <p className="text-[10px] font-semibold text-slate-600">Chọn kiểu 24 giờ (17:30) hoặc 12 giờ (05:30 PM)</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
+                      type="button"
                       onClick={() => onUpdateSettings({ ...settings, timeFormat: '24h' })}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      className={`py-2 px-3 rounded-xl text-xs transition-all cursor-pointer ${
                         settings.timeFormat === '24h'
-                          ? 'bg-[#2563EB] text-white border-[#2563EB] shadow-xs'
-                          : 'bg-white text-[#475569] border-[#CBD5E1] hover:bg-slate-50'
+                          ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                          : 'bg-white hover:bg-[#FFF1F2] text-[#0F172A] border-2 border-[#0F172A] font-bold'
                       }`}
                     >
                       24 Giờ (VD: 17:35)
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => onUpdateSettings({ ...settings, timeFormat: '12h' })}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      className={`py-2 px-3 rounded-xl text-xs transition-all cursor-pointer ${
                         settings.timeFormat === '12h'
-                          ? 'bg-[#2563EB] text-white border-[#2563EB] shadow-xs'
-                          : 'bg-white text-[#475569] border-[#CBD5E1] hover:bg-slate-50'
+                          ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                          : 'bg-white hover:bg-[#FFF1F2] text-[#0F172A] border-2 border-[#0F172A] font-bold'
                       }`}
                     >
                       12 Giờ (VD: 05:35 PM)
@@ -904,30 +816,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Week starts on */}
-                <div className="p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] space-y-2">
+                <div className="p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2.5">
                   <div>
-                    <p className="text-xs font-bold text-[#1E2433]">Ngày Bắt Đầu Tuần</p>
-                    <p className="text-[10px] text-[#8F9CAE]">Thứ tự ngày đầu tuần trên lưới thời gian biểu</p>
+                    <p className="text-xs font-black text-[#0F172A]">Ngày Bắt Đầu Tuần</p>
+                    <p className="text-[10px] font-semibold text-slate-600">Thứ tự ngày đầu tuần trên lưới thời gian biểu</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
+                      type="button"
                       onClick={() => onUpdateSettings({ ...settings, weekStartsOn: 1 })}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      className={`py-2 px-3 rounded-xl text-xs transition-all cursor-pointer ${
                         settings.weekStartsOn === 1
-                          ? 'bg-[#2563EB] text-white border-[#2563EB] shadow-xs'
-                          : 'bg-white text-[#475569] border-[#CBD5E1] hover:bg-slate-50'
+                          ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                          : 'bg-white hover:bg-[#FFF1F2] text-[#0F172A] border-2 border-[#0F172A] font-bold'
                       }`}
                     >
                       Thứ Hai (Mặc định VN)
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => onUpdateSettings({ ...settings, weekStartsOn: 0 })}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      className={`py-2 px-3 rounded-xl text-xs transition-all cursor-pointer ${
                         settings.weekStartsOn === 0
-                          ? 'bg-[#2563EB] text-white border-[#2563EB] shadow-xs'
-                          : 'bg-white text-[#475569] border-[#CBD5E1] hover:bg-slate-50'
+                          ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                          : 'bg-white hover:bg-[#FFF1F2] text-[#0F172A] border-2 border-[#0F172A] font-bold'
                       }`}
                     >
                       Chủ Nhật (US Standard)
@@ -936,60 +850,61 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Auto scroll to current time */}
-                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8]">
+                <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-indigo-100 text-[#4F46E5] flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-xl bg-[#FEF9C3] border-2 border-[#0F172A] text-[#E11D48] flex items-center justify-center shrink-0">
                       <Clock className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#1E2433]">Tự Động Canh Đến Giờ Hiện Tại</p>
-                      <p className="text-[10px] text-[#8F9CAE]">Lưới lịch biểu tự động cuộn đến thanh giờ thực tế</p>
+                      <p className="text-xs font-black text-[#0F172A]">Tự Động Canh Đến Giờ Hiện Tại</p>
+                      <p className="text-[10px] font-semibold text-slate-600">Lưới lịch biểu tự động cuộn đến thanh giờ thực tế</p>
                     </div>
                   </div>
 
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
                     <input
                       type="checkbox"
                       checked={settings.autoScrollToNow}
                       onChange={(e) => onUpdateSettings({ ...settings, autoScrollToNow: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#2563EB]" />
+                    <div className="w-11 h-6 bg-white border-2 border-[#0F172A] rounded-full peer peer-checked:bg-[#E11D48] after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#0F172A] peer-checked:after:bg-white after:border-2 after:border-[#0F172A] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
                   </label>
                 </div>
               </div>
             )}
 
-            {/* TAB 3: SAO LƯU & DỮ LIỆU */}
+            {/* TAB: SAO LƯU & DỮ LIỆU */}
             {activeTab === 'data' && (
               <div className="space-y-4 animate-in fade-in duration-150">
                 <div>
-                  <h4 className="text-xs font-bold text-[#1E2433]">Quản Lý Dữ Liệu & Sao Lưu An Toàn</h4>
-                  <p className="text-[11px] text-[#8F9CAE]">Xuất tệp dự phòng hoặc khôi phục công việc bất cứ lúc nào</p>
+                  <h4 className="text-xs font-black text-[#0F172A]">Quản Lý Dữ Liệu & Sao Lưu An Toàn</h4>
+                  <p className="text-[11px] font-semibold text-slate-600">Xuất tệp dự phòng hoặc khôi phục công việc bất cứ lúc nào</p>
                 </div>
 
                 {importMsg && (
-                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+                  <div className="p-3 rounded-2xl bg-[#DCFCE7] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A] text-xs font-bold flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
                     <span>{importMsg}</span>
                   </div>
                 )}
 
                 {/* Export Card */}
-                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8]">
+                <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-blue-100 text-[#2563EB] flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-xl bg-[#FFE4E6] border-2 border-[#0F172A] text-[#E11D48] flex items-center justify-center shrink-0">
                       <Download className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#1E2433]">Xuất Bản Sao Lưu (JSON)</p>
-                      <p className="text-[10px] text-[#8F9CAE]">Tải toàn bộ {tasks.length} công việc về máy tính</p>
+                      <p className="text-xs font-black text-[#0F172A]">Xuất Bản Sao Lưu (JSON)</p>
+                      <p className="text-[10px] font-semibold text-slate-600">Tải toàn bộ {tasks.length} công việc về máy tính</p>
                     </div>
                   </div>
 
                   <button
+                    type="button"
                     onClick={handleExportData}
-                    className="px-3.5 py-1.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
+                    className="px-3.5 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Tải về</span>
@@ -997,19 +912,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Import Card */}
-                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8]">
+                <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-xl bg-[#DCFCE7] border-2 border-[#0F172A] text-emerald-700 flex items-center justify-center shrink-0">
                       <Upload className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#1E2433]">Nhập Dữ Liệu Từ File</p>
-                      <p className="text-[10px] text-[#8F9CAE]">Khôi phục dữ liệu từ tệp sao lưu .json đã lưu</p>
+                      <p className="text-xs font-black text-[#0F172A]">Nhập Dữ Liệu Từ File</p>
+                      <p className="text-[10px] font-semibold text-slate-600">Khôi phục dữ liệu từ tệp sao lưu .json đã lưu</p>
                     </div>
                   </div>
 
-                  <label className="px-3.5 py-1.5 rounded-xl bg-white border border-[#CBD5E1] hover:bg-slate-50 text-[#1E2433] text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer">
-                    {importLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 text-emerald-600" />}
+                  <label className="px-3.5 py-2 rounded-xl bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-xs font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer">
+                    {importLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[#E11D48]" /> : <Upload className="w-3.5 h-3.5 text-[#E11D48]" />}
                     <span>{importLoading ? 'Đang nạp...' : 'Chọn file'}</span>
                     <input
                       type="file"
@@ -1021,18 +936,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Reset Seed Card */}
-                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-rose-50/50 border border-rose-100">
+                <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-xl bg-white border-2 border-[#0F172A] text-[#E11D48] flex items-center justify-center shrink-0">
                       <RefreshCw className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-rose-900">Khôi Phục Dữ Liệu Mẫu Ban Đầu</p>
-                      <p className="text-[10px] text-rose-600">Đặt lại danh sách công việc và lịch biểu mẫu chuẩn ban đầu</p>
+                      <p className="text-xs font-black text-[#0F172A]">Khôi Phục Dữ Liệu Mẫu Ban Đầu</p>
+                      <p className="text-[10px] font-semibold text-slate-700">Đặt lại danh sách công việc và lịch biểu mẫu chuẩn ban đầu</p>
                     </div>
                   </div>
 
                   <button
+                    type="button"
                     onClick={async () => {
                       const confirmed = await notify.confirm(
                         'Bạn có chắc chắn muốn đặt lại bộ dữ liệu mẫu ban đầu? Các công việc tự tạo có thể bị thay thế.',
@@ -1044,7 +960,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         await notify.success('Đã khôi phục bộ dữ liệu chuẩn khởi tạo thành công!');
                       }
                     }}
-                    className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black transition-all shrink-0 cursor-pointer"
                   >
                     Reset mẫu
                   </button>
@@ -1052,42 +968,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             )}
 
-            {/* TAB 4: TÀI KHOẢN & BẢO MẬT */}
+            {/* TAB: TÀI KHOẢN & BẢO MẬT */}
             {activeTab === 'account' && (
               <div className="space-y-4 animate-in fade-in duration-150">
                 <div>
-                  <h4 className="text-xs font-bold text-[#1E2433]">Thông Tin Tài Khoản & Bảo Mật Mật Khẩu</h4>
-                  <p className="text-[11px] text-[#8F9CAE]">Quản lý phiên đăng nhập và bảo mật tài khoản cá nhân</p>
+                  <h4 className="text-xs font-black text-[#0F172A]">Thông Tin Tài Khoản & Bảo Mật Mật Khẩu</h4>
+                  <p className="text-[11px] font-semibold text-slate-600">Quản lý phiên đăng nhập và bảo mật tài khoản cá nhân</p>
                 </div>
 
                 {/* Cloud Connection Status */}
-                <div className="p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#475569] flex items-center gap-1.5">
-                      <Database className="w-3.5 h-3.5 text-emerald-500" />
+                <div className="p-3.5 rounded-2xl bg-[#DCFCE7] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="text-xs font-black text-[#0F172A] flex items-center gap-1.5">
+                      <Database className="w-3.5 h-3.5 text-emerald-700" />
                       <span>Trạng Thái Lưu Trữ Đám Mây</span>
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="px-2.5 py-0.5 rounded-full bg-white border-2 border-[#0F172A] text-[#0F172A] text-[10px] font-black flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
                       <span>Đã Kết Nối Đám Mây ☁️</span>
                     </span>
                   </div>
 
                   {authUser ? (
-                    <div className="pt-2 border-t border-[#E2E8F0] text-xs space-y-1">
-                      <p className="text-[#1E2433] font-bold">Tài khoản: <span className="text-[#2563EB]">{authUser.name}</span></p>
-                      <p className="text-[#64748B]">Email: {authUser.email}</p>
-                      <p className="text-[11px] text-emerald-600 font-semibold">● Phiên đăng nhập được bảo mật và mã hóa an toàn</p>
+                    <div className="pt-2 border-t-2 border-[#0F172A]/15 text-xs space-y-1">
+                      <p className="text-[#0F172A] font-black">Tài khoản: <span className="text-[#E11D48]">{authUser.name}</span></p>
+                      <p className="font-semibold text-slate-700">Email: {authUser.email}</p>
+                      <p className="text-[11px] text-emerald-800 font-extrabold">● Phiên đăng nhập được bảo mật và mã hóa an toàn</p>
                     </div>
                   ) : (
-                    <div className="pt-2 border-t border-[#E2E8F0] flex items-center justify-between">
-                      <span className="text-xs text-[#64748B]">Chưa đăng nhập (Khách)</span>
+                    <div className="pt-2 border-t-2 border-[#0F172A]/15 flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-slate-700">Chưa đăng nhập (Khách)</span>
                       <button
+                        type="button"
                         onClick={() => {
                           onClose();
                           onOpenAuth?.();
                         }}
-                        className="px-3 py-1 rounded-lg bg-[#2563EB] text-white text-xs font-bold hover:bg-[#1D4ED8]"
+                        className="px-3.5 py-1.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-xs font-black cursor-pointer"
                       >
                         Đăng nhập ngay
                       </button>
@@ -1097,63 +1014,63 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 {/* Change Password Form (only when logged in) */}
                 {authUser ? (
-                  <form onSubmit={handleChangePassword} className="p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] space-y-3">
-                    <p className="text-xs font-bold text-[#1E2433] flex items-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5 text-[#2563EB]" />
+                  <form onSubmit={handleChangePassword} className="p-4 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-3">
+                    <p className="text-xs font-black text-[#0F172A] flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-[#E11D48]" />
                       <span>Đổi Mật Khẩu Tài Khoản</span>
                     </p>
 
                     {pwMsg && (
                       <div
-                        className={`p-2.5 rounded-xl text-xs flex items-center gap-2 ${
+                        className={`p-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border-2 border-[#0F172A] ${
                           pwMsg.type === 'success'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : 'bg-rose-50 text-rose-700 border border-rose-200'
+                            ? 'bg-[#DCFCE7] text-[#0F172A]'
+                            : 'bg-[#FFF1F2] text-[#BE123C]'
                         }`}
                       >
                         {pwMsg.type === 'success' ? (
-                          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-700" />
                         ) : (
-                          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                          <AlertCircle className="w-4 h-4 shrink-0 text-[#E11D48]" />
                         )}
                         <span>{pwMsg.text}</span>
                       </div>
                     )}
 
                     <div className="space-y-1">
-                      <label className="text-[11px] font-bold text-[#64748B]">Mật khẩu hiện tại</label>
+                      <label className="text-[11px] font-black text-[#0F172A]">Mật khẩu hiện tại</label>
                       <input
                         type="password"
                         required
                         value={oldPassword}
                         onChange={(e) => setOldPassword(e.target.value)}
                         placeholder="Nhập mật khẩu hiện tại"
-                        className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] text-xs font-medium text-[#1E2433] focus:border-[#2563EB] outline-none bg-white"
+                        className="w-full px-3 py-2 bg-white border-2 border-[#0F172A] rounded-xl text-xs text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none"
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-[#64748B]">Mật khẩu mới</label>
+                        <label className="text-[11px] font-black text-[#0F172A]">Mật khẩu mới</label>
                         <input
                           type="password"
                           required
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="Tối thiểu 6 ký tự"
-                          className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] text-xs font-medium text-[#1E2433] focus:border-[#2563EB] outline-none bg-white"
+                          className="w-full px-3 py-2 bg-white border-2 border-[#0F172A] rounded-xl text-xs text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none"
                         />
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-[#64748B]">Xác nhận lại</label>
+                        <label className="text-[11px] font-black text-[#0F172A]">Xác nhận lại</label>
                         <input
                           type="password"
                           required
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="Nhập lại mật khẩu mới"
-                          className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] text-xs font-medium text-[#1E2433] focus:border-[#2563EB] outline-none bg-white"
+                          className="w-full px-3 py-2 bg-white border-2 border-[#0F172A] rounded-xl text-xs text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -1161,16 +1078,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <button
                       type="submit"
                       disabled={pwLoading}
-                      className="w-full py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+                      className="w-full py-2.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
                     >
                       {pwLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Lock className="w-3.5 h-3.5" />}
                       <span>Lưu Mật Khẩu Mới</span>
                     </button>
                   </form>
                 ) : (
-                  <p className="text-[11px] text-[#64748B] italic">
-                    💡 Hãy đăng nhập tài khoản của bạn để sử dụng tính năng bảo mật và đổi mật khẩu trên đám mây.
-                  </p>
+                  <div className="p-3 rounded-2xl bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]">
+                    <p className="text-[11px] font-bold text-[#0F172A]">
+                      💡 Hãy đăng nhập tài khoản của bạn để sử dụng tính năng bảo mật và đổi mật khẩu trên đám mây.
+                    </p>
+                  </div>
                 )}
               </div>
             )}
@@ -1178,34 +1097,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {/* TAB: HÌNH NỀN KHÔNG GIAN (WALLPAPER) */}
             {activeTab === 'wallpaper' && (
               <div className="space-y-4 animate-in fade-in duration-150">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div>
-                    <h4 className="text-xs font-bold text-[#1E2433]">Hình Nền Không Gian (Ambient Canvas)</h4>
-                    <p className="text-[11px] text-[#8F9CAE]">
+                    <h4 className="text-xs font-black text-[#0F172A]">Hình Nền Không Gian (Ambient Canvas)</h4>
+                    <p className="text-[11px] font-semibold text-slate-600">
                       Tạo cảm hứng làm việc với ảnh nền phong cảnh, trừu tượng hoặc ảnh tùy chỉnh
                     </p>
                   </div>
                   {onOpenBackgroundModal && (
                     <button
+                      type="button"
                       onClick={() => {
                         onClose();
                         onOpenBackgroundModal();
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-violet-50 text-violet-700 hover:bg-violet-100 text-xs font-bold transition-all flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-xl bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer"
                     >
-                      <ExternalLink className="w-3.5 h-3.5" />
+                      <ExternalLink className="w-3.5 h-3.5 text-[#E11D48]" />
                       <span>Trình Tải & Cắt Ảnh</span>
                     </button>
                   )}
                 </div>
 
                 {/* Live Toggle */}
-                <div className="p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] flex items-center justify-between gap-3">
                   <div>
-                    <span className="text-xs font-bold text-[#1E2433] block">Kích hoạt hình nền ứng dụng</span>
-                    <span className="text-[11px] text-[#64748B]">Hiển thị ảnh nền phía sau bảng việc & thời khóa biểu</span>
+                    <span className="text-xs font-black text-[#0F172A] block">Kích hoạt hình nền ứng dụng</span>
+                    <span className="text-[11px] font-semibold text-slate-600">Hiển thị ảnh nền phía sau bảng việc & thời khóa biểu</span>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
                     <input
                       type="checkbox"
                       checked={userProfile?.applyAppBackground ?? false}
@@ -1220,13 +1140,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       }}
                       className="sr-only peer"
                     />
-                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#2563EB]"></div>
+                    <div className="w-11 h-6 bg-white border-2 border-[#0F172A] rounded-full peer peer-checked:bg-[#E11D48] after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#0F172A] peer-checked:after:bg-white after:border-2 after:border-[#0F172A] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
                   </label>
                 </div>
 
                 {/* Preset Gallery */}
-                <div className="space-y-2">
-                  <span className="text-xs font-bold text-[#1E2433] block">Bộ sưu tập hình nền tuyển chọn</span>
+                <div className="p-4 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2.5">
+                  <span className="text-xs font-black text-[#0F172A] block">Bộ sưu tập hình nền tuyển chọn</span>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                     {PRESET_BACKGROUNDS.map((item) => {
                       const isSelected = userProfile?.background === item.url;
@@ -1242,10 +1162,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             });
                             soundEngine.playPentatonicChime(4);
                           }}
-                          className={`relative h-20 rounded-xl overflow-hidden cursor-pointer border-2 transition-all group ${
+                          className={`relative h-20 rounded-xl overflow-hidden cursor-pointer border-2 border-[#0F172A] transition-all group ${
                             isSelected
-                              ? 'border-[#2563EB] ring-2 ring-blue-400 shadow-md'
-                              : 'border-slate-200 hover:border-slate-400'
+                              ? 'ring-2 ring-[#E11D48] shadow-[3px_3px_0px_#0F172A]'
+                              : 'hover:shadow-[2px_2px_0px_#0F172A]'
                           }`}
                         >
                           <img
@@ -1254,12 +1174,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-2">
-                            <span className="text-white text-[10px] font-bold truncate drop-shadow-xs">
+                            <span className="text-white text-[10px] font-black truncate drop-shadow-xs">
                               {item.label}
                             </span>
                           </div>
                           {isSelected && (
-                            <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#2563EB] text-white flex items-center justify-center">
+                            <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#E11D48] border border-[#0F172A] text-white flex items-center justify-center">
                               <Check className="w-2.5 h-2.5" />
                             </div>
                           )}
@@ -1270,11 +1190,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Blur & Opacity Sliders */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-[#64748B]">
+                    <div className="flex items-center justify-between text-[11px] font-black text-[#0F172A]">
                       <span>Độ mờ hậu cảnh (Blur)</span>
-                      <span>{userProfile?.backgroundBlur ?? 10}px</span>
+                      <span className="text-[#E11D48]">{userProfile?.backgroundBlur ?? 10}px</span>
                     </div>
                     <input
                       type="range"
@@ -1289,14 +1209,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           backgroundOpacity: userProfile?.backgroundOpacity ?? 0.65,
                         });
                       }}
-                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
+                      className="w-full cursor-pointer accent-[#E11D48]"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-[#64748B]">
+                    <div className="flex items-center justify-between text-[11px] font-black text-[#0F172A]">
                       <span>Độ đậm hình nền (Opacity)</span>
-                      <span>{Math.round((userProfile?.backgroundOpacity ?? 0.65) * 100)}%</span>
+                      <span className="text-[#E11D48]">{Math.round((userProfile?.backgroundOpacity ?? 0.65) * 100)}%</span>
                     </div>
                     <input
                       type="range"
@@ -1312,7 +1232,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           backgroundOpacity: Number(e.target.value),
                         });
                       }}
-                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
+                      className="w-full cursor-pointer accent-[#E11D48]"
                     />
                   </div>
                 </div>
@@ -1320,6 +1240,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 {/* Reset background */}
                 {userProfile?.applyAppBackground && (
                   <button
+                    type="button"
                     onClick={() => {
                       onUpdateBackground?.({
                         background: '',
@@ -1327,7 +1248,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       });
                       soundEngine.playSoftClick();
                     }}
-                    className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline cursor-pointer"
+                    className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#FFF1F2] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-xs font-black cursor-pointer"
                   >
                     Gỡ hình nền (trở về màu theme mặc định)
                   </button>
@@ -1339,59 +1260,61 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {activeTab === 'email' && (
               <div className="space-y-4 animate-in fade-in duration-150">
                 <div>
-                  <h4 className="text-xs font-bold text-[#1E2433]">Thư Bưu Thiếp & Báo Cáo Năng Suất (Postcard)</h4>
-                  <p className="text-[11px] text-[#8F9CAE]">
+                  <h4 className="text-xs font-black text-[#0F172A]">Thư Bưu Thiếp & Báo Cáo Năng Suất (Postcard)</h4>
+                  <p className="text-[11px] font-semibold text-slate-600">
                     Xuất bản báo cáo thành quả công việc trong tuần dưới dạng tấm bưu thiếp nghệ thuật gửi về hộp thư cá nhân
                   </p>
                 </div>
 
                 {/* Feature 1: Automated Schedule Reminder & Google Calendar */}
-                <div className="p-4 rounded-2xl bg-gradient-to-tr from-blue-50 via-slate-50 to-indigo-50 border border-blue-200 flex flex-col items-center text-center space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white shadow-md text-[#2563EB] flex items-center justify-center">
+                <div className="p-4 rounded-2xl bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] flex flex-col items-center text-center space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#E11D48] flex items-center justify-center">
                     <Bell className="w-6 h-6" />
                   </div>
                   <div>
-                    <h5 className="text-sm font-extrabold text-[#1E2433]">Tự Động Nhắc Lịch & Đồng Bộ Google Calendar</h5>
-                    <p className="text-xs text-[#64748B] max-w-md mt-1">
+                    <h5 className="text-sm font-black text-[#0F172A]">Tự Động Nhắc Lịch & Đồng Bộ Google Calendar</h5>
+                    <p className="text-xs font-semibold text-slate-700 max-w-md mt-1">
                       Tự động gửi email điểm danh ca việc mỗi sáng 07:00, cảnh báo trước 30 phút, và kết nối với Google Calendar qua chuẩn file .ics.
                     </p>
                   </div>
 
                   {onOpenScheduleReminder && (
                     <button
+                      type="button"
                       onClick={() => {
                         onClose();
                         onOpenScheduleReminder();
                       }}
-                      className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold shadow-md shadow-blue-500/20 flex items-center gap-2 transition-all cursor-pointer"
+                      className="px-4 py-2.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black flex items-center gap-2 transition-all cursor-pointer"
                     >
-                      <Bell className="w-3.5 h-3.5" />
+                      <Bell className="w-3.5 h-3.5 text-[#FDE047]" />
                       <span>Cấu Hình Tự Động Nhắc Lịch & Calendar</span>
                     </button>
                   )}
                 </div>
 
                 {/* Feature 2: Postcard */}
-                <div className="p-4 rounded-2xl bg-gradient-to-tr from-sky-50 via-indigo-50 to-purple-50 border border-sky-100 flex flex-col items-center text-center space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white shadow-md text-sky-600 flex items-center justify-center">
+                <div className="p-4 rounded-2xl bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] flex flex-col items-center text-center space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#E11D48] flex items-center justify-center">
                     <Mail className="w-6 h-6" />
                   </div>
                   <div>
-                    <h5 className="text-sm font-extrabold text-[#1E2433]">Bưu Thiếp Tổng Kết Thành Quả</h5>
-                    <p className="text-xs text-[#64748B] max-w-md mt-1">
+                    <h5 className="text-sm font-black text-[#0F172A]">Bưu Thiếp Tổng Kết Thành Quả</h5>
+                    <p className="text-xs font-semibold text-slate-700 max-w-md mt-1">
                       Tổng hợp số giờ tập trung, tỷ lệ hoàn thành checklist và danh sách các mục tiêu trọng tâm đã chinh phục.
                     </p>
                   </div>
 
                   {onOpenEmailModal && (
                     <button
+                      type="button"
                       onClick={() => {
                         onClose();
                         onOpenEmailModal();
                       }}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-sky-500/20 flex items-center gap-2 transition-all cursor-pointer"
+                      className="px-4 py-2.5 rounded-xl bg-white hover:bg-[#FFF1F2] text-[#0F172A] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black flex items-center gap-2 transition-all cursor-pointer"
                     >
-                      <Mail className="w-3.5 h-3.5" />
+                      <Mail className="w-3.5 h-3.5 text-[#E11D48]" />
                       <span>Mở Trình Soạn & Gửi Bưu Thiếp</span>
                     </button>
                   )}
@@ -1403,56 +1326,57 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {activeTab === 'help' && (
               <div className="space-y-4 animate-in fade-in duration-150">
                 <div>
-                  <h4 className="text-xs font-bold text-[#1E2433]">Phím Tắt & Hướng Dẫn Nhanh</h4>
-                  <p className="text-[11px] text-[#8F9CAE]">
-                    Tăng tốc thao tác làm việc chuyên nghiệp với Gencoore
+                  <h4 className="text-xs font-black text-[#0F172A]">Phím Tắt & Hướng Dẫn Nhanh</h4>
+                  <p className="text-[11px] font-semibold text-slate-600">
+                    Tăng tốc thao tác làm việc chuyên nghiệp với Genncore
                   </p>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] space-y-2.5">
-                  <p className="text-xs font-bold text-[#1E2433] flex items-center gap-1.5">
-                    <Keyboard className="w-3.5 h-3.5 text-[#2563EB]" />
+                <div className="p-4 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2.5">
+                  <p className="text-xs font-black text-[#0F172A] flex items-center gap-1.5">
+                    <Keyboard className="w-4 h-4 text-[#E11D48]" />
                     <span>Tổ hợp phím tắt nhanh</span>
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#EEF2F8]">
-                      <span className="text-[#64748B]">Bàn Làm Việc & Thời Khóa Biểu</span>
-                      <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px] font-mono font-bold border border-slate-300">Alt + 1</kbd>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FFFDF7] border-2 border-[#0F172A]">
+                      <span className="font-bold text-[#0F172A]">Bàn Làm Việc & Thời Khóa Biểu</span>
+                      <kbd className="px-2 py-0.5 rounded-lg bg-[#FEF9C3] text-[#0F172A] text-[10px] font-mono font-black border-2 border-[#0F172A]">Alt + 1</kbd>
                     </div>
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#EEF2F8]">
-                      <span className="text-[#64748B]">Nhật Ký & Mục Tiêu (Journal)</span>
-                      <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px] font-mono font-bold border border-slate-300">Alt + 2</kbd>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FFFDF7] border-2 border-[#0F172A]">
+                      <span className="font-bold text-[#0F172A]">Nhật Ký & Mục Tiêu (Journal)</span>
+                      <kbd className="px-2 py-0.5 rounded-lg bg-[#FEF9C3] text-[#0F172A] text-[10px] font-mono font-black border-2 border-[#0F172A]">Alt + 2</kbd>
                     </div>
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#EEF2F8]">
-                      <span className="text-[#64748B]">Đồng Hồ Tập Trung Pomodoro</span>
-                      <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px] font-mono font-bold border border-slate-300">Alt + P</kbd>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FFFDF7] border-2 border-[#0F172A]">
+                      <span className="font-bold text-[#0F172A]">Đồng Hồ Tập Trung Pomodoro</span>
+                      <kbd className="px-2 py-0.5 rounded-lg bg-[#FEF9C3] text-[#0F172A] text-[10px] font-mono font-black border-2 border-[#0F172A]">Alt + P</kbd>
                     </div>
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#EEF2F8]">
-                      <span className="text-[#64748B]">Sổ Ghi Chú Nhanh (Scratchpad)</span>
-                      <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px] font-mono font-bold border border-slate-300">Alt + N</kbd>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FFFDF7] border-2 border-[#0F172A]">
+                      <span className="font-bold text-[#0F172A]">Sổ Ghi Chú Nhanh (Scratchpad)</span>
+                      <kbd className="px-2 py-0.5 rounded-lg bg-[#FEF9C3] text-[#0F172A] text-[10px] font-mono font-black border-2 border-[#0F172A]">Alt + N</kbd>
                     </div>
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#EEF2F8]">
-                      <span className="text-[#64748B]">Theo Dõi Thói Quen Hàng Ngày</span>
-                      <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px] font-mono font-bold border border-slate-300">Alt + H</kbd>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FFFDF7] border-2 border-[#0F172A]">
+                      <span className="font-bold text-[#0F172A]">Theo Dõi Thói Quen Hàng Ngày</span>
+                      <kbd className="px-2 py-0.5 rounded-lg bg-[#FEF9C3] text-[#0F172A] text-[10px] font-mono font-black border-2 border-[#0F172A]">Alt + H</kbd>
                     </div>
-                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#EEF2F8]">
-                      <span className="text-[#64748B]">Trợ Lý AI Thông Minh</span>
-                      <span className="text-[10px] text-indigo-600 font-bold">Nút góc phải màn hình</span>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#FFF1F2] border-2 border-[#0F172A]">
+                      <span className="font-bold text-[#0F172A]">Trợ Lý AI Thông Minh</span>
+                      <span className="text-[10px] text-[#E11D48] font-black">Nút góc phải màn hình</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Reset Data section */}
-                <div className="p-3.5 rounded-2xl bg-amber-50/50 border border-amber-200 space-y-2">
-                  <div className="flex items-center gap-2 text-amber-800 font-bold text-xs">
-                    <RefreshCw className="w-3.5 h-3.5" />
+                <div className="p-4 rounded-2xl bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] space-y-2.5">
+                  <div className="flex items-center gap-2 text-[#0F172A] font-black text-xs">
+                    <RefreshCw className="w-3.5 h-3.5 text-[#E11D48]" />
                     <span>Khôi phục dữ liệu mẫu ban đầu</span>
                   </div>
-                  <p className="text-[11px] text-amber-700 leading-relaxed">
+                  <p className="text-[11px] font-semibold text-slate-700 leading-relaxed">
                     Khôi phục lại toàn bộ thời khóa biểu, thẻ kanban và danh mục mẫu thiết kế sẵn của hệ thống.
                   </p>
                   <button
+                    type="button"
                     onClick={async () => {
                       const confirmed = await notify.confirm('Bạn có chắc chắn muốn đặt lại toàn bộ dữ liệu mẫu ban đầu?', {
                         title: 'Đặt Lại Dữ Liệu',
@@ -1465,7 +1389,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         await notify.success('Đã khôi phục dữ liệu mẫu thành công!');
                       }
                     }}
-                    className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black transition-all cursor-pointer"
                   >
                     Đặt Lại Dữ Liệu Mẫu
                   </button>
@@ -1476,14 +1400,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 shrink-0 flex items-center justify-between border-t border-[#EEF2F8] bg-white">
-          <span className="text-[10px] text-[#8F9CAE]">
-            Gencoore v3.0 • Cài đặt tự động lưu
+        <div className="px-5 py-3.5 shrink-0 flex items-center justify-between border-t-2 border-[#0F172A] bg-[#FFF1F2]">
+          <span className="text-[10px] font-bold text-slate-700">
+            Genncore v3.0 • Cài đặt tự động lưu
           </span>
 
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold transition-all shadow-xs"
+            className="px-4 py-1.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] text-xs font-black transition-all cursor-pointer"
           >
             Đóng
           </button>
