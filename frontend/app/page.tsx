@@ -460,18 +460,19 @@ export default function ShoaibPortfolioStyleLanding() {
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
-          {/* Brand Logo: CBP. Shoaib Hamza Style */}
-          <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-            <div className="flex items-center justify-center font-black text-2xl tracking-tighter text-[#0F172A]">
-              <span>CBP</span>
-              <span className="w-2.5 h-2.5 rounded-full bg-[#E11D48] ml-0.5 inline-block animate-pulse" />
-            </div>
-            <div className="hidden sm:block border-l border-slate-200 pl-3">
+          {/* Brand Logo: Genncore + Cao Bảo Phúc */}
+          <Link href="/" className="flex items-center gap-3.5 group cursor-pointer">
+            <img
+              src="/images/logo-wordmark.png"
+              alt="GENNCORE"
+              className="block h-7 sm:h-8 w-auto object-contain transition-transform group-hover:scale-[1.03]"
+            />
+            <div className="hidden sm:block border-l border-slate-200 pl-3.5">
               <h1 className="font-extrabold text-xs tracking-tight text-[#0F172A] leading-tight">
                 Cao Bảo Phúc
               </h1>
               <p className="text-[10px] text-slate-500 font-medium">
-                Full-Stack Developer & Gencoore
+                Full-Stack Developer & Workspace OS
               </p>
             </div>
           </Link>
@@ -1520,9 +1521,12 @@ export default function ShoaibPortfolioStyleLanding() {
             
             {/* Col 1: Brand Info */}
             <div className="md:col-span-4 space-y-3">
-              <div className="flex items-center text-2xl font-black text-white">
-                <span>CBP</span>
-                <span className="w-2.5 h-2.5 rounded-full bg-[#E11D48] ml-0.5" />
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/images/logo-wordmark.png"
+                  alt="GENNCORE"
+                  className="h-7 w-auto object-contain brightness-0 invert"
+                />
               </div>
               <h5 className="font-extrabold text-sm text-slate-200">Cao Bảo Phúc</h5>
               <p className="text-xs text-slate-400 leading-relaxed max-w-sm">

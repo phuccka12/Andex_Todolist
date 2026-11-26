@@ -88,6 +88,17 @@ export const Header: React.FC<HeaderProps> = ({
             <Menu className="w-4 h-4" />
           </button>
         )}
+        <div
+          className={`md:hidden w-8 h-8 rounded-xl border p-1.5 shadow-2xs shrink-0 flex items-center justify-center ${
+            isDark ? 'bg-white/[0.08] border-white/15' : 'bg-white border-slate-200/80'
+          }`}
+        >
+          <img
+            src="/images/logo-mark.png"
+            alt="Genncore"
+            className={`block w-full h-full object-contain ${isDark ? 'brightness-0 invert' : ''}`}
+          />
+        </div>
         <div className="min-w-0">
           <h1
             className={`text-base sm:text-lg font-extrabold tracking-tight truncate ${

@@ -236,25 +236,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <X className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white font-black text-xs shadow-lg">
-              GC
+          <div className="space-y-1.5 pr-8">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <img
+                src="/images/logo-wordmark.png"
+                alt="Genncore"
+                className="block h-6 w-auto object-contain brightness-0 invert"
+              />
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                Cloud Sync
+              </span>
             </div>
-            <div>
-              <h3 className="font-extrabold text-base tracking-tight flex items-center gap-1.5">
-                <span>Gencoore</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                  Cloud Sync
-                </span>
-              </h3>
-              <p className="text-[11px] text-slate-300">
-                {tab === 'forgot'
-                  ? 'Khôi phục quyền truy cập tài khoản'
-                  : tab === 'reset'
-                  ? 'Thiết lập mật khẩu bảo mật mới'
-                  : 'Không gian làm việc & Quản lý thời gian đa người dùng'}
-              </p>
-            </div>
+            <p className="text-[11px] text-slate-300">
+              {tab === 'forgot'
+                ? 'Khôi phục quyền truy cập tài khoản'
+                : tab === 'reset'
+                ? 'Thiết lập mật khẩu bảo mật mới'
+                : 'Không gian làm việc & Quản lý thời gian đa người dùng'}
+            </p>
           </div>
 
           {/* Tab Selector for Login / Register */}

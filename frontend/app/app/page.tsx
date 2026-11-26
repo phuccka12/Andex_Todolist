@@ -490,11 +490,12 @@ export default function WorkspaceApp() {
   if (!isMounted) {
     return (
       <div className="w-full h-dvh flex items-center justify-center bg-[#F8FAFC]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#4F46E5] to-[#EC4899] flex items-center justify-center font-black text-white text-base shadow-lg shadow-indigo-500/20 animate-pulse">
-            GC
+        <div className="flex flex-col items-center gap-3.5 animate-pulse">
+          <img src="/images/logo-wordmark.png" alt="GENNCORE" className="block h-8 w-auto object-contain" />
+          <div className="w-24 h-1 rounded-full bg-slate-200 overflow-hidden">
+            <div className="w-1/2 h-full bg-slate-900 rounded-full animate-pulse" />
           </div>
-          <p className="text-xs font-bold text-slate-500 tracking-wider">Đang tải Gencoore...</p>
+          <p className="text-[11px] font-semibold text-slate-400 tracking-wide">Đang mở Workspace...</p>
         </div>
       </div>
     );

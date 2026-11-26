@@ -391,8 +391,8 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
       {/* Header */}
       <div className="px-5 py-4 border-b border-indigo-100/70 bg-gradient-to-r from-[#FFF7FA] via-white to-[#F2F6FF] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#4F46E5] via-[#7C3AED] to-[#EC4899] text-white flex items-center justify-center shadow-md shadow-indigo-500/20 relative">
-            <Bot className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-2xl bg-white border border-indigo-200/80 p-1.5 flex items-center justify-center shadow-md shadow-indigo-500/15 relative shrink-0">
+            <img src="/images/logo-mark.png" alt="Gencoore AI" className="w-full h-full object-contain" />
             <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white" />
           </div>
           <div>
@@ -449,8 +449,8 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
               </div>
             ) : (
               <div className="flex items-start gap-2.5 max-w-[92%]">
-                <div className="w-8 h-8 rounded-2xl bg-gradient-to-tr from-[#4F46E5] via-[#7C3AED] to-[#EC4899] text-white flex items-center justify-center shadow-sm shrink-0 mt-0.5">
-                  <Sparkles className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-2xl bg-white border border-indigo-200/80 p-1 flex items-center justify-center shadow-sm shrink-0 mt-0.5">
+                  <img src="/images/logo-mark.png" alt="AI" className="block w-full h-full object-contain" />
                 </div>
                 <div className="flex-1 p-4 rounded-3xl rounded-tl-md bg-white/95 text-slate-700 border border-indigo-100/80 shadow-sm shadow-indigo-950/[0.03]">
                   {msg.text ? (

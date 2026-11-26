@@ -189,28 +189,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="space-y-5">
         {/* Brand Header */}
         {!isCollapsed ? (
-          <div className="flex items-center justify-between px-1 pt-0.5">
+          <div className="flex items-center justify-between gap-2 px-1 pt-0.5">
             <Link
               href="/"
-              className="flex items-center gap-2.5 text-left group"
-              title="Về trang giới thiệu Gencoore"
+              className="flex flex-col items-start group min-w-0"
+              title="Về trang giới thiệu Genncore"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#4F46E5] via-[#7C3AED] to-[#EC4899] shadow-sm flex items-center justify-center text-white font-black text-xs tracking-tighter shrink-0 group-hover:scale-105 transition-transform">
-                GC
-              </div>
-              <div className="flex flex-col text-left">
-                <span className={`font-black text-sm tracking-tight leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Gencoore
-                </span>
-                <span className="text-[9px] font-bold text-slate-400 tracking-wider uppercase">
-                  Workspace
-                </span>
-              </div>
+              <img
+                src="/images/logo-wordmark.png"
+                alt="Genncore"
+                className={`block h-7 w-auto max-w-[144px] object-contain object-left transition-transform duration-200 group-hover:scale-[1.03] ${
+                  isDark ? 'brightness-0 invert' : ''
+                }`}
+              />
+              <span className="text-[9px] font-bold text-slate-400 tracking-[0.16em] uppercase mt-0.5">
+                Workspace OS
+              </span>
             </Link>
 
             <button
               onClick={handleToggle}
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${themeStyles.toggleBtn}`}
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer shrink-0 ${themeStyles.toggleBtn}`}
               title={onCloseMobile ? 'Đóng menu' : 'Thu gọn menu'}
             >
               <Menu className="w-4 h-4" />
@@ -218,20 +217,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 pt-0.5">
+            <Link
+              href="/"
+              title="Genncore Workspace"
+              className={`w-10 h-10 rounded-xl border shadow-xs flex items-center justify-center p-1.5 shrink-0 hover:scale-105 transition-transform ${
+                isDark
+                  ? 'bg-white/[0.08] border-white/15'
+                  : 'bg-white border-slate-200/80'
+              }`}
+            >
+              <img
+                src="/images/logo-mark.png"
+                alt="G"
+                className={`block w-full h-full object-contain ${isDark ? 'brightness-0 invert' : ''}`}
+              />
+            </Link>
             <button
               onClick={handleToggle}
-              className={`p-2 rounded-xl transition-all cursor-pointer ${themeStyles.toggleBtn}`}
+              className={`p-1.5 rounded-xl transition-all cursor-pointer ${themeStyles.toggleBtn}`}
               title="Mở rộng menu"
             >
               <Menu className="w-4 h-4" />
             </button>
-            <Link
-              href="/"
-              title="Gencoore"
-              className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#4F46E5] via-[#7C3AED] to-[#EC4899] shadow-sm flex items-center justify-center text-white font-black text-xs shrink-0"
-            >
-              GC
-            </Link>
           </div>
         )}
 
