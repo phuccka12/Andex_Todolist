@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Clock, BookOpen, Flame, Bot, Menu, Calendar, Kanban, LayoutGrid, FolderKanban, Tag } from 'lucide-react';
+import { Clock, BookOpen, Bot, Menu, Calendar, Kanban, LayoutGrid, FolderKanban, Tag, Languages } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { BentoTrackerCards } from '@/components/BentoTrackerCards';
@@ -19,6 +19,7 @@ import { HabitTrackerModal } from '@/components/HabitTrackerModal';
 import { QuickNotesModal } from '@/components/QuickNotesModal';
 import { AIAssistantDrawer } from '@/components/AIAssistantDrawer';
 import { JournalView } from '@/components/JournalView';
+import { VocabView } from '@/components/VocabView';
 import { EmailPostcardModal } from '@/components/EmailPostcardModal';
 import { ScheduleReminderModal } from '@/components/ScheduleReminderModal';
 import { TaskModal } from '@/components/TaskModal';
@@ -444,6 +445,11 @@ export default function WorkspaceApp() {
           title: 'Nhật Ký Ký Ức',
           subtitle: 'Lưu giữ khoảnh khắc và những dòng suy ngẫm theo tháng',
         };
+      case 'vocab':
+        return {
+          title: 'Học & Review Từ Vựng',
+          subtitle: 'Flashcard tiếng Anh, phát âm, ôn tập giãn cách SRS & Import tự động bằng AI',
+        };
       default:
         return {
           title: 'Lịch Biểu',
@@ -625,6 +631,27 @@ export default function WorkspaceApp() {
             />
           )}
 
+          {/* Guest Mode Notice Banner (Isolated local storage, encourages Cloud Sync login) */}
+          {!isLoading && !authUser && activeTab !== 'journal' && (
+            <div
+              className={`px-3.5 py-2 rounded-xl border flex flex-wrap items-center justify-between gap-2 text-xs shrink-0 ${
+                settings.theme === 'midnight'
+                  ? 'bg-indigo-500/10 border-indigo-400/25 text-indigo-200'
+                  : 'bg-indigo-50/80 border-indigo-200/80 text-indigo-900'
+              }`}
+            >
+              <span className="font-medium">
+                Bạn đang ở <strong>Chế độ Khách</strong> (dữ liệu chỉ lưu trên trình duyệt này). Đăng nhập để đồng bộ Cloud trên mọi thiết bị.
+              </span>
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] cursor-pointer shrink-0 transition-colors"
+              >
+                Đăng nhập / Đăng ký
+              </button>
+            </div>
+          )}
+
           {/* Dynamic Sidebar View Tabs */}
           {activeTab === 'archive' && (
             <CompletedTasksArchive
@@ -696,6 +723,13 @@ export default function WorkspaceApp() {
             <JournalView
               authUser={authUser}
               onOpenAuth={() => setIsAuthModalOpen(true)}
+            />
+          )}
+
+          {activeTab === 'vocab' && (
+            <VocabView
+              theme={settings.theme || 'slate'}
+              authUserId={authUser?.id}
             />
           )}
 
@@ -934,6 +968,19 @@ export default function WorkspaceApp() {
           <button
             onClick={() => {
               soundEngine.playSoftClick();
+              setActiveTab('vocab');
+            }}
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition-colors ${
+              activeTab === 'vocab' ? 'text-indigo-600' : ''
+            }`}
+          >
+            <Languages className="w-4 h-4" />
+            <span>Từ vựng</span>
+          </button>
+
+          <button
+            onClick={() => {
+              soundEngine.playSoftClick();
               setActiveTab('journal');
             }}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition-colors ${
@@ -942,17 +989,6 @@ export default function WorkspaceApp() {
           >
             <BookOpen className="w-4 h-4" />
             <span>Nhật ký</span>
-          </button>
-
-          <button
-            onClick={() => {
-              soundEngine.playSoftClick();
-              setIsPomodoroOpen(true);
-            }}
-            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold text-[#F43F5E]"
-          >
-            <Flame className="w-4 h-4" />
-            <span>Focus</span>
           </button>
 
           <button

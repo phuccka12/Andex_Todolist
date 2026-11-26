@@ -12,6 +12,7 @@ import {
   BookOpen,
   Menu,
   Settings,
+  Languages,
 } from 'lucide-react';
 import { soundEngine } from '../lib/audio';
 import { UserProfileData } from '../lib/types';
@@ -254,6 +255,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <Clock className={`w-4 h-4 shrink-0 ${activeTab === 'tracker' ? themeStyles.iconActive : themeStyles.iconDefault}`} />
               {!isCollapsed && <span>Lịch Biểu</span>}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('vocab')}
+              style={activeTab === 'vocab' ? themeStyles.btnActiveStyle : undefined}
+              className={`w-full flex items-center ${
+                isCollapsed ? 'justify-center p-2.5 rounded-xl' : 'gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
+              } transition-all cursor-pointer ${
+                activeTab === 'vocab' ? themeStyles.btnActive : themeStyles.btnDefault
+              }`}
+              title="Học & Review Từ Vựng Tiếng Anh"
+            >
+              <Languages className={`w-4 h-4 shrink-0 ${activeTab === 'vocab' ? themeStyles.iconActive : themeStyles.iconDefault}`} />
+              {!isCollapsed && <span>Từ Vựng</span>}
             </button>
 
             <button

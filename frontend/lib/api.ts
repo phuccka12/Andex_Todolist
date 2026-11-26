@@ -6,7 +6,23 @@ const TASKS_CACHE_KEY = 'andex_cached_tasks_v2';
 
 export const STARTER_TASKS: TaskItem[] = [];
 
+function readLocalTasks(): TaskItem[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const cached = localStorage.getItem(TASKS_CACHE_KEY);
+    const parsed = cached ? JSON.parse(cached) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchTasks(): Promise<TaskItem[]> {
+  // Isolate unauthenticated guest mode in local browser storage so visitors never share MongoDB data
+  if (!authService.getToken()) {
+    return readLocalTasks();
+  }
+
   try {
     const headers: Record<string, string> = {
       ...authService.getAuthHeaders(),
@@ -22,35 +38,12 @@ export async function fetchTasks(): Promise<TaskItem[]> {
     }
     return data;
   } catch (error) {
-    if (typeof window !== 'undefined') {
-      try {
-        const cached = localStorage.getItem(TASKS_CACHE_KEY);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed)) return parsed;
-        }
-      } catch {}
-      return [];
-    }
-    return [];
+    return readLocalTasks();
   }
 }
 
 export async function createTask(taskData: Partial<TaskItem>): Promise<TaskItem> {
-  try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...authService.getAuthHeaders(),
-    };
-    const res = await fetch(`${API_BASE}/tasks`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(taskData),
-    });
-    if (!res.ok) throw new Error('Failed to create task');
-    const created = await res.json();
-    return created;
-  } catch (error) {
+  const createLocally = (): TaskItem => {
     const newTask: TaskItem = {
       id: 'local-' + Date.now(),
       title: taskData.title || 'Công việc mới',
@@ -70,16 +63,52 @@ export async function createTask(taskData: Partial<TaskItem>): Promise<TaskItem>
     };
     if (typeof window !== 'undefined') {
       try {
-        const cached = localStorage.getItem(TASKS_CACHE_KEY);
-        const list = cached ? JSON.parse(cached) : STARTER_TASKS;
+        const list = readLocalTasks();
         localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify([newTask, ...list]));
       } catch {}
     }
     return newTask;
+  };
+
+  if (!authService.getToken()) {
+    return createLocally();
+  }
+
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...authService.getAuthHeaders(),
+    };
+    const res = await fetch(`${API_BASE}/tasks`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(taskData),
+    });
+    if (!res.ok) throw new Error('Failed to create task');
+    return await res.json();
+  } catch (error) {
+    return createLocally();
   }
 }
 
 export async function updateTask(id: string, updates: Partial<TaskItem>): Promise<TaskItem> {
+  const updateLocally = (): TaskItem => {
+    if (typeof window !== 'undefined') {
+      try {
+        const list = readLocalTasks();
+        const updatedList = list.map((t) => (t.id === id ? { ...t, ...updates } : t));
+        localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify(updatedList));
+        const found = updatedList.find((t) => t.id === id);
+        if (found) return found;
+      } catch {}
+    }
+    return { id, ...updates } as TaskItem;
+  };
+
+  if (!authService.getToken() || id.startsWith('local-')) {
+    return updateLocally();
+  }
+
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -93,23 +122,15 @@ export async function updateTask(id: string, updates: Partial<TaskItem>): Promis
     if (!res.ok) throw new Error('Failed to update task');
     return await res.json();
   } catch (error) {
-    if (typeof window !== 'undefined') {
-      try {
-        const cached = localStorage.getItem(TASKS_CACHE_KEY);
-        if (cached) {
-          const list: TaskItem[] = JSON.parse(cached);
-          const updatedList = list.map((t) => (t.id === id ? { ...t, ...updates } : t));
-          localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify(updatedList));
-          const found = updatedList.find((t) => t.id === id);
-          if (found) return found;
-        }
-      } catch {}
-    }
-    return { id, ...updates } as TaskItem;
+    return updateLocally();
   }
 }
 
 export async function completeTask(id: string): Promise<TaskItem> {
+  if (!authService.getToken() || id.startsWith('local-')) {
+    return await updateTask(id, { column: 'done', progress_percentage: 100 });
+  }
+
   try {
     const headers: Record<string, string> = {
       ...authService.getAuthHeaders(),
@@ -121,11 +142,27 @@ export async function completeTask(id: string): Promise<TaskItem> {
     if (!res.ok) throw new Error('Failed to complete task');
     return await res.json();
   } catch (error) {
-    return await updateTask(id, { column: 'done' });
+    return await updateTask(id, { column: 'done', progress_percentage: 100 });
   }
 }
 
 export async function toggleChecklistItem(taskId: string, checklistId: string): Promise<TaskItem> {
+  if (!authService.getToken() || taskId.startsWith('local-')) {
+    const list = readLocalTasks();
+    const target = list.find((t) => t.id === taskId);
+    if (!target) throw new Error('Task not found');
+    const updatedDod = (target.definition_of_done || []).map((d) =>
+      d.id === checklistId ? { ...d, completed: !d.completed } : d
+    );
+    const completedCount = updatedDod.filter((d) => d.completed).length;
+    const pct = updatedDod.length > 0 ? Math.round((completedCount / updatedDod.length) * 100) : 0;
+    return await updateTask(taskId, {
+      definition_of_done: updatedDod,
+      progress_percentage: pct,
+      ...(pct === 100 ? { column: 'done' as const } : {}),
+    });
+  }
+
   const headers: Record<string, string> = {
     ...authService.getAuthHeaders(),
   };
@@ -157,6 +194,10 @@ export async function deleteTask(id: string): Promise<boolean> {
     } catch {}
   }
 
+  if (!authService.getToken() || id.startsWith('local-')) {
+    return true;
+  }
+
   // 2. Call backend DELETE
   try {
     const headers: Record<string, string> = {
@@ -180,6 +221,10 @@ export async function deleteAllTasks(): Promise<boolean> {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(TASKS_CACHE_KEY);
     localStorage.removeItem('cbp_atelier_cached_tasks');
+  }
+
+  if (!authService.getToken()) {
+    return true;
   }
 
   try {

@@ -22,6 +22,22 @@ export interface AuthResponse {
 
 const TOKEN_KEY = 'cbp_auth_token';
 const USER_KEY = 'cbp_auth_user';
+const USER_SCOPED_CACHES = [
+  'andex_cached_tasks_v2',
+  'cbp_atelier_cached_tasks',
+  'gencoore_cached_vocab_v1',
+  'gencoore_guest_journals_v1',
+  'cbp_user_profile_v1',
+];
+
+function clearUserScopedCaches() {
+  if (typeof window === 'undefined') return;
+  USER_SCOPED_CACHES.forEach((k) => {
+    try {
+      localStorage.removeItem(k);
+    } catch {}
+  });
+}
 
 export const authService = {
   // Get stored token from localStorage
@@ -53,11 +69,12 @@ export const authService = {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
 
-  // Clear auth data
+  // Clear auth data and per-user caches
   logout() {
     if (typeof window === 'undefined') return;
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    clearUserScopedCaches();
   },
 
   // Auth headers for api requests
@@ -79,6 +96,7 @@ export const authService = {
       });
       const data = await res.json();
       if (res.ok && data.token && data.user) {
+        clearUserScopedCaches();
         this.setToken(data.token);
         this.setCachedUser(data.user);
       }
@@ -98,6 +116,7 @@ export const authService = {
       });
       const data = await res.json();
       if (res.ok && data.token && data.user) {
+        clearUserScopedCaches();
         this.setToken(data.token);
         this.setCachedUser(data.user);
       }
@@ -204,6 +223,7 @@ export const authService = {
       });
       const data = await res.json();
       if (res.ok && data.token && data.user) {
+        clearUserScopedCaches();
         this.setToken(data.token);
         this.setCachedUser(data.user);
       }

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { TaskModel, ITaskDocument } from '../models/Task.model';
 import { TaskItem } from '../types/index';
 
@@ -26,6 +27,7 @@ class TaskService {
   }
 
   public async getTaskById(id: string): Promise<TaskItem | null> {
+    if (!mongoose.Types.ObjectId.isValid(id)) return null;
     const task = await TaskModel.findById(id).lean();
     if (!task) return null;
     return { ...(task as any), id: (task as any)._id.toString(), userId: (task as any).userId?.toString() };
@@ -63,6 +65,7 @@ class TaskService {
   }
 
   public async updateTask(id: string, updates: Partial<TaskItem>, userId?: string): Promise<TaskItem | null> {
+    if (!mongoose.Types.ObjectId.isValid(id)) return null;
     const query: any = { _id: id };
     if (userId) {
       query.$or = [{ userId }, { userId: null }, { userId: { $exists: false } }];
@@ -105,6 +108,7 @@ class TaskService {
   }
 
   public async deleteTask(id: string, userId?: string): Promise<boolean> {
+    if (!mongoose.Types.ObjectId.isValid(id)) return false;
     const query: any = { _id: id };
     if (userId) {
       query.$or = [{ userId }, { userId: null }, { userId: { $exists: false } }];
@@ -114,6 +118,7 @@ class TaskService {
   }
 
   public async completeTask(id: string, userId?: string): Promise<TaskItem | null> {
+    if (!mongoose.Types.ObjectId.isValid(id)) return null;
     const query: any = { _id: id };
     if (userId) {
       query.$or = [{ userId }, { userId: null }, { userId: { $exists: false } }];
@@ -138,6 +143,7 @@ class TaskService {
   }
 
   public async toggleChecklist(taskId: string, checklistId: string, userId?: string): Promise<TaskItem | null> {
+    if (!mongoose.Types.ObjectId.isValid(taskId)) return null;
     const query: any = { _id: taskId };
     if (userId) {
       query.$or = [{ userId }, { userId: null }, { userId: { $exists: false } }];

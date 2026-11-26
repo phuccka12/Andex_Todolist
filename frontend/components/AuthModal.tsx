@@ -204,11 +204,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     soundEngine.playPentatonicChime(4);
     const guestUser: AuthUser = {
       id: 'guest-' + Date.now(),
-      name: 'Cao Bảo Phúc (Demo)',
-      email: 'phuc.cbp@gmail.com',
+      name: 'Khách Trải Nghiệm',
+      email: 'guest@gencoore.app',
       role: 'user',
-      title: 'Full-Stack Developer & Creator',
-      bio: 'Không gian làm việc trải nghiệm Gencoore',
+      title: 'Gencoore Guest Mode',
+      bio: 'Không gian trải nghiệm cục bộ trên trình duyệt',
     };
     authService.setCachedUser(guestUser);
     onAuthSuccess(guestUser);
@@ -216,8 +216,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   const handleQuickDemo = () => {
-    setName('Cao Bảo Phúc');
-    setEmail('phuc.cbp@gmail.com');
+    setName('Thành viên mới');
+    setEmail('demo@gencoore.app');
     setPassword('123456');
     setConfirmPassword('123456');
     soundEngine.playSoftClick();
