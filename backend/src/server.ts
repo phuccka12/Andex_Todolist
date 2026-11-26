@@ -35,13 +35,13 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'UP',
     database: 'MongoDB Atlas 🍃',
-    backend: 'Andex OS TypeScript Node.js Express',
+    backend: 'Gencoore TypeScript Node.js Express',
     timestamp: new Date().toISOString(),
   });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Andex OS Backend running at http://0.0.0.0:${PORT}`);
+  console.log(`🚀 Gencoore Backend running at http://0.0.0.0:${PORT}`);
   // Start automated background schedule reminder worker
   emailService.startReminderScheduler();
 });

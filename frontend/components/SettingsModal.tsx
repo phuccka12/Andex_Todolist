@@ -104,7 +104,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleExportData = async () => {
     try {
       const backupData = {
-        app: 'CBP Atelier OS',
+        app: 'Gencoore',
         version: '3.0',
         exportedAt: new Date().toISOString(),
         tasksCount: tasks.length,
@@ -203,7 +203,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
             <div>
               <h3 className="font-extrabold text-sm text-[#1E2433]">Cài Đặt Hệ Thống</h3>
-              <p className="text-[10px] text-[#8F9CAE]">Trung tâm điều khiển & Tùy biến CBP Atelier OS</p>
+              <p className="text-[10px] text-[#8F9CAE]">Trung tâm điều khiển & Tùy biến Gencoore</p>
             </div>
           </div>
 
@@ -1341,7 +1341,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div>
                   <h4 className="text-xs font-bold text-[#1E2433]">Phím Tắt & Hướng Dẫn Nhanh</h4>
                   <p className="text-[11px] text-[#8F9CAE]">
-                    Tăng tốc thao tác làm việc chuyên nghiệp với CBP Atelier OS
+                    Tăng tốc thao tác làm việc chuyên nghiệp với Gencoore
                   </p>
                 </div>
 
@@ -1414,7 +1414,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Footer */}
         <div className="px-5 py-3 shrink-0 flex items-center justify-between border-t border-[#EEF2F8] bg-white">
           <span className="text-[10px] text-[#8F9CAE]">
-            CBP Atelier OS v3.0 • Cài đặt tự động lưu
+            Gencoore v3.0 • Cài đặt tự động lưu
           </span>
 
           <button

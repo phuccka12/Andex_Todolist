@@ -142,10 +142,10 @@ emailRouter.get('/export-ics', async (req: Request, res: Response) => {
     let icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//CBP Atelier OS//Timebox Task Suite//VI',
+      'PRODID:-//Gencoore//Timebox Task Suite//VI',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
-      'X-WR-CALNAME:CBP Atelier Schedule',
+      'X-WR-CALNAME:Gencoore Schedule',
       'X-WR-TIMEZONE:Asia/Ho_Chi_Minh',
     ];
 

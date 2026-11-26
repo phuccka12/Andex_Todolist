@@ -50,8 +50,8 @@ class AIService {
     endOfWeek.setUTCHours(23, 59, 59, 999);
 
     return `
-You are Atelier Concierge, the elite AI Executive Assistant embedded within the Chrono-Atelier Operating System.
-Your core mission is to manage the user's focus, time-boxed schedule, and personal knowledge with deterministic precision, elegant clarity, and proactive agency.
+You are Gencoore AI, a warm, supportive, and intelligent personal time-management companion embedded within the Gencoore operating system.
+Your core mission is to help the user organize their focus, time-boxed schedule, and daily tasks with calm clarity, accuracy, and friendly encouragement.
 
 ---
 ### 1. DYNAMIC SYSTEM TEMPORAL GROUNDING (STRICT GROUND TRUTH)
@@ -85,20 +85,20 @@ You interact with three distinct data domains. Identify the user's intent and ro
 ### 3. DECOMPOSITION & TOOL EXECUTION WORKFLOW
 When presented with complex, multi-intent prompts:
 1. DECOMPOSE: Split the request into (a) Knowledge Retrieval, (b) Time Availability Check, (c) Action Execution.
-2. VERIFY BEFORE WRITE: Before scheduling any new task, verify slot availability. If a conflict arises, notify the user or call reschedule_conflicted_tasks appropriately.
+2. VERIFY BEFORE WRITE: Before scheduling any new task, verify slot availability. If a conflict arises, notify the user kindly and suggest a free alternative slot.
 3. SILENT INTERMEDIATE REASONING: Call the required tools cleanly using native Function Calling without polluting the user chat with raw JSON or tool signatures.
 
 ---
-### 4. TONE, VOICE & FORMATTING RULES (STRICT VISUAL AESTHETICS)
-- Voice: Sophisticated, articulate, grounded, proactive, and concise (Atelier Executive standard). Lead directly with actionable conclusions. Avoid conversational filler ("Sure, I can help you with that").
+### 4. TONE, VOICE & FORMATTING RULES (FRIENDLY & CLEAN UI)
+- Voice: Warm, friendly, empathetic, and clear in Vietnamese (xưng "mình" – gọi "bạn"). Be helpful and gently encouraging without sounding robotic or overly formal.
 - VISUAL STRUCTURE & SPACING (CRITICAL FOR UI RENDERING):
   1. ALWAYS insert a blank line (double newline) between paragraphs.
-  2. ALWAYS put each task, bullet point, or time-slot on its OWN SEPARATE LINE starting with "- ". NEVER concatenate multiple tasks or list items into a single paragraph!
+  2. ALWAYS put each task or time-slot on its OWN SEPARATE LINE starting with "- ". NEVER concatenate multiple tasks into a single paragraph!
   3. Format each task item strictly as:
      - **[HH:mm - HH:mm]** | **Task Title** | [Priority]
-  4. Separate any notes, caveats, or system remarks into a dedicated blockquote on its own line:
-     > **Lưu ý:** [Nội dung ghi chú...]
-  5. When suggesting a follow-up action, put it in its own closing paragraph after a blank line.
+  4. Put helpful tips, reminders, or gentle caveats in a dedicated blockquote on its own line:
+     > **Mẹo nhỏ:** [Nội dung gợi ý nhẹ nhàng...]
+  5. End with a short, friendly closing question or next step in its own paragraph.
 `.trim();
   }
 
@@ -137,7 +137,7 @@ When presented with complex, multi-intent prompts:
           },
           {
             name: 'create_scheduled_task',
-            description: 'Creates and commits a new task into the Chrono-Atelier workspace timetable and Kanban board',
+            description: 'Creates and commits a new task into the Gencoore workspace timetable and Kanban board',
             parameters: {
               type: 'OBJECT',
               properties: {
@@ -285,7 +285,7 @@ When presented with complex, multi-intent prompts:
     const apiKey = (customApiKey && customApiKey.trim()) || this.defaultApiKey;
     if (!apiKey) {
       console.warn('[Gemini AI] System GEMINI_API_KEY is not configured in backend/.env.');
-      res.write(`event: token\ndata: ${JSON.stringify({ text: 'Hệ thống trợ lý Atelier Concierge hiện đang trong quá trình đồng bộ máy chủ hoặc bảo trì ngắn hạn. Vui lòng quay lại sau giây lát.' })}\n\n`);
+      res.write(`event: token\ndata: ${JSON.stringify({ text: 'Trợ lý Gencoore AI hiện đang trong quá trình đồng bộ máy chủ hoặc bảo trì ngắn hạn. Bạn vui lòng quay lại sau giây lát nhé!' })}\n\n`);
       res.write(`event: done\ndata: {}\n\n`);
       res.end();
       return;
@@ -298,7 +298,7 @@ When presented with complex, multi-intent prompts:
 
     try {
       // Immediate heartbeat status to eliminate perceived latency
-      sendSse('status', { message: 'Atelier Concierge đang phân tích...' });
+      sendSse('status', { message: 'Gencoore AI đang kiểm tra lịch giúp bạn...' });
 
       const systemInstruction = this.buildSystemInstruction();
       const tools = this.getToolDeclarations();
@@ -376,7 +376,7 @@ When presented with complex, multi-intent prompts:
                 end: args.end_time,
                 duration_minutes: durationMin > 0 ? durationMin : 60,
               },
-              note: args.note || 'Tạo tự động bởi Atelier Concierge',
+              note: args.note || 'Tạo tự động bởi Gencoore AI',
               definition_of_done: [
                 { id: 'dod1', text: 'Khởi động & chuẩn bị tài liệu liên quan', completed: false },
                 { id: 'dod2', text: 'Thực thi nội dung trọng tâm', completed: false },
@@ -493,7 +493,7 @@ When presented with complex, multi-intent prompts:
       res.end();
     } catch (err: any) {
       console.error('AIService error:', err);
-      sendSse('error', { error: err.message || 'Lỗi xử lý phản hồi từ Atelier AI' });
+      sendSse('error', { error: err.message || 'Lỗi xử lý phản hồi từ Gencoore AI' });
       sendSse('done', {});
       res.end();
     }

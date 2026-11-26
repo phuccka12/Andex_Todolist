@@ -340,7 +340,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
       ctx.font = 'bold 12px serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('✦ CBP ✦', sealX, sealY - 4);
+      ctx.fillText('✦ GC ✦', sealX, sealY - 4);
       ctx.font = '9px serif';
       ctx.fillText('SEAL', sealX, sealY + 10);
       ctx.restore();
@@ -354,7 +354,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
       ctx.fillStyle = '#6E4E36';
       ctx.font = 'italic 15px serif';
       ctx.fillText(
-        `Lưu dấu ${selectedEntries.length} khoảnh khắc thân thương — CBP Atelier OS`,
+        `Lưu dấu ${selectedEntries.length} khoảnh khắc thân thương — Gencoore`,
         totalWidth / 2,
         108
       );
@@ -539,7 +539,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
       ctx.font = '11px monospace';
       ctx.textAlign = 'center';
       ctx.fillText(
-        `CHRONO ATELIER • LƯU TRỮ KÝ ỨC VĨNH CỬU • NGÀY ${new Date().toLocaleDateString('vi-VN')}`,
+        `GENCOORE • LƯU TRỮ KÝ ỨC VĨNH CỬU • NGÀY ${new Date().toLocaleDateString('vi-VN')}`,
         totalWidth / 2,
         totalHeight - 45
       );
@@ -1212,7 +1212,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                 {/* Footer Stamp on the Paper Sheet */}
                 <div className="text-center pt-8 mt-10 border-t-2 border-dashed border-[#DECBB4]">
                   <p className="text-[10px] font-mono text-[#7A5B42] uppercase tracking-widest">
-                    CHRONO ATELIER • SỔ TAY KÝ ỨC CẤT GIỮ THỜI GIAN
+                    GENCOORE • SỔ TAY KÝ ỨC CẤT GIỮ THỜI GIAN
                   </p>
                 </div>
               </div>

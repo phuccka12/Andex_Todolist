@@ -206,14 +206,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center justify-between px-1.5 pt-0.5 pb-1">
             <div className="flex items-center gap-2 text-left">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#2563EB] via-[#4F46E5] to-[#7C3AED] shadow-[0_4px_12px_rgba(37,99,235,0.35)] flex items-center justify-center text-white font-black text-xs tracking-tighter shrink-0">
-                CBP
+                GC
               </div>
               <div className="flex flex-col text-left">
-                <span className={`font-black text-base tracking-wider ${isDark ? 'text-white' : 'text-[#1E2433]'}`}>
-                  CBP
+                <span className={`font-black text-base tracking-tight ${isDark ? 'text-white' : 'text-[#1E2433]'}`}>
+                  Gencoore
                 </span>
                 <span className="text-[8px] font-bold text-[#98A2B3] tracking-widest uppercase -mt-0.5 text-left">
-                  Andex OS
+                  Workspace OS
                 </span>
               </div>
             </div>
@@ -237,7 +237,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Menu className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </button>
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#2563EB] via-[#4F46E5] to-[#7C3AED] shadow-sm flex items-center justify-center text-white font-black text-xs shrink-0">
-              CBP
+              GC
             </div>
           </div>
         )}
@@ -490,7 +490,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`w-full flex items-center ${
               isCollapsed ? 'justify-center p-2 rounded-xl' : 'gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
             } ${themeStyles.btnDefault} transition-all group`}
-            title="Xem Trang Giới Thiệu Andex OS"
+            title="Xem Trang Giới Thiệu Gencoore"
           >
             <Sparkles className={`w-4 h-4 shrink-0 text-[#2563EB] group-hover:scale-110 transition-transform`} />
             {!isCollapsed && (

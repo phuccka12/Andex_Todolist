@@ -22,7 +22,7 @@ const rateLimitMiddleware = (req: Request, res: Response, next: () => void) => {
   if (current.count >= 15) {
     return res.status(429).json({
       success: false,
-      error: 'Bạn đang thao tác quá nhanh. Atelier Concierge cần một nhịp thở trước khi tiếp tục.',
+      error: 'Bạn đang thao tác quá nhanh. Gencoore AI cần một nhịp thở trước khi tiếp tục nhé.',
     });
   }
 

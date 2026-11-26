@@ -41,7 +41,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   title = 'Time Tracker',
-  subtitle = 'CBP V3.0 Personal Operating System',
+  subtitle = 'Gencoore • Không gian làm việc cá nhân',
   onOpenNewTaskModal,
   onOpenAiDrawer,
   onOpenEmailModal,
@@ -102,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
         <Link
           href="/"
           className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-200/80 bg-blue-50/70 hover:bg-blue-100 text-[#2563EB] text-xs font-bold transition-all shadow-2xs hover:scale-[1.02]"
-          title="Xem trang giới thiệu Andex OS"
+          title="Xem trang giới thiệu Gencoore"
         >
           <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
           <span>Giới thiệu</span>

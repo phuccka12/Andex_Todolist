@@ -70,7 +70,7 @@ class EmailService {
       });
       return {
         transporter,
-        sender: `CBP Atelier OS <${customSmtp.user}>`,
+        sender: `Gencoore <${customSmtp.user}>`,
         isPreview: false,
       };
     }
@@ -78,7 +78,7 @@ class EmailService {
     if (this.defaultTransporter && process.env.SMTP_USER) {
       return {
         transporter: this.defaultTransporter,
-        sender: process.env.SMTP_FROM || `CBP Atelier OS <${process.env.SMTP_USER}>`,
+        sender: process.env.SMTP_FROM || `Gencoore <${process.env.SMTP_USER}>`,
         isPreview: false,
       };
     }
@@ -97,7 +97,7 @@ class EmailService {
       });
       return {
         transporter: testTransporter,
-        sender: `"CBP Atelier OS (Test)" <${testAccount.user}>`,
+        sender: `"Gencoore (Test)" <${testAccount.user}>`,
         isPreview: true,
       };
     } catch {
@@ -107,7 +107,7 @@ class EmailService {
       });
       return {
         transporter: dummyTransporter,
-        sender: '"CBP Atelier OS" <noreply@atelier.cbp.internal>',
+        sender: '"Gencoore" <noreply@gencoore.internal>',
         isPreview: true,
       };
     }
@@ -122,8 +122,8 @@ class EmailService {
     time?: string;
     note?: string;
   }): string {
-    const title = encodeURIComponent(task.title || 'Nhiệm vụ CBP Atelier');
-    const details = encodeURIComponent(task.note ? `${task.note}\n\n(Lên lịch từ CBP Atelier OS)` : 'Lên lịch từ CBP Atelier OS');
+    const title = encodeURIComponent(task.title || 'Nhiệm vụ Gencoore');
+    const details = encodeURIComponent(task.note ? `${task.note}\n\n(Lên lịch từ Gencoore)` : 'Lên lịch từ Gencoore');
     
     // Attempt parse date and time
     const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -176,7 +176,7 @@ class EmailService {
         tasks,
       });
 
-      const subject = req.subject || `[CBP Atelier] Nhắc Lịch Làm Việc & Ca Trọng Tâm: ${dateText}`;
+      const subject = req.subject || `[Gencoore] Nhắc Lịch Làm Việc & Ca Trọng Tâm: ${dateText}`;
 
       const info = await transporter.sendMail({
         from: sender,
@@ -270,7 +270,7 @@ class EmailService {
     <head>
       <meta charset="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Lịch Trình CBP Atelier OS</title>
+      <title>Lịch Trình Gencoore</title>
     </head>
     <body style="margin: 0; padding: 0; background-color: #07090E; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #F1F5F9;">
       <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #07090E; padding: 32px 16px;">
@@ -285,7 +285,7 @@ class EmailService {
                     <tr>
                       <td>
                         <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; color: #D4AF37;">
-                          CBP ATELIER OS • HỆ THỐNG NHẮC LỊCH TỰ ĐỘNG
+                          GENCOORE • HỆ THỐNG NHẮC LỊCH TỰ ĐỘNG
                         </div>
                         <h1 style="margin: 6px 0 0 0; font-size: 20px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.02em;">
                           Lịch Trình Công Việc
@@ -354,7 +354,7 @@ class EmailService {
               <tr>
                 <td style="padding: 0 32px 32px 32px; text-align: center;">
                   <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/app" target="_blank" style="display: inline-block; padding: 12px 28px; background: #2563EB; color: #FFFFFF; font-weight: 700; font-size: 13px; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);">
-                    Mở Bàn Làm Việc CBP Atelier OS &rarr;
+                    Mở Bàn Làm Việc Gencoore &rarr;
                   </a>
                   <div style="margin-top: 14px; font-size: 11px; color: #64748B;">
                     Thư tự động nhắc việc gửi tới <strong>${data.recipient}</strong>
@@ -366,7 +366,7 @@ class EmailService {
               <tr>
                 <td style="padding: 16px 32px; background-color: #07090E; border-top: 1px solid #1E293B; text-align: center;">
                   <p style="margin: 0; font-size: 10px; color: #475569; letter-spacing: 0.04em;">
-                    CBP Atelier Studio OS • Swiss Minimalist Productivity Suite • Synchronized with MongoDB Atlas
+                    Gencoore • Personal Productivity Suite • Synchronized with MongoDB Atlas
                   </p>
                 </td>
               </tr>
@@ -404,7 +404,7 @@ class EmailService {
         await transporter.sendMail({
           from: sender,
           to: req.recipient,
-          subject: `[CBP Atelier Postcard] ${req.title}`,
+          subject: `[Gencoore Postcard] ${req.title}`,
           html: `
             <div style="font-family: serif; background: #FFFBF0; padding: 24px; border: 1px solid #FDE68A; border-radius: 16px; max-width: 500px; margin: 0 auto; color: #1E293B;">
               <h2 style="color: #D97706; margin-top: 0;">${req.title}</h2>
@@ -476,7 +476,7 @@ class EmailService {
         if (tasks.length > 0) {
           await this.sendScheduleReminder({
             recipient: setting.targetEmail,
-            subject: `[CBP Atelier] Báo Cáo Buổi Sáng & Lịch Trình Ngày Hôm Nay (${todayYmd})`,
+            subject: `[Gencoore] Báo Cáo Buổi Sáng & Lịch Trình Ngày Hôm Nay (${todayYmd})`,
             dateStr: todayYmd,
             customMessage: 'Chào buổi sáng! Đây là danh sách các ca công việc trọng tâm được lên lịch cho ngày hôm nay của bạn.',
             tasks: tasks.map((t) => ({
@@ -551,7 +551,7 @@ class EmailService {
       if (matchedTasks.length > 0) {
         await this.sendScheduleReminder({
           recipient: setting.targetEmail,
-          subject: `[CBP Atelier Nhắc Nhở] Sắp bắt đầu ca việc trong ${minutesBefore} phút: ${matchedTasks[0].title}`,
+          subject: `[Gencoore Nhắc Nhở] Sắp bắt đầu ca việc trong ${minutesBefore} phút: ${matchedTasks[0].title}`,
           dateStr: todayYmd,
           customMessage: `Nhắc nhở tự động: Bạn có ${matchedTasks.length} ca làm việc sắp bắt đầu trong ${minutesBefore} phút tới.`,
           tasks: matchedTasks.map((t) => ({
@@ -640,12 +640,12 @@ class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <div class="badge">Chrono-Atelier OS</div>
+              <div class="badge">Gencoore</div>
               <h1 class="title">Khôi Phục Mật Khẩu</h1>
             </div>
             <div class="body">
-              <p class="greeting">Xin chào <strong>${name || 'Thành viên Atelier'}</strong>,</p>
-              <p class="greeting">Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản <strong>${email}</strong> của bạn trên hệ điều hành Chrono-Atelier.</p>
+              <p class="greeting">Xin chào <strong>${name || 'Thành viên Gencoore'}</strong>,</p>
+              <p class="greeting">Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản <strong>${email}</strong> của bạn trên hệ thống Gencoore.</p>
               
               <div class="otp-card">
                 <div class="otp-label">MÃ XÁC THỰC BẢO MẬT (OTP)</div>
@@ -656,7 +656,7 @@ class EmailService {
               <p class="note">Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email và mật khẩu của bạn vẫn được giữ an toàn tuyệt đối.</p>
             </div>
             <div class="footer">
-              © ${new Date().getFullYear()} Chrono-Atelier Operating System. Designed for Focus & Elegance.
+              © ${new Date().getFullYear()} Gencoore. Designed for Focus & Calm.
             </div>
           </div>
         </body>
@@ -666,7 +666,7 @@ class EmailService {
       const info = await transporter.sendMail({
         from: sender,
         to: email,
-        subject: `[Chrono-Atelier] Mã xác nhận đặt lại mật khẩu: ${code}`,
+        subject: `[Gencoore] Mã xác nhận đặt lại mật khẩu: ${code}`,
         html: htmlContent,
       });
 

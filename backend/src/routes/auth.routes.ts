@@ -45,8 +45,8 @@ authRouter.post('/register', async (req, res) => {
       email: cleanEmail,
       password: hashedPassword,
       avatar: '',
-      title: 'CBP Atelier Member',
-      bio: 'Ready to master focus and time in CBP OS.',
+      title: 'Gencoore Member',
+      bio: 'Ready to master focus and time in Gencoore.',
       role: 'user',
     });
 
@@ -58,7 +58,7 @@ authRouter.post('/register', async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Đăng ký tài khoản thành công! Chào mừng đến với CBP Atelier.',
+      message: 'Đăng ký tài khoản thành công! Chào mừng đến với Gencoore.',
       token,
       user: newUser.toJSON(),
     });

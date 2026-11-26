@@ -175,7 +175,7 @@ interface ProjectCaseStudy {
 const PROJECT_DETAILS: Record<string, ProjectCaseStudy> = {
   chrono: {
     id: 'chrono',
-    title: 'Andex Dashboard & Center-Stage Timetable',
+    title: 'Gencoore Workspace & Center-Stage Timetable',
     subtitle: 'Hệ thống quản lý thời gian 24h với Kim Laser Thời Gian Thực',
     badge: 'Productivity & Time',
     badgeColor: 'text-emerald-600 bg-emerald-50 border-emerald-200',
@@ -262,7 +262,7 @@ const TESTIMONIALS = [
     role: 'Senior Frontend Engineer @ TechVN',
     avatar: '👨‍💻',
     rating: 5,
-    text: 'Giao diện Andex OS cực kỳ mượt mà! Thích nhất là kim laser thời gian thực và âm thanh chuông ngũ cung 432Hz giúp mình tập trung code mà không bị stress.',
+    text: 'Giao diện Gencoore cực kỳ mượt mà! Thích nhất là kim laser thời gian thực và âm thanh chuông ngũ cung 432Hz giúp mình tập trung code mà không bị stress.',
     accent: 'border-rose-100 bg-white shadow-rose-100/50',
   },
   {
@@ -471,7 +471,7 @@ export default function ShoaibPortfolioStyleLanding() {
                 Cao Bảo Phúc
               </h1>
               <p className="text-[10px] text-slate-500 font-medium">
-                Full-Stack Developer & Andex OS
+                Full-Stack Developer & Gencoore
               </p>
             </div>
           </Link>
@@ -574,7 +574,7 @@ export default function ShoaibPortfolioStyleLanding() {
             {/* Description */}
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl font-normal">
               Tôi là lập trình viên full-stack đam mê tạo ra các ứng dụng web và di động mượt mà, tốc độ cao và thân thiện với người dùng. 
-              Chào mừng bạn đến với <strong>Andex OS</strong> — giải pháp quản trị thời gian & năng suất cá nhân hóa với trợ lý AI và âm thanh tập trung.
+              Chào mừng bạn đến với <strong>Gencoore</strong> — giải pháp quản trị thời gian & năng suất cá nhân hóa với trợ lý AI và âm thanh tập trung.
             </p>
 
             {/* Action Buttons */}
@@ -673,7 +673,7 @@ export default function ShoaibPortfolioStyleLanding() {
             <div className="relative z-10 rounded-3xl overflow-hidden bg-white p-3 border border-slate-100 shadow-2xl shadow-slate-200/80 max-w-md w-full group hover:scale-[1.01] transition-transform duration-300">
               <img
                 src="/images/landing/hero-desk.jpg"
-                alt="Andex Developer Desk Setup"
+                alt="Gencoore Developer Desk Setup"
                 className="w-full h-auto rounded-2xl object-cover"
               />
             </div>
@@ -908,7 +908,7 @@ export default function ShoaibPortfolioStyleLanding() {
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-slate-600 max-w-md font-medium">
-            Một số giải pháp tiêu biểu thuộc hệ sinh thái Andex. Mỗi sản phẩm đều được chăm chút bằng <Heart className="w-3.5 h-3.5 inline text-[#E11D48] fill-[#E11D48]" /> và sự chính xác cao.
+            Một số giải pháp tiêu biểu thuộc hệ sinh thái Gencoore. Mỗi sản phẩm đều được chăm chút bằng <Heart className="w-3.5 h-3.5 inline text-[#E11D48] fill-[#E11D48]" /> và sự chính xác cao.
           </p>
         </div>
 
@@ -933,7 +933,7 @@ export default function ShoaibPortfolioStyleLanding() {
             </div>
             <div>
               <span className="text-[11px] font-bold text-emerald-600 uppercase">Productivity & Time</span>
-              <h4 className="text-lg font-black text-[#0F172A] mt-0.5">Andex Dashboard</h4>
+              <h4 className="text-lg font-black text-[#0F172A] mt-0.5">Gencoore Workspace</h4>
               <p className="text-xs text-slate-500 mt-1 line-clamp-2">
                 Center-Stage Timetable với kim laser thời gian thực và ma trận Kanban đa cột.
               </p>
@@ -1139,7 +1139,7 @@ export default function ShoaibPortfolioStyleLanding() {
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
-                  <span>Andex Native</span>
+                  <span>Gencoore Native</span>
                   <span className="text-emerald-500 font-bold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Production Ready
@@ -1389,7 +1389,7 @@ export default function ShoaibPortfolioStyleLanding() {
               Người Dùng & Đồng Nghiệp Nói Gì?
             </h2>
             <p className="text-xs sm:text-sm text-slate-600">
-              Những đánh giá và cảm nhận thực tế từ những người đã trải nghiệm hệ sinh thái Andex OS.
+              Những đánh giá và cảm nhận thực tế từ những người đã trải nghiệm hệ sinh thái Gencoore.
             </p>
           </div>
 
@@ -1526,7 +1526,7 @@ export default function ShoaibPortfolioStyleLanding() {
               </div>
               <h5 className="font-extrabold text-sm text-slate-200">Cao Bảo Phúc</h5>
               <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-                Building digital products that make an impact. Full-Stack Developer & Creator of Andex Operating System.
+                Building digital products that make an impact. Full-Stack Developer & Creator of Gencoore Operating System.
               </p>
               <div className="pt-2 flex items-center gap-2">
                 <button
@@ -1586,7 +1586,7 @@ export default function ShoaibPortfolioStyleLanding() {
                   Email: <a href="mailto:phuc.cbp@gmail.com" className="text-white hover:underline">phuc.cbp@gmail.com</a>
                 </li>
                 <li className="text-slate-400 text-[11px]">
-                  Telegram: <span className="text-white font-mono">@AtelierOS</span>
+                  Telegram: <span className="text-white font-mono">@GencooreApp</span>
                 </li>
               </ul>
             </div>
@@ -1595,10 +1595,10 @@ export default function ShoaibPortfolioStyleLanding() {
 
           {/* Bottom Copyright bar */}
           <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-            <p>© {new Date().getFullYear()} Cao Bảo Phúc. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Gencoore. All rights reserved.</p>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
-              <span>Andex OS v2.6 • MongoDB Atlas Connected 🍃</span>
+              <span>Gencoore v3.0 • MongoDB Atlas Connected 🍃</span>
             </div>
           </div>
 
@@ -1743,7 +1743,7 @@ export default function ShoaibPortfolioStyleLanding() {
 
               <div className="p-4 rounded-2xl bg-slate-50 space-y-2">
                 <h5 className="text-xs font-extrabold text-[#0F172A]">Dự án trọng tâm</h5>
-                <p className="text-xs font-bold text-slate-800">Andex Operating System</p>
+                <p className="text-xs font-bold text-slate-800">Gencoore Operating System</p>
                 <p className="text-[11px] text-slate-500">Full-Stack OS với AI Co-Pilot & 432Hz Audio</p>
                 <p className="text-[10px] text-blue-600 font-bold">500+ Active Users</p>
               </div>

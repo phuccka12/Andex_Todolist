@@ -35,8 +35,8 @@ const UserSchema = new Schema<IUserDocument>(
     password: { type: String, required: true },
     avatar: { type: String, default: '' },
     coverImage: { type: String, default: '' },
-    title: { type: String, default: 'CBP Atelier Specialist' },
-    bio: { type: String, default: 'Crafting thoughtful routines and time blocks in CBP OS.' },
+    title: { type: String, default: 'Gencoore Member' },
+    bio: { type: String, default: 'Crafting thoughtful routines and time blocks in Gencoore.' },
     wallpaper: { type: String, default: '' },
     pomodoroStats: {
       sessionsCompleted: { type: Number, default: 0 },

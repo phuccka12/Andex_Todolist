@@ -1,8 +1,8 @@
 {
-  "name": "andex-os-backend-ts",
+  "name": "gencoore-backend-ts",
   "version": "2.6.0",
   "private": true,
-  "description": "Andex OS TypeScript Express REST API with MongoDB Atlas Integration",
+  "description": "Gencoore TypeScript Express REST API with MongoDB Atlas Integration",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",

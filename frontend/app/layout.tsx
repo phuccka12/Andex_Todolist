@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Andex OS — Personal Productivity & Time Operating System',
-  description: 'Andex OS: Thời khóa biểu 24h, Kanban, Pomodoro 432Hz, Nhật ký Ký Ức & Trợ lý AI Gemini.',
+  title: 'Gencoore — Personal Productivity & Time Operating System',
+  description: 'Gencoore: Thời khóa biểu 24h, Kanban, Pomodoro 432Hz, Nhật ký Ký Ức & Trợ lý AI Gemini.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Andex OS',
+    title: 'Gencoore',
   },
 };
 

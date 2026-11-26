@@ -79,7 +79,7 @@ class TelegramService {
     customToken?: string
   ): Promise<{ success: boolean; error?: string }> {
     const text = `
-⚡ <b>CBP ATELIER OS • KẾT NỐI THÀNH CÔNG</b>
+⚡ <b>GENCOORE • KẾT NỐI THÀNH CÔNG</b>
 ━━━━━━━━━━━━━━━━━━━━
 Chào bạn! Kênh thông báo Telegram đã được kích hoạt thành công cho không gian làm việc của bạn.
 
@@ -135,7 +135,7 @@ Chào bạn! Kênh thông báo Telegram đã được kích hoạt thành công 
     const noteSection = customNote ? `\n\n💬 <b>Ghi chú:</b> <i>"${customNote}"</i>` : '';
 
     const text = `
-🌅 <b>LỊCH TRÌNH CÔNG VIỆC • CBP ATELIER</b>
+🌅 <b>LỊCH TRÌNH CÔNG VIỆC • GENCOORE</b>
 📅 <i>${todayText}</i>
 ━━━━━━━━━━━━━━━━━━━━
 📊 <b>Tổng quan:</b> ${totalTasks} mục tiêu | ${p1Tasks} P1 Cốt lõi | ${doneTasks} hoàn tất${noteSection}
@@ -143,7 +143,7 @@ Chào bạn! Kênh thông báo Telegram đã được kích hoạt thành công 
 📋 <b>Danh sách ca việc:</b>
 ${taskListText}
 ━━━━━━━━━━━━━━━━━━━━
-<i>Hệ thống tự động nhắc nhở từ CBP Atelier OS</i>
+<i>Hệ thống tự động nhắc nhở từ Gencoore</i>
     `.trim();
 
     return await this.sendMessage(chatId, text, {

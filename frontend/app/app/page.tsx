@@ -447,7 +447,7 @@ export default function WorkspaceApp() {
       default:
         return {
           title: 'Time Tracker',
-          subtitle: 'CBP V3.0 Personal Operating System',
+          subtitle: 'Gencoore • Không gian làm việc cá nhân',
         };
     }
   };
@@ -503,10 +503,10 @@ export default function WorkspaceApp() {
     return (
       <div className="w-full max-w-[1760px] 2xl:max-w-[1880px] h-full md:h-[98dvh] jiron-app-frame !rounded-none md:!rounded-[32px] flex items-center justify-center bg-[#FAFBFD] border-0 md:border border-[#E2E8F0] shadow-app">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#E11D48] to-[#F43F5E] flex items-center justify-center font-black text-white text-lg shadow-lg shadow-rose-500/25 animate-pulse">
-            A
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#4F46E5] to-[#EC4899] flex items-center justify-center font-black text-white text-lg shadow-lg shadow-indigo-500/25 animate-pulse">
+            G
           </div>
-          <p className="text-xs font-bold text-slate-500 tracking-wider">Đang tải Andex OS...</p>
+          <p className="text-xs font-bold text-slate-500 tracking-wider">Đang tải Gencoore...</p>
         </div>
       </div>
     );

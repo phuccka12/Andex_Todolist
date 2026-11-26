@@ -295,9 +295,9 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
   // --- CALENDAR EXPORT ---
   const handleExportIcs = () => {
     soundEngine.playSoftClick();
-    const icsContent = generateIcsContent(tasks, 'CBP Atelier Schedule');
+    const icsContent = generateIcsContent(tasks, 'Gencoore Schedule');
     const todayStr = new Date().toISOString().slice(0, 10);
-    downloadIcsFile(`cbp-atelier-schedule-${todayStr}.ics`, icsContent);
+    downloadIcsFile(`gencoore-schedule-${todayStr}.ics`, icsContent);
   };
 
   return (
@@ -860,7 +860,7 @@ export const ScheduleReminderModal: React.FC<ScheduleReminderModalProps> = ({
         {/* Footer */}
         <div className="px-6 py-4 shrink-0 flex items-center justify-between border-t border-[#EEF2F8] bg-white">
           <span className="text-[11px] text-[#8F9CAE]">
-            CBP Atelier Synchronizer • Tiêu chuẩn bảo mật ISO 27001 • Đồng bộ đám mây MongoDB Atlas
+            Gencoore Synchronizer • Tiêu chuẩn bảo mật ISO 27001 • Đồng bộ đám mây MongoDB Atlas
           </span>
 
           <button

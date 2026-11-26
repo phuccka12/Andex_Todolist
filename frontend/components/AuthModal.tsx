@@ -208,7 +208,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       email: 'phuc.cbp@gmail.com',
       role: 'user',
       title: 'Full-Stack Developer & Creator',
-      bio: 'Không gian làm việc trải nghiệm Andex OS',
+      bio: 'Không gian làm việc trải nghiệm Gencoore',
     };
     authService.setCachedUser(guestUser);
     onAuthSuccess(guestUser);
@@ -238,11 +238,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white font-black text-xs shadow-lg">
-              CBP
+              GC
             </div>
             <div>
               <h3 className="font-extrabold text-base tracking-tight flex items-center gap-1.5">
-                <span>CBP Atelier OS</span>
+                <span>Gencoore</span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
                   Cloud Sync
                 </span>

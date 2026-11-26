@@ -1,11 +1,10 @@
 {
-  "name": "Andex OS — Personal Productivity Suite",
-  "short_name": "Andex OS",
-  "description": "Quản lý thời gian, thời khóa biểu thông minh, Pomodoro & Nhật ký Ký Ức.",
+  "name": "Gencoore — Personal Productivity Suite",
+  "short_name": "Gencoore",
+  "description": "Gencoore: Quản lý thời gian, thời khóa biểu thông minh, Pomodoro 432Hz & Nhật ký Ký Ức.",
   "start_url": "/app",
   "display": "standalone",
   "background_color": "#FAFBFD",
-  "theme_color": "#2563EB",
+  "theme_color": "#4F46E5",
   "orientation": "portrait-primary"
 }
-

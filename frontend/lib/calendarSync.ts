@@ -11,12 +11,12 @@ export function generateGoogleCalendarUrl(task: {
   notes?: string;
   priority?: string;
 }): string {
-  const title = encodeURIComponent(task.title || 'Nhiệm vụ CBP Atelier');
+  const title = encodeURIComponent(task.title || 'Nhiệm vụ Gencoore');
   
   let detailsText = '';
   if (task.priority) detailsText += `Mức độ ưu tiên: ${task.priority}\n`;
   if (task.notes) detailsText += `Ghi chú: ${task.notes}\n`;
-  detailsText += '\n(Tạo từ hệ thống CBP Atelier OS)';
+  detailsText += '\n(Tạo từ hệ thống Gencoore)';
   const details = encodeURIComponent(detailsText);
 
   // Date parsing
@@ -53,13 +53,13 @@ export function generateGoogleCalendarUrl(task: {
 /**
  * Builds standard RFC 5545 iCalendar (.ics) string for tasks
  */
-export function generateIcsContent(tasks: TaskItem[], calendarTitle = 'CBP Atelier Schedule'): string {
+export function generateIcsContent(tasks: TaskItem[], calendarTitle = 'Gencoore Schedule'): string {
   const nowStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//CBP Atelier OS//Timebox Task Suite//VI',
+    'PRODID:-//Gencoore//Timebox Task Suite//VI',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     `X-WR-CALNAME:${calendarTitle}`,

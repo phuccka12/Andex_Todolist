@@ -1,16 +1,16 @@
 import { UserProfileData } from './types';
 
 export const DEFAULT_USER_PROFILE: UserProfileData = {
-  name: 'Thành viên Andex OS',
-  email: 'member@andex.os',
-  title: 'Andex Personal Workspace',
+  name: 'Thành viên Gencoore',
+  email: 'member@gencoore.app',
+  title: 'Gencoore Personal Workspace',
   avatar: '',
   cover: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
   background: '',
   applyAppBackground: false,
   backgroundBlur: 10,
   backgroundOpacity: 0.65,
-  bio: 'Định hình nhịp sống và tối ưu hóa năng suất cùng CBP Workspace.',
+  bio: 'Định hình nhịp sống và tối ưu hóa năng suất cùng Gencoore.',
   dailyGoalHours: 6,
 };
 
