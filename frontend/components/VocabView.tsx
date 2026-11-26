@@ -28,8 +28,17 @@ import {
   Maximize2,
   Download,
   Copy,
+  PenLine,
+  Send,
+  BookMarked,
+  SlidersHorizontal,
+  ArrowUpDown,
+  ChevronDown,
+  RotateCcw,
+  Star,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import * as XLSX from 'xlsx';
 import { soundEngine } from '../lib/audio';
 import { notify } from '../lib/notificationService';
 import { compressImageDataUrl } from '../lib/imageUtils';
@@ -47,7 +56,15 @@ import {
   deleteVocab,
   clearAllVocab,
   autoTagExistingVocab,
+  checkVocabSentence,
+  SentenceCheckResult,
+  lookupDictionary,
+  DictionaryCategory,
+  DictionaryEntry,
+  sendEnglishTutorMessage,
+  TutorChatMessage,
   parseStructuredVocabLines,
+  parseVocabRowsMatrix,
   speakEnglishWord,
 } from '../lib/vocabApi';
 
@@ -62,13 +79,18 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
   const [words, setWords] = useState<VocabItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Main 2 Modes: Học (learn) & Review (review)
-  const [mode, setMode] = useState<'learn' | 'review'>('learn');
+  // Main 3 Modes: Học & Kho Từ (learn), Đã Lưu (saved) & Review (review)
+  const [mode, setMode] = useState<'learn' | 'saved' | 'review'>('learn');
   const [isStudyPopupOpen, setIsStudyPopupOpen] = useState(false);
 
   // Filters & Pagination
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTopic, setSelectedTopic] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'due' | 'new' | 'learning' | 'mastered'>('all');
+  const [posFilter, setPosFilter] = useState('all');
+  const [sortBy, setSortBy] = useState<'newest' | 'due_first' | 'az' | 'za' | 'mastery_asc'>('newest');
+  const [isMoreTopicsOpen, setIsMoreTopicsOpen] = useState(false);
+  const [topicSearchQuery, setTopicSearchQuery] = useState('');
   const [flippedIds, setFlippedIds] = useState<Record<string, boolean>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(12);
@@ -77,6 +99,38 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
   // Single Flashcard Deck state (in Learn Deck mode)
   const [deckIndex, setDeckIndex] = useState(0);
   const [isDeckFlipped, setIsDeckFlipped] = useState(false);
+
+  // Sentence Making Practice state inside Study Popup
+  const [isSentenceBoxOpen, setIsSentenceBoxOpen] = useState(false);
+  const [userSentence, setUserSentence] = useState('');
+  const [isCheckingSentence, setIsCheckingSentence] = useState(false);
+  const [sentenceFeedback, setSentenceFeedback] = useState<SentenceCheckResult | null>(null);
+  const [isSavingSentenceExample, setIsSavingSentenceExample] = useState(false);
+
+  // Smart Dictionary Modal state
+  const [isDictOpen, setIsDictOpen] = useState(false);
+  const [dictQuery, setDictQuery] = useState('');
+  const [dictCategory, setDictCategory] = useState<DictionaryCategory>('auto');
+  const [isLookingUpDict, setIsLookingUpDict] = useState(false);
+  const [dictResult, setDictResult] = useState<DictionaryEntry | null>(null);
+  const [isSavingDictWord, setIsSavingDictWord] = useState(false);
+
+  // Floating Cute IELTS 8.0+ English Tutor Chatbot state
+  const [isTutorOpen, setIsTutorOpen] = useState(false);
+  const [tutorInput, setTutorInput] = useState('');
+  const [isTutorTyping, setIsTutorTyping] = useState(false);
+  const [tutorMessages, setTutorMessages] = useState<TutorChatMessage[]>([
+    {
+      id: 'welcome-tutor',
+      role: 'assistant',
+      text: 'Chào bạn! Mình là **Gia sư IELTS 8.0+** của Genncore đây 🐱✨',
+      replyEn: 'Hi there! Ready to practice English or master a new word together?',
+      explanationVi:
+        'Bất cứ lúc nào đang học từ mà thấy bí — bạn cứ nhắn tiếng Anh để luyện chat, hoặc hỏi mình ngữ pháp, Modal Verbs, Idioms, Phrasal Verbs nhé!',
+      bonusVocab: null,
+    },
+  ]);
+  const tutorScrollRef = useRef<HTMLDivElement>(null);
 
   // Review Mode State
   const [reviewStyle, setReviewStyle] = useState<'flashcard' | 'quiz'>('flashcard');
@@ -136,6 +190,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
   }, [words]);
 
   const masteredCount = useMemo(() => words.filter((w) => (w.srsLevel || 0) >= 3).length, [words]);
+  const savedCount = useMemo(() => words.filter((w) => Boolean(w.isSaved)).length, [words]);
 
   const topicCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -206,20 +261,93 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     return isDark ? palette.dark : palette.light;
   };
 
+  const partOfSpeechList = useMemo(() => {
+    const set = new Set<string>();
+    words.forEach((w) => {
+      const pos = w.partOfSpeech?.trim();
+      if (pos) set.add(pos);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [words]);
+
+  const topTopics = useMemo(() => topics.slice(0, 6), [topics]);
+  const extraTopics = useMemo(() => topics.slice(6), [topics]);
+
+  const filteredExtraTopics = useMemo(() => {
+    const q = topicSearchQuery.toLowerCase().trim();
+    if (!q) return extraTopics;
+    return extraTopics.filter((tp) => tp.toLowerCase().includes(q));
+  }, [extraTopics, topicSearchQuery]);
+
+  const hasActiveFilters =
+    selectedTopic !== 'all' ||
+    statusFilter !== 'all' ||
+    posFilter !== 'all' ||
+    sortBy !== 'newest' ||
+    searchQuery.trim().length > 0;
+
+  const resetAllFilters = () => {
+    soundEngine.playSoftClick();
+    setSearchQuery('');
+    setSelectedTopic('all');
+    setStatusFilter('all');
+    setPosFilter('all');
+    setSortBy('newest');
+    setIsMoreTopicsOpen(false);
+    setTopicSearchQuery('');
+  };
+
   const filteredWords = useMemo(() => {
-    return words.filter((w) => {
+    const now = Date.now();
+    const filtered = words.filter((w) => {
+      if (mode === 'saved' && !w.isSaved) return false;
       if (selectedTopic !== 'all' && (w.topic?.trim() || 'Chung') !== selectedTopic) return false;
+
+      if (statusFilter === 'due') {
+        if (w.nextReviewAt && new Date(w.nextReviewAt).getTime() > now) return false;
+      } else if (statusFilter === 'new') {
+        if ((w.srsLevel || 0) !== 0) return false;
+      } else if (statusFilter === 'learning') {
+        const lvl = w.srsLevel || 0;
+        if (lvl < 1 || lvl > 2) return false;
+      } else if (statusFilter === 'mastered') {
+        if ((w.srsLevel || 0) < 3) return false;
+      }
+
+      if (posFilter !== 'all' && (w.partOfSpeech?.trim() || '') !== posFilter) return false;
+
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const hit =
           w.word.toLowerCase().includes(q) ||
           w.meaning.toLowerCase().includes(q) ||
-          (w.topic || '').toLowerCase().includes(q);
+          (w.topic || '').toLowerCase().includes(q) ||
+          (w.example || '').toLowerCase().includes(q) ||
+          (w.partOfSpeech || '').toLowerCase().includes(q) ||
+          (w.phonetic || '').toLowerCase().includes(q);
         if (!hit) return false;
       }
       return true;
     });
-  }, [words, selectedTopic, searchQuery]);
+
+    if (sortBy === 'az') {
+      return [...filtered].sort((a, b) => a.word.localeCompare(b.word));
+    }
+    if (sortBy === 'za') {
+      return [...filtered].sort((a, b) => b.word.localeCompare(a.word));
+    }
+    if (sortBy === 'mastery_asc') {
+      return [...filtered].sort((a, b) => (a.srsLevel || 0) - (b.srsLevel || 0));
+    }
+    if (sortBy === 'due_first') {
+      return [...filtered].sort((a, b) => {
+        const ta = a.nextReviewAt ? new Date(a.nextReviewAt).getTime() : 0;
+        const tb = b.nextReviewAt ? new Date(b.nextReviewAt).getTime() : 0;
+        return ta - tb;
+      });
+    }
+    return filtered;
+  }, [words, mode, selectedTopic, statusFilter, posFilter, sortBy, searchQuery]);
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(filteredWords.length / pageSize)),
@@ -237,7 +365,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     setCurrentPage(1);
     setDeckIndex(0);
     setIsDeckFlipped(false);
-  }, [selectedTopic, searchQuery, pageSize]);
+  }, [mode, selectedTopic, statusFilter, posFilter, sortBy, searchQuery, pageSize]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -259,7 +387,285 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     const bounded = Math.max(0, Math.min(index, filteredWords.length - 1));
     setDeckIndex(bounded);
     setIsDeckFlipped(false);
+    setUserSentence('');
+    setSentenceFeedback(null);
     setIsStudyPopupOpen(true);
+  };
+
+  useEffect(() => {
+    setUserSentence('');
+    setSentenceFeedback(null);
+  }, [deckIndex]);
+
+  const handleCheckSentence = async (card: VocabItem) => {
+    const trimmed = userSentence.trim();
+    if (!trimmed) {
+      notify.warning(`Hãy viết 1 câu tiếng Anh có chứa từ "${card.word}" nhé!`);
+      return;
+    }
+    setIsCheckingSentence(true);
+    setSentenceFeedback(null);
+    try {
+      const result = await checkVocabSentence({
+        word: card.word,
+        meaning: card.meaning,
+        partOfSpeech: card.partOfSpeech,
+        userSentence: trimmed,
+      });
+      setSentenceFeedback(result);
+      soundEngine.playPentatonicChime(result.isCorrect ? 5 : 3);
+    } catch (err: any) {
+      notify.error(err.message || 'Không thể chấm câu lúc này.');
+    } finally {
+      setIsCheckingSentence(false);
+    }
+  };
+
+  const handleSaveSentenceAsExample = async (card: VocabItem) => {
+    if (!sentenceFeedback?.correctedSentence) return;
+    setIsSavingSentenceExample(true);
+    try {
+      const updated = await updateVocab(card.id, {
+        example: sentenceFeedback.correctedSentence,
+        exampleTranslation: sentenceFeedback.naturalTranslationVi || card.exampleTranslation || '',
+      });
+      setWords((prev) => prev.map((w) => (w.id === updated.id ? updated : w)));
+      soundEngine.playPentatonicChime(4);
+      notify.success('Đã lưu câu này làm câu ví dụ của thẻ!');
+    } catch (err: any) {
+      notify.error(err.message || 'Không thể lưu câu ví dụ.');
+    } finally {
+      setIsSavingSentenceExample(false);
+    }
+  };
+
+  const DICT_QUICK_CHIPS: Record<DictionaryCategory, string[]> = {
+    auto: ['resilient', 'must have', 'break a leg', 'give up', 'put off'],
+    word: ['ubiquitous', 'mitigate', 'procrastinate', 'eloquent', 'ambiguous'],
+    modal_verb: ['must / have to', 'should / ought to', 'may / might', 'could have', 'had better'],
+    idiom: ['piece of cake', 'under the weather', 'hit the nail on the head', 'bite the bullet', 'once in a blue moon'],
+    phrasal_verb: ['give up', 'look forward to', 'put off', 'run out of', 'figure out'],
+  };
+
+  const handleLookupDictionary = async (overrideQuery?: string, overrideCat?: DictionaryCategory) => {
+    const q = (overrideQuery ?? dictQuery).trim();
+    const cat = overrideCat ?? dictCategory;
+    if (!q) {
+      notify.warning('Nhập từ, Modal Verb, Idiom hoặc Phrasal Verb để tra cứu.');
+      return;
+    }
+    setDictQuery(q);
+    setDictCategory(cat);
+    setIsLookingUpDict(true);
+    try {
+      const entry = await lookupDictionary({ query: q, category: cat });
+      setDictResult(entry);
+      soundEngine.playPentatonicChime(4);
+    } catch (err: any) {
+      notify.error(err.message || 'Chưa tra cứu được lúc này.');
+    } finally {
+      setIsLookingUpDict(false);
+    }
+  };
+
+  const handleSaveDictEntryToVocab = async () => {
+    if (!dictResult) return;
+    setIsSavingDictWord(true);
+    try {
+      const firstEx = dictResult.examples?.[0];
+      const created = await createVocab({
+        word: dictResult.term,
+        phonetic: dictResult.phonetic,
+        partOfSpeech: dictResult.partOfSpeech,
+        meaning: dictResult.shortMeaningVi || dictResult.detailedExplanationVi,
+        example: firstEx?.en || '',
+        exampleTranslation: firstEx?.vi || '',
+        topic: dictResult.suggestedTopic || 'Đời sống',
+        isSaved: true,
+      });
+      setWords((prev) => [created, ...prev]);
+      soundEngine.playPentatonicChime(5);
+      notify.success(`Đã lưu "${dictResult.term}" vào mục Đã Lưu ⭐!`);
+    } catch (err: any) {
+      notify.error(err.message || 'Không thể lưu từ này.');
+    } finally {
+      setIsSavingDictWord(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isTutorOpen && tutorScrollRef.current) {
+      tutorScrollRef.current.scrollTop = tutorScrollRef.current.scrollHeight;
+    }
+  }, [tutorMessages, isTutorOpen, isTutorTyping]);
+
+  const handleSendTutorMessage = async (overrideMsg?: string) => {
+    const msg = (overrideMsg ?? tutorInput).trim();
+    if (!msg || isTutorTyping) return;
+
+    const userMsg: TutorChatMessage = {
+      id: `u-${Date.now()}`,
+      role: 'user',
+      text: msg,
+    };
+
+    const nextHistory = [...tutorMessages, userMsg]
+      .filter((m) => m.id !== 'welcome-tutor')
+      .slice(-6)
+      .map((m) => ({
+        role: m.role,
+        text: m.role === 'user' ? m.text : [m.replyEn, m.explanationVi].filter(Boolean).join(' — '),
+      }));
+
+    setTutorMessages((prev) => [...prev, userMsg]);
+    if (!overrideMsg) setTutorInput('');
+    setIsTutorTyping(true);
+    soundEngine.playSoftClick();
+
+    const activeCard = isStudyPopupOpen && filteredWords[deckIndex] ? filteredWords[deckIndex] : null;
+
+    try {
+      const res = await sendEnglishTutorMessage({
+        message: msg,
+        history: nextHistory,
+        activeWord: activeCard
+          ? { word: activeCard.word, meaning: activeCard.meaning, partOfSpeech: activeCard.partOfSpeech }
+          : null,
+      });
+
+      const botMsg: TutorChatMessage = {
+        id: `a-${Date.now()}`,
+        role: 'assistant',
+        text: res.explanationVi || res.replyEn,
+        primaryMode: res.primaryMode || 'vi_explain',
+        replyEn: res.replyEn,
+        explanationVi: res.explanationVi,
+        bonusVocab: res.bonusVocab,
+      };
+      setTutorMessages((prev) => [...prev, botMsg]);
+      soundEngine.playPentatonicChime(4);
+    } catch (err: any) {
+      setTutorMessages((prev) => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          role: 'assistant',
+          text: err.message || 'Mình đang hơi bận một xíu, bạn nhắn lại giúp mình nhé!',
+          explanationVi: err.message || 'Mình đang hơi bận một xíu, bạn nhắn lại giúp mình nhé!',
+        },
+      ]);
+    } finally {
+      setIsTutorTyping(false);
+    }
+  };
+
+  const handleSaveBonusVocabFromTutor = async (bonus: NonNullable<TutorChatMessage['bonusVocab']>) => {
+    try {
+      const created = await createVocab({
+        word: bonus.word,
+        phonetic: bonus.phonetic || '',
+        meaning: bonus.meaning,
+        topic: bonus.topic || 'IELTS & Học thuật',
+        isSaved: true,
+      });
+      setWords((prev) => [created, ...prev]);
+      soundEngine.playPentatonicChime(5);
+      notify.success(`Đã lưu "${bonus.word}" vào mục Đã Lưu ⭐!`);
+    } catch (err: any) {
+      notify.error(err.message || 'Từ này đã có hoặc chưa lưu được.');
+    }
+  };
+
+  const renderHighlightedTutorText = (content: string) => {
+    const renderInline = (line: string) => {
+      const tokens = line.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+      return tokens.map((part, idx) => {
+        if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+          return (
+            <mark
+              key={idx}
+              className={`px-1.5 py-0.5 rounded-md font-extrabold mx-0.5 ${
+                isDark
+                  ? 'bg-amber-400/20 text-amber-300'
+                  : 'bg-amber-100/90 text-amber-900'
+              }`}
+            >
+              {part.slice(2, -2)}
+            </mark>
+          );
+        }
+        if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+          return (
+            <code
+              key={idx}
+              className={`px-1.5 py-0.5 rounded-md font-mono font-bold text-[11px] mx-0.5 ${
+                isDark
+                  ? 'bg-indigo-500/25 text-indigo-300'
+                  : 'bg-indigo-50 text-indigo-700 border border-indigo-200/70'
+              }`}
+            >
+              {part.slice(1, -1)}
+            </code>
+          );
+        }
+        return <React.Fragment key={idx}>{part}</React.Fragment>;
+      });
+    };
+
+    const lines = content
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+    return (
+      <div className="space-y-2">
+        {lines.map((line, i) => {
+          const numbered = line.match(/^(\d+)\.\s+(.+)$/);
+          if (numbered) {
+            return (
+              <div key={i} className="flex items-start gap-2">
+                <span
+                  className={`w-4 h-4 rounded-full text-[10px] font-extrabold flex items-center justify-center shrink-0 mt-0.5 ${
+                    isDark ? 'bg-emerald-500/25 text-emerald-300' : 'bg-indigo-100 text-indigo-700'
+                  }`}
+                >
+                  {numbered[1]}
+                </span>
+                <p className="flex-1 leading-relaxed">{renderInline(numbered[2])}</p>
+              </div>
+            );
+          }
+
+          const bulleted = line.match(/^[-•*]\s+(.+)$/);
+          if (bulleted) {
+            return (
+              <div key={i} className="flex items-start gap-2 pl-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-1.5" />
+                <p className="flex-1 leading-relaxed">{renderInline(bulleted[1])}</p>
+              </div>
+            );
+          }
+
+          return (
+            <p key={i} className="leading-relaxed">
+              {renderInline(line)}
+            </p>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const handleToggleSaved = async (item: VocabItem) => {
+    const nextSaved = !item.isSaved;
+    soundEngine.playSoftClick();
+    setWords((prev) => prev.map((w) => (w.id === item.id ? { ...w, isSaved: nextSaved } : w)));
+    try {
+      await updateVocab(item.id, { isSaved: nextSaved });
+    } catch {
+      setWords((prev) => prev.map((w) => (w.id === item.id ? { ...w, isSaved: !nextSaved } : w)));
+      notify.error('Không thể cập nhật trạng thái lưu.');
+    }
   };
 
   useEffect(() => {
@@ -585,12 +991,40 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      notify.warning('File văn bản quá lớn (tối đa 2MB). Vui lòng chia nhỏ danh sách từ.');
+    if (file.size > 4 * 1024 * 1024) {
+      notify.warning('File quá lớn (tối đa 4MB). Vui lòng chia nhỏ danh sách từ.');
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
     try {
+      const lowerName = file.name.toLowerCase();
+      if (lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls')) {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[firstSheetName];
+        const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: '' });
+        const structured = parseVocabRowsMatrix(rows, importTopic);
+        if (structured && structured.length > 0) {
+          soundEngine.playPentatonicChime(3);
+          setExtractedDrafts(structured);
+          return;
+        }
+        // Fallback: single-column Excel list -> send words to AI extraction
+        const rawWords = rows
+          .map((r) => (Array.isArray(r) ? String(r[0] ?? '').trim() : ''))
+          .filter((w) => w && !/^(word|term|tu|từ|english)$/i.test(w))
+          .join('\n');
+        if (rawWords) {
+          setImportText(rawWords);
+          setImportTab('text');
+          await handleRunAutoExtract(rawWords);
+          return;
+        }
+        notify.warning('Không tìm thấy dữ liệu từ vựng hợp lệ trong file Excel.');
+        return;
+      }
+
       const text = await file.text();
       setImportText(text);
       setImportTab('text');
@@ -663,34 +1097,39 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     return () => window.removeEventListener('paste', handlePaste);
   }, [isImportModalOpen, importTopic]);
 
-  const CSV_TEMPLATE_CONTENT = [
-    'word,meaning,phonetic,partOfSpeech,example,exampleTranslation,topic',
-    'resilient,"Kiên cường, mau phục hồi",/rɪˈzɪliənt/,adj,"She remained resilient despite setbacks.","Cô ấy vẫn kiên cường dù gặp nhiều trở ngại.",Cảm xúc & Tâm lý',
-    'latency,"Độ trễ mạng, độ trễ xử lý",/ˈleɪtənsi/,noun,"Caching significantly reduces API latency.","Bộ nhớ đệm giúp giảm đáng kể độ trễ API.",IT & Tech',
-    'negotiate,"Đàm phán, thương lượng",/nɪˈɡəʊʃieɪt/,verb,"We need to negotiate the contract terms.","Chúng ta cần thương lượng các điều khoản hợp đồng.",Kinh doanh',
-  ].join('\n');
+  const TEMPLATE_ROWS: string[][] = [
+    ['word', 'meaning', 'phonetic', 'partOfSpeech', 'example', 'exampleTranslation', 'topic'],
+    ['resilient', 'Kiên cường, mau phục hồi', '/rɪˈzɪliənt/', 'adj', 'She remained resilient despite setbacks.', 'Cô ấy vẫn kiên cường dù gặp nhiều trở ngại.', 'Cảm xúc & Tâm lý'],
+    ['latency', 'Độ trễ mạng, độ trễ xử lý', '/ˈleɪtənsi/', 'noun', 'Caching significantly reduces API latency.', 'Bộ nhớ đệm giúp giảm đáng kể độ trễ API.', 'IT & Tech'],
+    ['negotiate', 'Đàm phán, thương lượng', '/nɪˈɡəʊʃieɪt/', 'verb', 'We need to negotiate the contract terms.', 'Chúng ta cần thương lượng các điều khoản hợp đồng.', 'Kinh doanh'],
+  ];
 
-  const handleDownloadCsvTemplate = () => {
+  const handleDownloadExcelTemplate = () => {
     soundEngine.playSoftClick();
-    const blob = new Blob(['\uFEFF' + CSV_TEMPLATE_CONTENT], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'genncore-vocab-template.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    notify.success('Đã tải file mẫu genncore-vocab-template.csv');
+    const ws = XLSX.utils.aoa_to_sheet(TEMPLATE_ROWS);
+    ws['!cols'] = [
+      { wch: 16 },
+      { wch: 28 },
+      { wch: 16 },
+      { wch: 14 },
+      { wch: 44 },
+      { wch: 44 },
+      { wch: 20 },
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'VocabTemplate');
+    XLSX.writeFile(wb, 'genncore-vocab-template.xlsx');
+    notify.success('Đã tải file Excel mẫu genncore-vocab-template.xlsx (chia sẵn 7 cột)');
   };
 
-  const handleCopyCsvTemplate = async () => {
+  const handleCopySpreadsheetSample = async () => {
     soundEngine.playSoftClick();
+    const tsv = TEMPLATE_ROWS.map((row) => row.join('\t')).join('\n');
     try {
-      await navigator.clipboard.writeText(CSV_TEMPLATE_CONTENT);
-      notify.success('Đã sao chép mẫu CSV vào bộ nhớ tạm!');
+      await navigator.clipboard.writeText(tsv);
+      notify.success('Đã sao chép bảng mẫu — dán vào Excel hoặc Google Sheets sẽ tự chia 7 cột!');
     } catch {
-      notify.warning('Không thể tự copy, bạn hãy tải file CSV mẫu bên cạnh nhé.');
+      notify.warning('Không thể tự copy, bạn hãy tải file Excel mẫu (.xlsx) bên cạnh nhé.');
     }
   };
 
@@ -786,6 +1225,25 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             <button
               onClick={() => {
                 soundEngine.playSoftClick();
+                setMode('saved');
+              }}
+              className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                mode === 'saved'
+                  ? isDark
+                    ? 'bg-amber-400 text-[#090A0F]'
+                    : 'bg-white text-amber-600 shadow-2xs'
+                  : isDark
+                  ? 'text-slate-400 hover:text-white'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Xem riêng các từ đã đánh dấu sao hoặc lưu từ Từ Điển / Gia sư AI"
+            >
+              <Star className={`w-3.5 h-3.5 ${mode === 'saved' ? 'fill-current' : 'text-amber-500'}`} />
+              <span>Đã Lưu ({savedCount})</span>
+            </button>
+            <button
+              onClick={() => {
+                soundEngine.playSoftClick();
                 setMode('review');
               }}
               className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
@@ -802,6 +1260,23 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               <span>Review ({dueWords.length})</span>
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundEngine.playSoftClick();
+              setIsDictOpen(true);
+            }}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all ${
+              isDark
+                ? 'bg-amber-500/15 border-amber-400/30 text-amber-300 hover:bg-amber-500/25'
+                : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
+            }`}
+            title="Tra từ điển, Modal Verbs, Idioms (IDM) & Phrasal Verbs"
+          >
+            <BookMarked className="w-3.5 h-3.5" />
+            <span>Từ Điển</span>
+          </button>
 
           <button
             onClick={openImportModal}
@@ -841,98 +1316,318 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
       {/* MODE 1: LEARN & VOCAB LIBRARY (Always visible behind blur modals)     */}
       {/* ===================================================================== */}
       <div className="flex-1 min-h-0 flex flex-col space-y-3.5">
-          {/* Search, Topic Filters & Grid/Deck Toggle */}
-          <div className={`p-3 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shrink-0 ${surfaceCls}`}>
-            <div className="flex items-center gap-2 flex-1 flex-wrap">
-              <div className="relative flex-1 min-w-[180px] max-w-xs">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Tìm từ tiếng Anh hoặc nghĩa..."
-                  className={`w-full pl-8 pr-3 py-1.5 rounded-xl border text-xs outline-none transition-all ${
-                    isDark
-                      ? 'bg-[#181C28] border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500'
-                      : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white focus:border-indigo-400'
-                  }`}
-                />
-              </div>
-
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                <button
-                  onClick={() => setSelectedTopic('all')}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 ${
-                    selectedTopic === 'all'
-                      ? 'bg-indigo-600 text-white'
-                      : isDark
-                      ? 'bg-white/5 text-slate-400 hover:text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  <span>Tất cả</span>
-                  <span className="opacity-75 text-[10px]">({words.length})</span>
-                </button>
-                {topics.map((tp) => (
-                  <button
-                    key={tp}
-                    onClick={() => setSelectedTopic(tp)}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 border ${
-                      selectedTopic === tp
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : isDark
-                        ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                        : 'bg-slate-100 border-transparent text-slate-700 hover:bg-slate-200'
+          {/* Search, Multi-Criteria Vocab Filters, Smart Topic Filter & Study Popup Trigger */}
+          <div className={`p-3 rounded-2xl border flex flex-col gap-2.5 shrink-0 min-w-0 w-full relative z-20 ${surfaceCls}`}>
+            {/* Row 1: Search + Status + POS + Sort + Study Popup CTA */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
+                <div className="relative flex-1 min-w-[180px] max-w-xs">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Tìm từ, nghĩa, ví dụ, phiên âm..."
+                    className={`w-full pl-8 pr-7 py-1.5 rounded-xl border text-xs outline-none transition-all ${
+                      isDark
+                        ? 'bg-[#181C28] border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500'
+                        : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white focus:border-indigo-400'
                     }`}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+                      title="Xóa từ khóa"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                {/* SRS Status Filter */}
+                <div className="flex items-center gap-1">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                      isDark
+                        ? 'bg-[#181C28] border-white/10 text-slate-200'
+                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                    }`}
+                    title="Lọc theo mức độ ghi nhớ"
                   >
-                    <span>{tp}</span>
-                    <span className="opacity-70 text-[10px]">({topicCounts[tp] || 0})</span>
-                  </button>
-                ))}
-                {uncategorizedCount > 0 && (
+                    <option value="all">Mọi trạng thái</option>
+                    <option value="due">Cần Review ({dueWords.length})</option>
+                    <option value="new">Từ mới</option>
+                    <option value="learning">Đang nhớ</option>
+                    <option value="mastered">Thuộc làu ({masteredCount})</option>
+                  </select>
+                </div>
+
+                {/* Part of Speech Filter */}
+                {partOfSpeechList.length > 0 && (
+                  <select
+                    value={posFilter}
+                    onChange={(e) => setPosFilter(e.target.value)}
+                    className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                      isDark
+                        ? 'bg-[#181C28] border-white/10 text-slate-200'
+                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                    }`}
+                    title="Lọc theo từ loại"
+                  >
+                    <option value="all">Mọi từ loại</option>
+                    {partOfSpeechList.map((pos) => (
+                      <option key={pos} value={pos}>
+                        {pos}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Sort Dropdown */}
+                <div className="flex items-center gap-1">
+                  <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                      isDark
+                        ? 'bg-[#181C28] border-white/10 text-slate-200'
+                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                    }`}
+                    title="Sắp xếp danh sách"
+                  >
+                    <option value="newest">Mới thêm nhất</option>
+                    <option value="due_first">Ưu tiên cần ôn</option>
+                    <option value="az">Từ A → Z</option>
+                    <option value="za">Từ Z → A</option>
+                    <option value="mastery_asc">Từ yếu nhớ trước</option>
+                  </select>
+                </div>
+
+                {hasActiveFilters && (
                   <button
                     type="button"
-                    disabled={isAutoTagging}
-                    onClick={handleAutoTagAll}
-                    title="Tự động phân loại các từ đang ở mục Chung / Tự động sang chủ đề chuẩn"
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 border ${
+                    onClick={resetAllFilters}
+                    className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
                       isDark
-                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30 hover:bg-emerald-500/25'
-                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                    } disabled:opacity-50`}
+                        ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                        : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
+                    }`}
+                    title="Đặt lại tất cả bộ lọc"
                   >
-                    {isAutoTagging ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <Wand2 className="w-3 h-3" />
-                    )}
-                    <span>Tự chia Tag ({uncategorizedCount})</span>
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Đặt lại</span>
                   </button>
                 )}
               </div>
+
+              {/* Big Centered Study Popup Trigger */}
+              <button
+                type="button"
+                disabled={filteredWords.length === 0}
+                onClick={() => openStudyPopupAt((safePage - 1) * pageSize)}
+                className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 shrink-0 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                  isDark
+                    ? 'bg-[#1DB954]/15 border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
+                    : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                }`}
+                title="Mở cửa sổ học lật thẻ lớn ở giữa màn hình"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                <span>Học Thẻ Lớn (Popup)</span>
+              </button>
             </div>
 
-            {/* Big Centered Study Popup Trigger */}
-            <button
-              type="button"
-              disabled={filteredWords.length === 0}
-              onClick={() => openStudyPopupAt((safePage - 1) * pageSize)}
-              className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 shrink-0 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
-                isDark
-                  ? 'bg-[#1DB954]/15 border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
-                  : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
-              }`}
-              title="Mở cửa sổ học lật thẻ lớn ở giữa màn hình"
-            >
-              <Maximize2 className="w-3.5 h-3.5" />
-              <span>Học Thẻ Lớn (Popup)</span>
-            </button>
+            {/* Row 2: Smart Topic Pills + Searchable Overflow Topics Dropdown */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button
+                onClick={() => {
+                  setSelectedTopic('all');
+                  setIsMoreTopicsOpen(false);
+                }}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 ${
+                  selectedTopic === 'all'
+                    ? 'bg-indigo-600 text-white'
+                    : isDark
+                    ? 'bg-white/5 text-slate-400 hover:text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                <span>Tất cả</span>
+                <span className="opacity-75 text-[10px]">({words.length})</span>
+              </button>
+
+              {topTopics.map((tp) => (
+                <button
+                  key={tp}
+                  onClick={() => {
+                    setSelectedTopic(tp);
+                    setIsMoreTopicsOpen(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 border ${
+                    selectedTopic === tp
+                      ? 'bg-indigo-600 text-white border-indigo-600'
+                      : isDark
+                      ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                      : 'bg-slate-100 border-transparent text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  <span>{tp}</span>
+                  <span className="opacity-70 text-[10px]">({topicCounts[tp] || 0})</span>
+                </button>
+              ))}
+
+              {/* If user picked a topic from extraTopics, show it visibly as an active chip */}
+              {selectedTopic !== 'all' && extraTopics.includes(selectedTopic) && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedTopic('all')}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white border border-indigo-600 shrink-0 cursor-pointer flex items-center gap-1"
+                  title="Bấm để bỏ lọc chủ đề này"
+                >
+                  <span>{selectedTopic}</span>
+                  <span className="opacity-80 text-[10px]">({topicCounts[selectedTopic] || 0})</span>
+                  <X className="w-3 h-3 ml-0.5" />
+                </button>
+              )}
+
+              {extraTopics.length > 0 && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsMoreTopicsOpen((prev) => !prev)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 border ${
+                      isDark
+                        ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                        : 'bg-slate-100 border-slate-200/80 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    <span>+{extraTopics.length} chủ đề khác</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+
+                  {isMoreTopicsOpen && (
+                    <div
+                      className={`absolute left-0 top-full mt-1.5 w-64 rounded-2xl border shadow-xl p-2.5 space-y-2 z-40 ${
+                        isDark ? 'bg-[#181C28] border-white/15 text-white' : 'bg-white border-slate-200 text-slate-800'
+                      }`}
+                    >
+                      <input
+                        type="text"
+                        value={topicSearchQuery}
+                        onChange={(e) => setTopicSearchQuery(e.target.value)}
+                        placeholder="Tìm chủ đề..."
+                        className={`w-full px-2.5 py-1.5 rounded-xl border text-xs outline-none ${
+                          isDark
+                            ? 'bg-[#12151E] border-white/10 text-white placeholder:text-slate-500'
+                            : 'bg-slate-50 border-slate-200 text-slate-800'
+                        }`}
+                      />
+                      <div className="max-h-48 overflow-y-auto space-y-1">
+                        {filteredExtraTopics.length === 0 ? (
+                          <p className="text-[11px] text-slate-400 text-center py-2">Không thấy chủ đề phù hợp</p>
+                        ) : (
+                          filteredExtraTopics.map((tp) => (
+                            <button
+                              key={tp}
+                              type="button"
+                              onClick={() => {
+                                setSelectedTopic(tp);
+                                setIsMoreTopicsOpen(false);
+                                setTopicSearchQuery('');
+                              }}
+                              className={`w-full px-2.5 py-1.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between cursor-pointer ${
+                                selectedTopic === tp
+                                  ? 'bg-indigo-600 text-white'
+                                  : isDark
+                                  ? 'hover:bg-white/10 text-slate-200'
+                                  : 'hover:bg-slate-100 text-slate-700'
+                              }`}
+                            >
+                              <span className="truncate">{tp}</span>
+                              <span className="text-[10px] opacity-75 shrink-0 ml-2">
+                                {topicCounts[tp] || 0}
+                              </span>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {uncategorizedCount > 0 && (
+                <button
+                  type="button"
+                  disabled={isAutoTagging}
+                  onClick={handleAutoTagAll}
+                  title="Tự động phân loại các từ đang ở mục Chung / Tự động sang chủ đề chuẩn"
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 border ${
+                    isDark
+                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/30 hover:bg-emerald-500/25'
+                      : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                  } disabled:opacity-50`}
+                >
+                  {isAutoTagging ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Wand2 className="w-3 h-3" />
+                  )}
+                  <span>Tự chia Tag ({uncategorizedCount})</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Empty State */}
+          {/* Empty State / Empty Filter State */}
           {isLoading ? (
             <div className="flex-1 flex items-center justify-center py-16">
               <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+            </div>
+          ) : mode === 'saved' && filteredWords.length === 0 && !hasActiveFilters ? (
+            <div className={`flex-1 rounded-2xl border p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
+              <div className="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-500 flex items-center justify-center">
+                <Star className="w-7 h-7" />
+              </div>
+              <div className="max-w-md space-y-1.5">
+                <h3 className="font-extrabold text-base">Kho Đã Lưu của bạn đang trống</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Hãy bấm biểu tượng ngôi sao <strong>⭐</strong> trên bất kỳ thẻ từ nào, hoặc bấm <strong>Lưu vào kho</strong> khi tra <strong>Từ Điển</strong> / hỏi <strong>Gia sư AI</strong> để tách riêng các từ quan trọng vào đây.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMode('learn')}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer"
+              >
+                Quay lại Học & Kho Từ
+              </button>
+            </div>
+          ) : words.length > 0 && filteredWords.length === 0 ? (
+            <div className={`flex-1 rounded-2xl border p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                <Search className="w-6 h-6" />
+              </div>
+              <div className="max-w-md space-y-1">
+                <h3 className="font-extrabold text-sm">Không tìm thấy từ vựng khớp bộ lọc</h3>
+                <p className="text-xs text-slate-500">
+                  Hãy thử đổi từ khóa tìm kiếm, trạng thái ôn tập hoặc chọn chủ đề khác.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={resetAllFilters}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Xóa tất cả bộ lọc</span>
+              </button>
             </div>
           ) : filteredWords.length === 0 ? (
             <div className={`flex-1 rounded-2xl border p-8 flex flex-col items-center justify-center text-center space-y-4 ${surfaceCls}`}>
@@ -997,9 +1692,28 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                         >
                           {topicLabel}
                         </button>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${badge.cls}`}>
-                          {badge.label}
-                        </span>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleSaved(item);
+                            }}
+                            className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                              item.isSaved
+                                ? 'text-amber-500 hover:bg-amber-50'
+                                : isDark
+                                ? 'text-slate-500 hover:text-amber-400 hover:bg-white/10'
+                                : 'text-slate-300 hover:text-amber-500 hover:bg-slate-100'
+                            }`}
+                            title={item.isSaved ? 'Bỏ khỏi Kho Đã Lưu' : 'Lưu vào Kho Đã Lưu ⭐'}
+                          >
+                            <Star className={`w-3.5 h-3.5 ${item.isSaved ? 'fill-amber-400 text-amber-500' : ''}`} />
+                          </button>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${badge.cls}`}>
+                            {badge.label}
+                          </span>
+                        </div>
                       </div>
 
                     <div className="space-y-1.5">
@@ -1396,15 +2110,32 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     </div>
 
                     {!showReviewAnswer ? (
-                      <button
-                        onClick={() => {
-                          soundEngine.playSoftClick();
-                          setShowReviewAnswer(true);
-                        }}
-                        className="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer transition-all"
-                      >
-                        Hiện nghĩa & ví dụ
-                      </button>
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          onClick={() => {
+                            soundEngine.playSoftClick();
+                            setShowReviewAnswer(true);
+                          }}
+                          className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer transition-all"
+                        >
+                          Hiện nghĩa & ví dụ
+                        </button>
+                        {reviewQueue.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundEngine.playSoftClick();
+                              setShowReviewAnswer(false);
+                              setReviewPos((prev) => (prev + 1) % reviewQueue.length);
+                            }}
+                            className={`px-4 py-3 rounded-2xl border text-xs font-bold flex items-center gap-1 cursor-pointer shrink-0 ${surfaceCls}`}
+                            title="Chuyển sang từ tiếp theo"
+                          >
+                            <span>Next</span>
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     ) : (
                       <div className="space-y-4 animate-in fade-in duration-150">
                         <div className={`p-4 rounded-2xl border text-center space-y-2 ${
@@ -1776,7 +2507,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".csv,.txt,.tsv"
+                    accept=".xlsx,.xls,.csv,.txt,.tsv"
                     onChange={handleFileUpload}
                     className="hidden"
                   />
@@ -1786,35 +2517,35 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   >
                     <Upload className="w-7 h-7 text-indigo-500 mx-auto" />
                     <p className="text-xs font-bold text-slate-700">
-                      Bấm để chọn file <code>.csv</code> hoặc <code>.txt</code>
+                      Bấm để chọn file <code>.xlsx</code>, <code>.csv</code> hoặc <code>.txt</code>
                     </p>
                     <p className="text-[11px] text-slate-500">
-                      Hỗ trợ file xuất từ Excel, Google Sheets, Quizlet (hoặc file chỉ có danh sách từ để AI tự dịch).
+                      Hỗ trợ trực tiếp file Excel (<code>.xlsx</code>), Google Sheets, Quizlet (hoặc file chỉ có danh sách từ để AI tự dịch).
                     </p>
                   </div>
 
-                  {/* CSV Column Guide */}
+                  {/* Excel / CSV Column Guide */}
                   <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 space-y-2.5">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <span className="text-xs font-extrabold text-slate-800">
-                        Hướng dẫn 7 cột chuẩn khi tạo file CSV / Excel
+                        Cấu trúc 7 cột chuẩn trên Excel / Google Sheets
                       </span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={handleCopyCsvTemplate}
+                          onClick={handleCopySpreadsheetSample}
                           className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
                         >
                           <Copy className="w-3 h-3" />
-                          <span>Copy mẫu</span>
+                          <span>Copy bảng mẫu</span>
                         </button>
                         <button
                           type="button"
-                          onClick={handleDownloadCsvTemplate}
-                          className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                          onClick={handleDownloadExcelTemplate}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
                         >
                           <Download className="w-3 h-3" />
-                          <span>Tải file CSV mẫu</span>
+                          <span>Tải file Excel mẫu (.xlsx)</span>
                         </button>
                       </div>
                     </div>
@@ -2032,14 +2763,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-2xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col transition-all ${
+              className={`w-full max-w-2xl max-h-[90dvh] rounded-3xl border shadow-2xl overflow-hidden flex flex-col transition-all ${
                 isDark
                   ? 'bg-[#12151E] border-white/10 text-white'
                   : 'bg-white border-slate-200 text-slate-900'
               }`}
             >
               {/* Top Progress Bar */}
-              <div className={`h-1.5 w-full ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
+              <div className={`h-1.5 w-full shrink-0 ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
                 <div
                   className={`h-full transition-all duration-300 ${
                     isDark ? 'bg-[#1DB954]' : 'bg-indigo-600'
@@ -2050,7 +2781,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
               {/* Popup Header */}
               <div
-                className={`px-5 sm:px-7 py-4 border-b flex items-center justify-between gap-3 ${
+                className={`px-4 sm:px-6 py-3.5 border-b flex items-center justify-between gap-3 shrink-0 ${
                   isDark ? 'border-white/[0.08] bg-[#181C28]/70' : 'border-slate-100 bg-slate-50/70'
                 }`}
               >
@@ -2067,14 +2798,60 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundEngine.playSoftClick();
+                      setIsDeckFlipped(false);
+                      setDeckIndex((prev) => (prev - 1 + filteredWords.length) % filteredWords.length);
+                    }}
+                    className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                      isDark
+                        ? 'border-white/10 hover:bg-white/10 text-slate-300'
+                        : 'border-slate-200 bg-white hover:bg-slate-100 text-slate-600'
+                    }`}
+                    title="Từ trước (←)"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
                   <span
-                    className={`text-xs font-mono font-bold px-2.5 py-1 rounded-lg ${
+                    className={`text-xs font-mono font-bold px-2 py-1 rounded-lg ${
                       isDark ? 'bg-white/5 text-slate-300' : 'bg-white border border-slate-200 text-slate-600'
                     }`}
                   >
                     {deckIndex + 1} / {filteredWords.length}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundEngine.playSoftClick();
+                      setIsDeckFlipped(false);
+                      setDeckIndex((prev) => (prev + 1) % filteredWords.length);
+                    }}
+                    className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                      isDark
+                        ? 'border-white/10 hover:bg-white/10 text-slate-300'
+                        : 'border-slate-200 bg-white hover:bg-slate-100 text-slate-600'
+                    }`}
+                    title="Từ tiếp / Next (→)"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleSaved(card)}
+                    className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                      card.isSaved
+                        ? 'text-amber-500 bg-amber-500/10'
+                        : isDark
+                        ? 'hover:bg-white/10 text-slate-300'
+                        : 'hover:bg-slate-200/70 text-slate-500'
+                    }`}
+                    title={card.isSaved ? 'Bỏ khỏi Kho Đã Lưu' : 'Lưu vào Kho Đã Lưu ⭐'}
+                  >
+                    <Star className={`w-4 h-4 ${card.isSaved ? 'fill-amber-400 text-amber-500' : ''}`} />
+                  </button>
                   <button
                     type="button"
                     onClick={() => openEditWordModal(card)}
@@ -2104,7 +2881,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   soundEngine.playSoftClick();
                   setIsDeckFlipped((prev) => !prev);
                 }}
-                className="min-h-[330px] sm:min-h-[380px] p-6 sm:p-10 flex flex-col justify-between cursor-pointer select-none"
+                className="flex-1 min-h-[240px] sm:min-h-[280px] overflow-y-auto p-6 sm:p-8 flex flex-col justify-between cursor-pointer select-none"
               >
                 <div />
 
@@ -2245,11 +3022,157 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                       : 'Chạm thẻ hoặc bấm Space để xem nghĩa & ví dụ'}
                   </span>
                 </div>
+
+                {/* Sentence Making Practice Section */}
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className={`mt-5 pt-4 border-t ${
+                    isDark ? 'border-white/[0.08]' : 'border-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundEngine.playSoftClick();
+                        setIsSentenceBoxOpen((prev) => !prev);
+                      }}
+                      className={`text-xs font-extrabold flex items-center gap-1.5 cursor-pointer ${
+                        isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-indigo-600 hover:text-indigo-700'
+                      }`}
+                    >
+                      <PenLine className="w-3.5 h-3.5" />
+                      <span>Luyện đặt câu với &ldquo;{card.word}&rdquo;</span>
+                    </button>
+                    <span className="text-[10.5px] text-slate-400">
+                      {isSentenceBoxOpen ? 'Thu gọn' : 'Bấm để tự đặt câu & nhờ AI sửa'}
+                    </span>
+                  </div>
+
+                  {isSentenceBoxOpen && (
+                    <div className="mt-3 space-y-2.5 animate-in fade-in duration-150">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={userSentence}
+                          onChange={(e) => setUserSentence(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleCheckSentence(card);
+                            }
+                          }}
+                          placeholder={`Viết 1 câu tiếng Anh có dùng từ "${card.word}"...`}
+                          className={`flex-1 px-3.5 py-2 rounded-xl border text-xs outline-none transition-all ${
+                            isDark
+                              ? 'bg-[#181C28] border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
+                              : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white focus:border-indigo-500'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          disabled={isCheckingSentence || !userSentence.trim()}
+                          onClick={() => handleCheckSentence(card)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50 ${
+                            isDark
+                              ? 'bg-[#1DB954] text-[#090A0F] hover:brightness-110'
+                              : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                          }`}
+                        >
+                          {isCheckingSentence ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Send className="w-3.5 h-3.5" />
+                          )}
+                          <span>AI Chấm</span>
+                        </button>
+                      </div>
+
+                      {sentenceFeedback && (
+                        <div
+                          className={`p-3.5 rounded-2xl border text-xs space-y-2 ${
+                            sentenceFeedback.isCorrect
+                              ? isDark
+                                ? 'bg-emerald-500/10 border-emerald-500/25'
+                                : 'bg-emerald-50/70 border-emerald-200'
+                              : isDark
+                              ? 'bg-amber-500/10 border-amber-500/25'
+                              : 'bg-amber-50/70 border-amber-200'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span
+                              className={`font-extrabold ${
+                                sentenceFeedback.isCorrect
+                                  ? isDark
+                                    ? 'text-emerald-300'
+                                    : 'text-emerald-700'
+                                  : isDark
+                                  ? 'text-amber-300'
+                                  : 'text-amber-700'
+                              }`}
+                            >
+                              {sentenceFeedback.isCorrect ? '✨ Đặt câu rất tự nhiên!' : '💡 Góp ý chỉnh nhẹ:'}
+                            </span>
+                            <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/80 text-slate-800 border border-slate-200/70">
+                              {sentenceFeedback.score}/10
+                            </span>
+                          </div>
+
+                          <p className={`leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                            {sentenceFeedback.feedbackVi}
+                          </p>
+
+                          <div
+                            className={`p-2.5 rounded-xl border space-y-1 ${
+                              isDark ? 'bg-[#12151E] border-white/10' : 'bg-white border-slate-200/80'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="font-bold text-indigo-500 leading-relaxed">
+                                &ldquo;{sentenceFeedback.correctedSentence}&rdquo;
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => speakEnglishWord(sentenceFeedback.correctedSentence, false)}
+                                className="p-1 rounded-lg hover:bg-indigo-100 text-indigo-500 shrink-0 cursor-pointer"
+                                title="Nghe phát âm câu gợi ý"
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            {sentenceFeedback.naturalTranslationVi && (
+                              <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                {sentenceFeedback.naturalTranslationVi}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex justify-end">
+                            <button
+                              type="button"
+                              disabled={isSavingSentenceExample}
+                              onClick={() => handleSaveSentenceAsExample(card)}
+                              className={`px-3 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer disabled:opacity-50 ${
+                                isDark
+                                  ? 'bg-white/10 hover:bg-white/15 text-white'
+                                  : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-700'
+                              }`}
+                            >
+                              <Check className="w-3 h-3 text-emerald-500" />
+                              <span>{isSavingSentenceExample ? 'Đang lưu...' : 'Lưu làm ví dụ của thẻ'}</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Popup Footer Controls */}
               <div
-                className={`px-5 sm:px-7 py-4 border-t flex flex-col gap-2.5 ${
+                className={`px-4 sm:px-6 py-3.5 border-t flex flex-col gap-2 shrink-0 ${
                   isDark ? 'border-white/[0.08] bg-[#181C28]/70' : 'border-slate-100 bg-slate-50/70'
                 }`}
               >
@@ -2314,6 +3237,571 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
           </div>
         );
       })(), document.body)}
+
+      {/* ===================================================================== */}
+      {/* MODAL 4: SMART DICTIONARY (WORDS, MODAL VERBS, IDIOMS, PHRASAL VERBS) */}
+      {/* ===================================================================== */}
+      {typeof document !== 'undefined' && isDictOpen && createPortal(
+        <div
+          onClick={() => setIsDictOpen(false)}
+          className="fixed inset-0 z-[155] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={`w-full max-w-2xl max-h-[90dvh] rounded-3xl border shadow-2xl overflow-hidden flex flex-col ${
+              isDark
+                ? 'bg-[#12151E] border-white/10 text-white'
+                : 'bg-white border-slate-200 text-slate-900'
+            }`}
+          >
+            {/* Header */}
+            <div
+              className={`px-5 py-4 border-b flex items-center justify-between gap-3 shrink-0 ${
+                isDark ? 'border-white/[0.08] bg-[#181C28]/80' : 'border-slate-100 bg-amber-50/40'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-sm">
+                  <BookMarked className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm">Từ Điển Song Ngữ Thông Minh (Anh ↔ Việt)</h3>
+                  <p className="text-[11px] text-slate-500">
+                    Tra 2 chiều Anh-Việt & Việt-Anh cho Từ vựng, Modal Verbs, Idioms (IDM) & Phrasal Verbs
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDictOpen(false)}
+                className={`p-1.5 rounded-full cursor-pointer ${
+                  isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-500'
+                }`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {/* Category Tabs */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {(
+                  [
+                    { id: 'auto', label: 'Tự nhận diện' },
+                    { id: 'word', label: 'Từ vựng' },
+                    { id: 'modal_verb', label: 'Modal Verbs' },
+                    { id: 'idiom', label: 'Idioms (IDM)' },
+                    { id: 'phrasal_verb', label: 'Phrasal Verbs' },
+                  ] as Array<{ id: DictionaryCategory; label: string }>
+                ).map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setDictCategory(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
+                      dictCategory === tab.id
+                        ? isDark
+                          ? 'bg-[#1DB954] text-[#090A0F]'
+                          : 'bg-amber-500 text-white shadow-2xs'
+                        : isDark
+                        ? 'bg-white/5 text-slate-300 hover:bg-white/10'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search Bar */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleLookupDictionary();
+                }}
+                className="flex items-center gap-2"
+              >
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={dictQuery}
+                    onChange={(e) => setDictQuery(e.target.value)}
+                    placeholder="Nhập tiếng Anh hoặc tiếng Việt (vd: resilient, bỏ cuộc, nên làm gì, may mắn)..."
+                    className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border text-xs font-semibold outline-none ${
+                      isDark
+                        ? 'bg-[#181C28] border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
+                        : 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:border-amber-500'
+                    }`}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isLookingUpDict || !dictQuery.trim()}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 ${
+                    isDark
+                      ? 'bg-[#1DB954] text-[#090A0F] hover:brightness-110'
+                      : 'bg-amber-500 hover:bg-amber-600 text-white'
+                  }`}
+                >
+                  {isLookingUpDict ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  <span>Tra ngay</span>
+                </button>
+              </form>
+
+              {/* Quick Chips */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-bold text-slate-400 mr-1">Gợi ý nhanh:</span>
+                {DICT_QUICK_CHIPS[dictCategory].map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => handleLookupDictionary(chip, dictCategory)}
+                    className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold cursor-pointer transition-colors ${
+                      isDark
+                        ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-amber-50 hover:border-amber-200'
+                    }`}
+                  >
+                    {chip}
+                  </button>
+                ))}
+              </div>
+
+              {/* Lookup Result Card */}
+              {isLookingUpDict && (
+                <div className="py-10 flex flex-col items-center justify-center gap-2 text-xs text-slate-400">
+                  <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+                  <span>Đang tra cứu chi tiết nghĩa, công thức và ví dụ...</span>
+                </div>
+              )}
+
+              {!isLookingUpDict && dictResult && (
+                <div
+                  className={`rounded-2xl border p-4 sm:p-5 space-y-4 animate-in fade-in duration-150 ${
+                    isDark ? 'bg-[#181C28] border-white/10' : 'bg-slate-50/70 border-slate-200/80'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-xl sm:text-2xl font-black tracking-tight">{dictResult.term}</h4>
+                        <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 border border-amber-400/30">
+                          {dictResult.partOfSpeech || dictResult.category}
+                        </span>
+                      </div>
+                      {dictResult.phonetic && (
+                        <p className="text-xs font-mono text-slate-400 mt-0.5">{dictResult.phonetic}</p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => speakEnglishWord(dictResult.term, false)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer ${
+                          isDark
+                            ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/35'
+                            : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                        }`}
+                      >
+                        <Volume2 className="w-3.5 h-3.5" />
+                        <span>Phát âm</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={isSavingDictWord}
+                        onClick={handleSaveDictEntryToVocab}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                      >
+                        {isSavingDictWord ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                        <span>Lưu vào kho</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Meanings */}
+                  <div className="space-y-1.5">
+                    <p className={`text-base font-extrabold ${isDark ? 'text-[#1DB954]' : 'text-emerald-700'}`}>
+                      {dictResult.shortMeaningVi}
+                    </p>
+                    {dictResult.detailedExplanationVi && (
+                      <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                        {dictResult.detailedExplanationVi}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Grammar Formula / Usage Notes */}
+                  {(dictResult.grammarFormula || dictResult.usageNotesVi) && (
+                    <div
+                      className={`p-3 rounded-xl border text-xs space-y-1.5 ${
+                        isDark ? 'bg-[#12151E] border-white/10' : 'bg-white border-slate-200/80'
+                      }`}
+                    >
+                      {dictResult.grammarFormula && (
+                        <p>
+                          <strong className="text-indigo-500">Cấu trúc / Cách dùng:</strong>{' '}
+                          <span className="font-mono text-[11.5px]">{dictResult.grammarFormula}</span>
+                        </p>
+                      )}
+                      {dictResult.usageNotesVi && (
+                        <p className={isDark ? 'text-slate-300' : 'text-slate-600'}>
+                          <strong className="text-amber-500">Lưu ý ngữ cảnh:</strong> {dictResult.usageNotesVi}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Synonyms & Antonyms */}
+                  {(dictResult.synonyms.length > 0 || dictResult.antonyms.length > 0) && (
+                    <div className="flex flex-wrap gap-3 text-[11px]">
+                      {dictResult.synonyms.length > 0 && (
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className="font-bold text-slate-400">Đồng nghĩa:</span>
+                          {dictResult.synonyms.map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => handleLookupDictionary(s, 'auto')}
+                              className="px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-600 font-semibold hover:underline cursor-pointer"
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {dictResult.antonyms.length > 0 && (
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className="font-bold text-slate-400">Trái nghĩa:</span>
+                          {dictResult.antonyms.map((a) => (
+                            <button
+                              key={a}
+                              type="button"
+                              onClick={() => handleLookupDictionary(a, 'auto')}
+                              className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 font-semibold hover:underline cursor-pointer"
+                            >
+                              {a}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Bilingual Examples */}
+                  {dictResult.examples.length > 0 && (
+                    <div className="space-y-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        Ví dụ thực tế
+                      </span>
+                      {dictResult.examples.map((ex, i) => (
+                        <div
+                          key={i}
+                          className={`p-3 rounded-xl border flex items-start justify-between gap-2 text-xs ${
+                            isDark ? 'bg-[#12151E] border-white/10' : 'bg-white border-slate-200/80'
+                          }`}
+                        >
+                          <div className="space-y-0.5">
+                            <p className="font-semibold italic">&ldquo;{ex.en}&rdquo;</p>
+                            {ex.vi && <p className="text-[11px] text-slate-500">{ex.vi}</p>}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => speakEnglishWord(ex.en, false)}
+                            className="p-1.5 rounded-lg hover:bg-indigo-100 text-indigo-500 shrink-0 cursor-pointer"
+                            title="Nghe câu ví dụ"
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ===================================================================== */}
+      {/* FLOATING CUTE ENGLISH TUTOR ICON & RIGHT-SIDE MINI CHAT POPUP         */}
+      {/* ===================================================================== */}
+      {typeof document !== 'undefined' && createPortal(
+        <>
+          {/* Cute Floating Icon-Only Trigger Button (Bottom-Right Corner) */}
+          {!isTutorOpen && (
+            <button
+              type="button"
+              onClick={() => {
+                soundEngine.playSoftClick();
+                setIsTutorOpen(true);
+              }}
+              className="fixed bottom-20 md:bottom-4 right-4 z-[165] w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-500 via-violet-500 to-pink-500 p-[2px] shadow-lg shadow-indigo-500/25 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+              title="Mở Gia sư Tiếng Anh IELTS 8.0+"
+              aria-label="Mở Gia sư Tiếng Anh IELTS 8.0+"
+            >
+              <div className="w-full h-full rounded-full bg-white flex items-center justify-center p-2 relative">
+                <img src="/images/logo-mark.png" alt="Tutor" className="w-full h-full object-contain" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white" />
+              </div>
+            </button>
+          )}
+
+          {/* Mini Friendly Chat Popup on Right Side */}
+          {isTutorOpen && (
+            <div
+              className={`fixed bottom-20 md:bottom-5 right-3 sm:right-6 z-[165] w-[calc(100vw-1.5rem)] sm:w-[390px] h-[510px] max-h-[76dvh] rounded-3xl border shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200 ${
+                isDark
+                  ? 'bg-[#12151E] border-white/15 text-white'
+                  : 'bg-white border-indigo-100 text-slate-900'
+              }`}
+            >
+              {/* Cute Header */}
+              <div
+                className={`px-4 py-3 border-b flex items-center justify-between gap-2 shrink-0 ${
+                  isDark
+                    ? 'bg-[#181C28] border-white/[0.08]'
+                    : 'bg-gradient-to-r from-indigo-50/80 via-white to-pink-50/80 border-indigo-100/70'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="relative w-9 h-9 rounded-2xl bg-white border border-indigo-200/80 p-1.5 shadow-xs shrink-0">
+                    <img src="/images/logo-mark.png" alt="Genncore Tutor" className="w-full h-full object-contain" />
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="text-xs font-extrabold">Genncore English Tutor</h4>
+                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white">
+                        IELTS 8.0+
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-400">Hỏi ngữ pháp, từ vựng & luyện chat 1-1</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundEngine.playSoftClick();
+                      setTutorMessages((prev) => prev.slice(0, 1));
+                    }}
+                    className={`p-1.5 rounded-xl text-[10px] font-bold cursor-pointer ${
+                      isDark ? 'hover:bg-white/10 text-slate-400' : 'hover:bg-slate-100 text-slate-400'
+                    }`}
+                    title="Làm mới cuộc trò chuyện"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsTutorOpen(false)}
+                    className={`p-1.5 rounded-xl cursor-pointer ${
+                      isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-500'
+                    }`}
+                    title="Thu nhỏ"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Messages Feed */}
+              <div ref={tutorScrollRef} className="flex-1 overflow-y-auto p-3.5 space-y-3">
+                {tutorMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start items-start gap-2'}`}
+                  >
+                    {msg.role === 'assistant' && (
+                      <div className="w-6 h-6 rounded-xl bg-white border border-indigo-200/80 p-1 shrink-0 mt-0.5 shadow-2xs">
+                        <img src="/images/logo-mark.png" alt="" className="w-full h-full object-contain" />
+                      </div>
+                    )}
+
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed space-y-2 ${
+                        msg.role === 'user'
+                          ? isDark
+                            ? 'bg-[#1DB954] text-[#090A0F] font-semibold rounded-tr-sm'
+                            : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-tr-sm shadow-xs'
+                          : isDark
+                          ? 'bg-[#181C28] border border-white/10 text-slate-200 rounded-tl-sm'
+                          : 'bg-slate-50 border border-slate-200/70 text-slate-700 rounded-tl-sm'
+                      }`}
+                    >
+                      {msg.role === 'user' ? (
+                        <p>{msg.text}</p>
+                      ) : (
+                        <>
+                          {msg.primaryMode === 'en_chat' ? (
+                            <>
+                              {msg.replyEn && (
+                                <div
+                                  className={`p-2.5 rounded-xl border flex items-start justify-between gap-2 ${
+                                    isDark
+                                      ? 'bg-[#12151E] border-emerald-400/25 text-emerald-300'
+                                      : 'bg-white border-indigo-200/80 text-indigo-800 shadow-2xs'
+                                  }`}
+                                >
+                                  <p className="font-bold leading-relaxed">{msg.replyEn}</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => speakEnglishWord(msg.replyEn || '', false)}
+                                    className="p-1 rounded-lg hover:bg-indigo-100/70 text-indigo-500 shrink-0 cursor-pointer"
+                                    title="Nghe phát âm"
+                                  >
+                                    <Volume2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              )}
+                              {msg.explanationVi && renderHighlightedTutorText(msg.explanationVi)}
+                            </>
+                          ) : (
+                            <>
+                              {msg.explanationVi && renderHighlightedTutorText(msg.explanationVi)}
+                              {msg.replyEn && (
+                                <div
+                                  className={`p-2.5 rounded-xl border flex items-start justify-between gap-2 ${
+                                    isDark
+                                      ? 'bg-[#12151E] border-white/10 text-emerald-300'
+                                      : 'bg-white border-indigo-100 text-indigo-700'
+                                  }`}
+                                >
+                                  <div className="space-y-0.5">
+                                    <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-slate-400 block">
+                                      Ví dụ minh họa
+                                    </span>
+                                    <p className="font-bold italic leading-relaxed">&ldquo;{msg.replyEn}&rdquo;</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => speakEnglishWord(msg.replyEn || '', false)}
+                                    className="p-1 rounded-lg hover:bg-indigo-100/70 text-indigo-500 shrink-0 cursor-pointer mt-1"
+                                    title="Nghe phát âm"
+                                  >
+                                    <Volume2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          )}
+
+                          {msg.bonusVocab && (
+                            <div
+                              className={`p-2 rounded-xl border flex items-center justify-between gap-2 ${
+                                isDark ? 'bg-emerald-500/10 border-emerald-500/25' : 'bg-emerald-50/70 border-emerald-200'
+                              }`}
+                            >
+                              <div className="min-w-0">
+                                <p className="font-extrabold text-[11px] truncate">
+                                  ✨ {msg.bonusVocab.word}{' '}
+                                  {msg.bonusVocab.phonetic && (
+                                    <span className="font-mono font-normal opacity-75">{msg.bonusVocab.phonetic}</span>
+                                  )}
+                                </p>
+                                <p className="text-[10.5px] opacity-85 truncate">{msg.bonusVocab.meaning}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleSaveBonusVocabFromTutor(msg.bonusVocab!)}
+                                className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold shrink-0 cursor-pointer"
+                              >
+                                + Lưu
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {isTutorTyping && (
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <div className="w-6 h-6 rounded-xl bg-white border border-indigo-200/80 p-1">
+                      <img src="/images/logo-mark.png" alt="" className="w-full h-full object-contain" />
+                    </div>
+                    <div className={`px-3 py-2 rounded-2xl border flex items-center gap-1.5 ${
+                      isDark ? 'bg-[#181C28] border-white/10' : 'bg-slate-50 border-slate-200/70'
+                    }`}>
+                      <Loader2 className="w-3 h-3 animate-spin text-indigo-500" />
+                      <span className="text-[11px]">Gia sư đang soạn câu trả lời...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Starter Chips */}
+              <div className="px-3 pb-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+                {[
+                  ...(isStudyPopupOpen && filteredWords[deckIndex]
+                    ? [`Giải thích thêm từ "${filteredWords[deckIndex].word}" & cho ví dụ Band 8.0`]
+                    : []),
+                  'Phân biệt must & have to',
+                  'Luyện chat giao tiếp công sở',
+                  '3 Idioms hay cho IELTS Speaking',
+                ].map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => handleSendTutorMessage(q)}
+                    className={`px-2.5 py-1 rounded-full border text-[10.5px] font-semibold shrink-0 cursor-pointer transition-colors ${
+                      isDark
+                        ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                        : 'bg-indigo-50/60 border-indigo-100 text-indigo-700 hover:bg-indigo-100'
+                    }`}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+
+              {/* Input Bar */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendTutorMessage();
+                }}
+                className={`p-3 border-t flex items-center gap-2 shrink-0 ${
+                  isDark ? 'border-white/[0.08] bg-[#181C28]/60' : 'border-slate-100 bg-slate-50/70'
+                }`}
+              >
+                <input
+                  type="text"
+                  value={tutorInput}
+                  onChange={(e) => setTutorInput(e.target.value)}
+                  placeholder="Hỏi ngữ pháp, từ vựng hoặc chat tiếng Anh..."
+                  className={`flex-1 px-3.5 py-2 rounded-xl border text-xs outline-none ${
+                    isDark
+                      ? 'bg-[#12151E] border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
+                      : 'bg-white border-slate-200 text-slate-800 focus:border-indigo-500'
+                  }`}
+                />
+                <button
+                  type="submit"
+                  disabled={isTutorTyping || !tutorInput.trim()}
+                  className={`p-2 rounded-xl cursor-pointer disabled:opacity-45 shrink-0 ${
+                    isDark
+                      ? 'bg-[#1DB954] text-[#090A0F] hover:brightness-110'
+                      : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  }`}
+                  title="Gửi"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
+          )}
+        </>,
+        document.body
+      )}
     </div>
   );
 };

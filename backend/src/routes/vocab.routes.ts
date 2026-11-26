@@ -4,6 +4,26 @@ import { vocabService, ReviewRating } from '../services/vocab.service';
 
 export const vocabRouter = Router();
 
+// GET /api/vocab/tts - Synthesize English pronunciation MP3 with Neural Voices
+vocabRouter.get('/tts', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const text = String(req.query.text || '').trim();
+    const voice = String(req.query.voice || 'en-US-AriaNeural').trim();
+    const rate = String(req.query.rate || '+0%').trim();
+
+    if (!text) {
+      return res.status(400).json({ error: 'Thiếu nội dung text cần đọc.' });
+    }
+
+    const audioBuffer = await vocabService.synthesizeSpeech({ text, voice, rate });
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(audioBuffer);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Không thể tạo giọng đọc lúc này', details: err.message });
+  }
+});
+
 // GET /api/vocab - Fetch all vocab words for user
 vocabRouter.get('/', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -76,6 +96,77 @@ vocabRouter.post('/ai-extract', optionalAuth, async (req: AuthenticatedRequest, 
     res.status(500).json({
       success: false,
       error: err.message || 'Không thể tự động trích xuất từ vựng lúc này.',
+    });
+  }
+});
+
+// POST /api/vocab/check-sentence - Evaluate user's practice sentence with AI
+vocabRouter.post('/check-sentence', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { word, meaning, partOfSpeech, userSentence, customApiKey } = req.body || {};
+    if (!word?.trim() || !userSentence?.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Vui lòng nhập câu tiếng Anh để AI kiểm tra.',
+      });
+    }
+    const result = await vocabService.checkSentenceUsage({
+      word,
+      meaning,
+      partOfSpeech,
+      userSentence,
+      customApiKey,
+    });
+    res.json({ success: true, ...result });
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      error: err.message || 'Chưa thể chấm câu lúc này, bạn thử lại sau giây lát.',
+    });
+  }
+});
+
+// POST /api/vocab/dictionary - Smart dictionary lookup (words, modal verbs, idioms, phrasal verbs)
+vocabRouter.post('/dictionary', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { query, category, customApiKey } = req.body || {};
+    if (!query?.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Vui lòng nhập từ, modal verb, idiom hoặc phrasal verb cần tra.',
+      });
+    }
+    const entry = await vocabService.lookupDictionary({ query, category, customApiKey });
+    res.json({ success: true, entry });
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      error: err.message || 'Chưa tra được từ điển lúc này.',
+    });
+  }
+});
+
+// POST /api/vocab/tutor-chat - Friendly IELTS 8.0+ English Tutor Mini-Chatbot
+vocabRouter.post('/tutor-chat', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { message, history, activeWord, customApiKey } = req.body || {};
+    if (!message?.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Vui lòng nhập câu hỏi hoặc nội dung luyện tập.',
+      });
+    }
+    const reply = await vocabService.englishTutorChat({
+      message,
+      history,
+      activeWord,
+      customApiKey,
+    });
+    res.json({ success: true, ...reply });
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      error: err.message || 'Gia sư AI đang bận, bạn thử lại sau giây lát nhé.',
     });
   }
 });

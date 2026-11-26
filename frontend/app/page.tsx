@@ -111,10 +111,10 @@ const TECH_STACK_ITEMS: TechItem[] = [
     tag: 'Cloud DB',
   },
   {
-    name: 'Google Gemini 2.5 AI',
+    name: 'Genncore Neural AI',
     category: 'ai-tools',
     level: 'Tích Hợp',
-    desc: 'Xử lý ngôn ngữ tự nhiên, phân tích task thông minh và lập lịch không chồng chéo.',
+    desc: 'Xử lý ngôn ngữ tự nhiên, phân tích task thông minh và trợ lý học tiếng Anh chuyên sâu.',
     iconBg: 'bg-rose-50',
     iconColor: 'text-[#E11D48]',
     tag: 'LLM & AI Co-Pilot',
@@ -195,13 +195,13 @@ const PROJECT_DETAILS: Record<string, ProjectCaseStudy> = {
   },
   gemini: {
     id: 'gemini',
-    title: 'Gemini AI Co-Pilot & Smart Task Assistant',
-    subtitle: 'Trợ lý lập lịch trình tự động bằng Ngôn Ngữ Tự Nhiên',
+    title: 'Genncore AI Co-Pilot & English Expert',
+    subtitle: 'Trợ lý lập lịch trình & Gia sư tiếng Anh thông minh',
     badge: 'Artificial Intelligence',
     badgeColor: 'text-rose-600 bg-rose-50 border-rose-200',
     gradient: 'from-[#E11D48] to-pink-600',
     summary:
-      'Tích hợp Google Gemini 2.5 AI phân tích câu lệnh tiếng Việt thành các mục việc cụ thể với khung giờ và độ ưu tiên tối ưu.',
+      'Tích hợp trí tuệ nhân tạo Genncore Neural AI phân tích câu lệnh tiếng Việt thành lịch trình tối ưu và hỗ trợ tra từ điển, chấm câu tiếng Anh.',
     problem:
       'Nhập liệu thủ công từng giờ, từng ngày mất thời gian và dễ tạo ra xung đột giờ giữa các sự kiện quan trọng.',
     solution:
@@ -211,7 +211,7 @@ const PROJECT_DETAILS: Record<string, ProjectCaseStudy> = {
       { label: 'Độ chính xác ngữ cảnh', value: '98%' },
       { label: 'Số giờ tiết kiệm/tuần', value: '4.5 hrs' },
     ],
-    tags: ['Google Gemini 2.5', 'NLP Engine', 'Auto Scheduling', 'Express.js'],
+    tags: ['Genncore Neural AI', 'NLP Engine', 'Auto Scheduling', 'English Studio'],
   },
   pomodoro: {
     id: 'pomodoro',
@@ -278,7 +278,7 @@ const TESTIMONIALS = [
     role: 'Founder @ EduSpark Academy',
     avatar: '👩‍💼',
     rating: 5,
-    text: 'Trợ lý AI Gemini lên lịch tự động bằng tiếng Việt thông minh bất ngờ. Chỉ cần nói vài câu là mọi lịch trình trong tuần được phân bổ chuẩn chỉnh.',
+    text: 'Trợ lý Genncore AI lên lịch tự động bằng tiếng Việt thông minh bất ngờ. Chỉ cần nói vài câu là mọi lịch trình trong tuần được phân bổ chuẩn chỉnh.',
     accent: 'border-emerald-100 bg-white shadow-emerald-100/50',
   },
 ];
@@ -667,7 +667,7 @@ export default function ShoaibPortfolioStyleLanding() {
             
             <div className="absolute -bottom-4 left-6 sm:left-10 z-20 px-4 py-2 rounded-xl bg-white border-2 border-rose-200 shadow-xl font-bold text-xs text-[#E11D48] flex items-center gap-1.5 select-none hover:scale-105 transition-transform">
               <Sparkles className="w-3.5 h-3.5 text-[#E11D48] animate-spin" />
-              <span>Gemini 2.5 Active</span>
+              <span>Genncore AI Active</span>
             </div>
 
             {/* Main Hero Illustration */}
@@ -850,7 +850,7 @@ export default function ShoaibPortfolioStyleLanding() {
                 Backend & AI Co-Pilot
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Xây dựng API RESTful với Node.js & MongoDB Atlas, tích hợp mô hình ngôn ngữ lớn Google Gemini 2.5 tự động hóa.
+                Xây dựng API RESTful với Node.js & MongoDB Atlas, tích hợp mô hình ngôn ngữ thông minh Genncore Neural AI.
               </p>
               <button
                 onClick={() => {
@@ -962,12 +962,12 @@ export default function ShoaibPortfolioStyleLanding() {
                 <div className="p-2 rounded-lg bg-rose-50/80 border border-rose-100 text-[10px] text-slate-700 font-medium truncate">
                   "Xếp lịch học React lúc 19:30"
                 </div>
-                <span className="text-[10px] font-bold text-[#E11D48]">Google Gemini 2.5 Active</span>
+                <span className="text-[10px] font-bold text-[#E11D48]">Genncore AI Active</span>
               </div>
             </div>
             <div>
               <span className="text-[11px] font-bold text-[#E11D48] uppercase">Artificial Intelligence</span>
-              <h4 className="text-lg font-black text-[#0F172A] mt-0.5">Gemini AI Co-Pilot</h4>
+              <h4 className="text-lg font-black text-[#0F172A] mt-0.5">Genncore AI Co-Pilot</h4>
               <p className="text-xs text-slate-500 mt-1 line-clamp-2">
                 Trợ lý phân tích ngôn ngữ tự nhiên và tự động lên lịch trình thông minh không chồng chéo.
               </p>
@@ -1185,7 +1185,7 @@ export default function ShoaibPortfolioStyleLanding() {
                   </div>
                 </div>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-[#E11D48]">
-                  Gemini 2.5
+                  Genncore AI
                 </span>
               </div>
 
@@ -1273,7 +1273,7 @@ export default function ShoaibPortfolioStyleLanding() {
             </div>
 
             <p className="text-[11px] text-slate-400 italic">
-              ✦ Trong ứng dụng thật, Gemini AI sẽ tự động phân tích và xếp thẳng vào bảng giờ 24h không trùng lịch.
+              ✦ Trong ứng dụng thật, Genncore AI sẽ tự động phân tích và xếp thẳng vào bảng giờ 24h không trùng lịch.
             </p>
           </div>
 

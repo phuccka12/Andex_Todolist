@@ -392,10 +392,10 @@ export async function saveTelegramSettings(settings: {
 export async function getAiStatus(): Promise<{ isReady: boolean; model: string }> {
   try {
     const res = await fetch(`${API_BASE}/ai/status`);
-    if (!res.ok) return { isReady: false, model: 'gemini-3.8-flash' };
+    if (!res.ok) return { isReady: false, model: 'genncore-ai' };
     return await res.json();
   } catch {
-    return { isReady: false, model: 'gemini-3.8-flash' };
+    return { isReady: false, model: 'genncore-ai' };
   }
 }
 

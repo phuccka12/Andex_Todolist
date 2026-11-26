@@ -102,6 +102,28 @@ export const THEME_OPTIONS: ThemeOption[] = [
   },
 ];
 
+export interface VocabVoiceOption {
+  id: string;
+  label: string;
+  accent: string;
+  gender: 'Nữ' | 'Nam' | 'Hệ thống';
+  sampleTag: string;
+}
+
+export const VOCAB_VOICE_OPTIONS: VocabVoiceOption[] = [
+  { id: 'en-US-AriaNeural', label: 'Aria (Mỹ • Tự nhiên)', accent: 'en-US', gender: 'Nữ', sampleTag: 'US' },
+  { id: 'en-US-GuyNeural', label: 'Guy (Mỹ • Trầm ấm)', accent: 'en-US', gender: 'Nam', sampleTag: 'US' },
+  { id: 'en-US-JennyNeural', label: 'Jenny (Mỹ • Giao tiếp)', accent: 'en-US', gender: 'Nữ', sampleTag: 'US' },
+  { id: 'en-US-ChristopherNeural', label: 'Christopher (Mỹ • Chuẩn)', accent: 'en-US', gender: 'Nam', sampleTag: 'US' },
+  { id: 'en-US-EmmaMultilingualNeural', label: 'Emma (Mỹ • Đa ngữ)', accent: 'en-US', gender: 'Nữ', sampleTag: 'US' },
+  { id: 'en-GB-SoniaNeural', label: 'Sonia (Anh UK • BBC)', accent: 'en-GB', gender: 'Nữ', sampleTag: 'UK' },
+  { id: 'en-GB-RyanNeural', label: 'Ryan (Anh UK • Lịch lãm)', accent: 'en-GB', gender: 'Nam', sampleTag: 'UK' },
+  { id: 'en-AU-NatashaNeural', label: 'Natasha (Úc • Trẻ trung)', accent: 'en-AU', gender: 'Nữ', sampleTag: 'AU' },
+  { id: 'en-AU-WilliamNeural', label: 'William (Úc • Rõ nét)', accent: 'en-AU', gender: 'Nam', sampleTag: 'AU' },
+  { id: 'en-CA-ClaraNeural', label: 'Clara (Canada • Dịu nhẹ)', accent: 'en-CA', gender: 'Nữ', sampleTag: 'CA' },
+  { id: 'browser', label: 'Giọng mặc định trình duyệt (Offline)', accent: 'en-US', gender: 'Hệ thống', sampleTag: 'Local' },
+];
+
 export interface AppSettings {
   soundEnabled: boolean;
   soundVolume: number; // 0 to 100
@@ -112,6 +134,8 @@ export interface AppSettings {
   theme: AppTheme;
   customTheme?: CustomThemeConfig;
   sidebarCollapsed: boolean;
+  vocabVoice: string;
+  vocabSpeechRate: number; // 0.7 to 1.25
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -124,6 +148,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   theme: 'slate',
   customTheme: DEFAULT_CUSTOM_THEME,
   sidebarCollapsed: false,
+  vocabVoice: 'en-US-AriaNeural',
+  vocabSpeechRate: 1.0,
 };
 
 const SETTINGS_KEY = 'cbp_atelier_app_settings';

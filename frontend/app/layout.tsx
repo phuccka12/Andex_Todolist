@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Gencoore — Personal Productivity & Time Operating System',
-  description: 'Gencoore: Thời khóa biểu 24h, Kanban, Pomodoro 432Hz, Nhật ký Ký Ức & Trợ lý AI Gemini.',
+  title: 'Genncore — Personal Productivity & English Studio',
+  description: 'Genncore: Thời khóa biểu 24h, Kanban, Pomodoro 432Hz, Học Từ Vựng & Trợ lý Genncore AI.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

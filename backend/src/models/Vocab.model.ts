@@ -9,6 +9,7 @@ export interface IVocabDocument extends Document {
   example?: string;
   exampleTranslation?: string;
   topic: string;
+  isSaved?: boolean;
   srsLevel: number;
   nextReviewAt: Date;
   lastReviewedAt?: Date;
@@ -28,6 +29,7 @@ const VocabSchema = new Schema<IVocabDocument>(
     example: { type: String, default: '', trim: true },
     exampleTranslation: { type: String, default: '', trim: true },
     topic: { type: String, default: 'Chung', trim: true },
+    isSaved: { type: Boolean, default: false, index: true },
     srsLevel: { type: Number, default: 0, min: 0, max: 5 },
     nextReviewAt: { type: Date, default: () => new Date(), index: true },
     lastReviewedAt: { type: Date, default: null },

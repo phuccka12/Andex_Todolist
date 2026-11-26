@@ -10,6 +10,7 @@
     "dev": "ts-node src/server.ts"
   },
   "dependencies": {
+    "@andresaya/edge-tts": "^1.9.1",
     "@types/nodemailer": "^8.0.2",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.11.0",

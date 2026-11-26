@@ -1,5 +1,6 @@
 import { authService } from './authService';
 import { API_BASE } from './config';
+import { getStoredSettings } from './settingsStorage';
 
 export interface VocabItem {
   id: string;
@@ -11,6 +12,7 @@ export interface VocabItem {
   example?: string;
   exampleTranslation?: string;
   topic: string;
+  isSaved?: boolean;
   srsLevel: number; // 0..5
   nextReviewAt: string;
   lastReviewedAt?: string | null;
@@ -30,6 +32,58 @@ export interface ExtractedVocabDraft {
   exampleTranslation: string;
   topic: string;
   selected?: boolean;
+}
+
+export interface SentenceCheckResult {
+  isCorrect: boolean;
+  score: number;
+  feedbackVi: string;
+  correctedSentence: string;
+  naturalTranslationVi: string;
+}
+
+export type DictionaryCategory = 'auto' | 'word' | 'modal_verb' | 'idiom' | 'phrasal_verb';
+
+export interface DictionaryEntry {
+  term: string;
+  category: 'word' | 'modal_verb' | 'idiom' | 'phrasal_verb';
+  phonetic: string;
+  partOfSpeech: string;
+  shortMeaningVi: string;
+  detailedExplanationVi: string;
+  grammarFormula: string;
+  usageNotesVi: string;
+  synonyms: string[];
+  antonyms: string[];
+  examples: Array<{ en: string; vi: string }>;
+  suggestedTopic: string;
+}
+
+export interface TutorChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  text: string;
+  primaryMode?: 'en_chat' | 'vi_explain';
+  replyEn?: string;
+  explanationVi?: string;
+  bonusVocab?: {
+    word: string;
+    phonetic?: string;
+    meaning: string;
+    topic?: string;
+  } | null;
+}
+
+export interface TutorChatResponse {
+  primaryMode?: 'en_chat' | 'vi_explain';
+  replyEn: string;
+  explanationVi: string;
+  bonusVocab: {
+    word: string;
+    phonetic?: string;
+    meaning: string;
+    topic?: string;
+  } | null;
 }
 
 const VOCAB_CACHE_KEY = 'gencoore_cached_vocab_v1';
@@ -199,6 +253,7 @@ export async function createVocab(payload: Partial<VocabItem>): Promise<VocabIte
         payload.example || '',
         payload.topic
       ),
+      isSaved: Boolean(payload.isSaved),
       srsLevel: 0,
       nextReviewAt: new Date().toISOString(),
       reviewCount: 0,
@@ -318,6 +373,105 @@ export async function aiExtractVocab(payload: {
   return Array.isArray(data.words)
     ? data.words.map((w: ExtractedVocabDraft) => ({ ...w, selected: true }))
     : [];
+}
+
+export async function checkVocabSentence(payload: {
+  word: string;
+  meaning?: string;
+  partOfSpeech?: string;
+  userSentence: string;
+}): Promise<SentenceCheckResult> {
+  const res = await fetch(`${API_BASE}/vocab/check-sentence`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authService.getAuthHeaders(),
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || 'Chưa thể chấm câu lúc này.');
+  }
+  return {
+    isCorrect: Boolean(data.isCorrect),
+    score: Number(data.score) || 7,
+    feedbackVi: data.feedbackVi || '',
+    correctedSentence: data.correctedSentence || payload.userSentence,
+    naturalTranslationVi: data.naturalTranslationVi || '',
+  };
+}
+
+const DICT_CACHE_KEY = 'genncore_dict_cache_v1';
+
+export async function lookupDictionary(payload: {
+  query: string;
+  category?: DictionaryCategory;
+}): Promise<DictionaryEntry> {
+  const cacheKey = `${payload.category || 'auto'}|${payload.query.trim().toLowerCase()}`;
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(DICT_CACHE_KEY);
+      const map: Record<string, DictionaryEntry> = raw ? JSON.parse(raw) : {};
+      if (map[cacheKey]) return map[cacheKey];
+    } catch {}
+  }
+
+  const res = await fetch(`${API_BASE}/vocab/dictionary`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authService.getAuthHeaders(),
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.success || !data.entry) {
+    throw new Error(data.error || 'Không thể tra cứu từ điển lúc này.');
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(DICT_CACHE_KEY);
+      const map: Record<string, DictionaryEntry> = raw ? JSON.parse(raw) : {};
+      const keys = Object.keys(map);
+      if (keys.length >= 100) {
+        delete map[keys[0]];
+      }
+      map[cacheKey] = data.entry;
+      localStorage.setItem(DICT_CACHE_KEY, JSON.stringify(map));
+    } catch {}
+  }
+
+  return data.entry;
+}
+
+export async function sendEnglishTutorMessage(payload: {
+  message: string;
+  history?: Array<{ role: 'user' | 'assistant'; text: string }>;
+  activeWord?: { word: string; meaning?: string; partOfSpeech?: string } | null;
+}): Promise<TutorChatResponse> {
+  const res = await fetch(`${API_BASE}/vocab/tutor-chat`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authService.getAuthHeaders(),
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.success) {
+    if (res.status === 404) {
+      throw new Error('Server chưa cập nhật tính năng Gia sư AI (404). Hãy git push để Render deploy bản mới.');
+    }
+    throw new Error(data.error || `Gia sư AI chưa phản hồi được (HTTP ${res.status}).`);
+  }
+  return {
+    primaryMode: data.primaryMode === 'en_chat' ? 'en_chat' : 'vi_explain',
+    replyEn: data.replyEn || '',
+    explanationVi: data.explanationVi || '',
+    bonusVocab: data.bonusVocab || null,
+  };
 }
 
 export async function reviewVocab(id: string, rating: ReviewRating): Promise<VocabItem> {
@@ -519,37 +673,25 @@ function splitCsvLine(line: string, delimiter = ','): string[] {
 }
 
 /**
- * Parses CSV/TSV or delimited lines.
+ * Maps a 2D array of string rows (e.g. from Excel .xlsx or parsed CSV) into ExtractedVocabDraft[].
  * Supports header-mapped columns (word, meaning, phonetic, partOfSpeech, example, exampleTranslation, topic)
- * as well as positional 2..7 column CSV/TSV/dash/pipe rows.
- * Returns null if the input looks like raw words-only or paragraph text that needs AI extraction.
+ * as well as positional 2..7 column rows.
  */
-export function parseStructuredVocabLines(
-  rawText: string,
+export function parseVocabRowsMatrix(
+  rawRows: unknown[][],
   defaultTopic = 'Chung'
 ): ExtractedVocabDraft[] | null {
-  const cleanText = rawText.replace(/^\uFEFF/, '');
-  const lines = cleanText
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
+  const rows = rawRows
+    .map((r) => (Array.isArray(r) ? r.map((c) => String(c ?? '').trim()) : []))
+    .filter((r) => r.some((cell) => cell.length > 0));
 
-  if (lines.length === 0) return null;
+  if (rows.length === 0) return null;
 
   const parsed: ExtractedVocabDraft[] = [];
   let colMap: Record<string, number> | null = null;
   let startIdx = 0;
 
-  const firstParts = lines[0].includes('\t')
-    ? splitCsvLine(lines[0], '\t')
-    : lines[0].includes(';') && !lines[0].includes(',')
-    ? splitCsvLine(lines[0], ';')
-    : lines[0].includes('|')
-    ? splitCsvLine(lines[0], '|')
-    : lines[0].includes(',')
-    ? splitCsvLine(lines[0], ',')
-    : [];
-
+  const firstParts = rows[0];
   if (
     firstParts.length >= 2 &&
     /^(word|term|tu|từ|english|từ vựng)$/i.test(firstParts[0])
@@ -571,24 +713,8 @@ export function parseStructuredVocabLines(
     startIdx = 1;
   }
 
-  for (let i = startIdx; i < lines.length; i++) {
-    const line = lines[i];
-
-    let parts: string[] = [];
-    if (line.includes('\t')) {
-      parts = splitCsvLine(line, '\t');
-    } else if (line.includes('|')) {
-      parts = splitCsvLine(line, '|');
-    } else if (line.includes(' - ')) {
-      parts = line.split(' - ').map((p) => p.trim());
-    } else if (line.includes(': ')) {
-      parts = line.split(': ').map((p) => p.trim());
-    } else if (line.includes(';')) {
-      parts = splitCsvLine(line, ';');
-    } else if (line.includes(',')) {
-      parts = splitCsvLine(line, ',');
-    }
-
+  for (let i = startIdx; i < rows.length; i++) {
+    const parts = rows[i];
     const word = colMap ? parts[colMap.word ?? 0] || '' : parts[0] || '';
     const meaning = colMap ? parts[colMap.meaning ?? 1] || '' : parts[1] || '';
 
@@ -640,9 +766,8 @@ export function parseStructuredVocabLines(
     }
   }
 
-  const effectiveLines = Math.max(1, lines.length - startIdx);
-  // Only treat as structured import if at least half of data lines matched word+meaning pairs
-  if (parsed.length > 0 && parsed.length >= Math.ceil(effectiveLines * 0.5)) {
+  const effectiveRows = Math.max(1, rows.length - startIdx);
+  if (parsed.length > 0 && parsed.length >= Math.ceil(effectiveRows * 0.5)) {
     return parsed;
   }
 
@@ -650,24 +775,63 @@ export function parseStructuredVocabLines(
 }
 
 /**
- * Browser Text-to-Speech pronunciation for English words/sentences
+ * Parses CSV/TSV or delimited lines.
+ * Supports header-mapped columns (word, meaning, phonetic, partOfSpeech, example, exampleTranslation, topic)
+ * as well as positional 2..7 column CSV/TSV/dash/pipe rows.
+ * Returns null if the input looks like raw words-only or paragraph text that needs AI extraction.
  */
-export function speakEnglishWord(text: string, slow = false): void {
+export function parseStructuredVocabLines(
+  rawText: string,
+  defaultTopic = 'Chung'
+): ExtractedVocabDraft[] | null {
+  const cleanText = rawText.replace(/^\uFEFF/, '');
+  const lines = cleanText
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) return null;
+
+  const matrix = lines.map((line) => {
+    if (line.includes('\t')) return splitCsvLine(line, '\t');
+    if (line.includes('|')) return splitCsvLine(line, '|');
+    if (line.includes(' - ')) return line.split(' - ').map((p) => p.trim());
+    if (line.includes(': ')) return line.split(': ').map((p) => p.trim());
+    if (line.includes(';')) return splitCsvLine(line, ';');
+    if (line.includes(',')) return splitCsvLine(line, ',');
+    return [line];
+  });
+
+  return parseVocabRowsMatrix(matrix, defaultTopic);
+}
+
+let activeTtsAudio: HTMLAudioElement | null = null;
+
+function speakWithBrowserSynthesis(text: string, slow = false, voiceId?: string): void {
   if (typeof window === 'undefined' || !('speechSynthesis' in window) || !text.trim()) {
     return;
   }
-
   try {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text.trim());
-    utterance.lang = 'en-US';
-    utterance.rate = slow ? 0.65 : 0.95;
+    const stored = getStoredSettings();
+    const baseRate = stored.vocabSpeechRate || 1.0;
+    const preferredLang = voiceId?.startsWith('en-GB')
+      ? 'en-GB'
+      : voiceId?.startsWith('en-AU')
+      ? 'en-AU'
+      : voiceId?.startsWith('en-CA')
+      ? 'en-CA'
+      : 'en-US';
+
+    utterance.lang = preferredLang;
+    utterance.rate = slow ? Math.max(0.55, baseRate * 0.65) : baseRate;
     utterance.pitch = 1.0;
 
     const voices = window.speechSynthesis.getVoices();
     const enVoice =
-      voices.find((v) => v.lang === 'en-US' && v.localService) ||
-      voices.find((v) => v.lang.startsWith('en-US')) ||
+      voices.find((v) => v.lang === preferredLang && v.localService) ||
+      voices.find((v) => v.lang.startsWith(preferredLang)) ||
       voices.find((v) => v.lang.startsWith('en'));
 
     if (enVoice) {
@@ -676,5 +840,52 @@ export function speakEnglishWord(text: string, slow = false): void {
 
     window.speechSynthesis.speak(utterance);
   } catch {}
+}
+
+/**
+ * Pronounces English words/sentences using the selected Neural TTS voice from Settings,
+ * automatically falling back to browser speechSynthesis if offline or set to "browser".
+ */
+export function speakEnglishWord(text: string, slow = false, overrideVoice?: string): void {
+  if (typeof window === 'undefined' || !text.trim()) return;
+
+  const settings = getStoredSettings();
+  const voice = overrideVoice || settings.vocabVoice || 'en-US-AriaNeural';
+
+  if (activeTtsAudio) {
+    try {
+      activeTtsAudio.pause();
+      activeTtsAudio.currentTime = 0;
+    } catch {}
+    activeTtsAudio = null;
+  }
+
+  if (voice === 'browser') {
+    speakWithBrowserSynthesis(text, slow, voice);
+    return;
+  }
+
+  const baseRate = settings.vocabSpeechRate || 1.0;
+  const effectiveMultiplier = slow ? Math.max(0.65, baseRate * 0.7) : baseRate;
+  const pct = Math.round((effectiveMultiplier - 1) * 100);
+  const rateParam = `${pct >= 0 ? '+' : ''}${pct}%`;
+
+  const url = `${API_BASE}/vocab/tts?text=${encodeURIComponent(
+    text.trim()
+  )}&voice=${encodeURIComponent(voice)}&rate=${encodeURIComponent(rateParam)}`;
+
+  try {
+    const audio = new Audio(url);
+    audio.volume = Math.min(1, Math.max(0.1, (settings.soundVolume ?? 80) / 100));
+    activeTtsAudio = audio;
+    audio.onerror = () => {
+      speakWithBrowserSynthesis(text, slow, voice);
+    };
+    audio.play().catch(() => {
+      speakWithBrowserSynthesis(text, slow, voice);
+    });
+  } catch {
+    speakWithBrowserSynthesis(text, slow, voice);
+  }
 }
 

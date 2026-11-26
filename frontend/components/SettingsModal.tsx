@@ -34,7 +34,9 @@ import {
   THEME_OPTIONS,
   CustomThemeConfig,
   DEFAULT_CUSTOM_THEME,
+  VOCAB_VOICE_OPTIONS,
 } from '../lib/settingsStorage';
+import { speakEnglishWord } from '../lib/vocabApi';
 import { TaskItem, UserProfileData } from '../lib/types';
 import { soundEngine } from '../lib/audio';
 import { authService, AuthUser } from '../lib/authService';
@@ -793,6 +795,68 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     />
                     <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#2563EB]" />
                   </label>
+                </div>
+
+                {/* English Vocabulary Neural Voice Selection */}
+                <div className="p-3.5 rounded-2xl bg-[#F8FAFD] border border-[#EEF2F8] space-y-3">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div>
+                      <p className="text-xs font-bold text-[#1E2433]">Giọng Đọc Từ Vựng Tiếng Anh (Neural TTS)</p>
+                      <p className="text-[10px] text-[#8F9CAE]">
+                        Chọn giọng Mỹ, Anh (UK), Úc, Canada từ Edge Neural Voices để luyện nghe phát âm chuẩn
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        speakEnglishWord(
+                          'She remained resilient despite setbacks.',
+                          false,
+                          settings.vocabVoice || 'en-US-AriaNeural'
+                        )
+                      }
+                      className="px-2.5 py-1.5 rounded-lg bg-white border border-[#CBD5E1] text-[#2563EB] hover:bg-blue-50 text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer shrink-0 shadow-2xs"
+                    >
+                      <Volume2 className="w-3.5 h-3.5" />
+                      <span>Nghe thử giọng này</span>
+                    </button>
+                  </div>
+
+                  <select
+                    value={settings.vocabVoice || 'en-US-AriaNeural'}
+                    onChange={(e) => {
+                      const nextVoice = e.target.value;
+                      onUpdateSettings({ ...settings, vocabVoice: nextVoice });
+                      speakEnglishWord('Hello, welcome to Genncore vocabulary studio.', false, nextVoice);
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] bg-white text-xs font-bold text-[#1E2433] outline-none focus:border-[#2563EB] cursor-pointer"
+                  >
+                    {VOCAB_VOICE_OPTIONS.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        [{v.sampleTag}] {v.label} — {v.gender}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Speech Rate Slider */}
+                  <div className="space-y-1 pt-1">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-[#475569]">
+                      <span>Tốc độ đọc tiếng Anh</span>
+                      <span className="text-[#2563EB]">{(settings.vocabSpeechRate || 1).toFixed(2)}x</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.7"
+                      max="1.25"
+                      step="0.05"
+                      value={settings.vocabSpeechRate || 1.0}
+                      onChange={(e) => {
+                        const rate = parseFloat(e.target.value);
+                        onUpdateSettings({ ...settings, vocabSpeechRate: rate });
+                      }}
+                      className="w-full accent-[#2563EB]"
+                    />
+                  </div>
                 </div>
               </div>
             )}
