@@ -15,6 +15,108 @@ export type ReviewRating = 'again' | 'hard' | 'good' | 'easy';
 
 const SRS_INTERVAL_DAYS = [1, 3, 7, 14, 30, 60];
 
+const TOPIC_KEYWORD_RULES: Array<{ topic: string; keywords: string[] }> = [
+  {
+    topic: 'IT & Tech',
+    keywords: [
+      'code', 'coding', 'software', 'server', 'database', 'api', 'deploy', 'bug', 'algorithm',
+      'framework', 'frontend', 'backend', 'cloud', 'network', 'cyber', 'security', 'encrypt',
+      'debug', 'compile', 'latency', 'cache', 'query', 'interface', 'system', 'hardware',
+      'lập trình', 'phần mềm', 'dữ liệu', 'máy chủ', 'thuật toán', 'bảo mật', 'hệ thống', 'mạng',
+    ],
+  },
+  {
+    topic: 'Kinh doanh',
+    keywords: [
+      'business', 'company', 'client', 'customer', 'deadline', 'meeting', 'strategy', 'startup',
+      'negotiate', 'negotiation', 'contract', 'marketing', 'brand', 'sales', 'product', 'launch',
+      'workflow', 'streamline', 'manage', 'leadership', 'stakeholder', 'enterprise', 'pitch',
+      'kinh doanh', 'khách hàng', 'chiến lược', 'hợp đồng', 'họp', 'thương lượng', 'lãnh đạo', 'dự án',
+    ],
+  },
+  {
+    topic: 'Tài chính',
+    keywords: [
+      'finance', 'financial', 'invest', 'investment', 'stock', 'market', 'budget', 'revenue',
+      'profit', 'loss', 'inflation', 'debt', 'asset', 'equity', 'tax', 'bank', 'interest',
+      'tài chính', 'đầu tư', 'ngân sách', 'doanh thu', 'lợi nhuận', 'lạm phát', 'cổ phiếu', 'thuế',
+    ],
+  },
+  {
+    topic: 'Cảm xúc & Tâm lý',
+    keywords: [
+      'resilient', 'resilience', 'empathy', 'anxious', 'anxiety', 'burnout', 'stress', 'calm',
+      'grateful', 'gratitude', 'mindset', 'emotion', 'confidence', 'overwhelm', 'procrastinate',
+      'motivation', 'inspire', 'frustrated', 'peaceful', 'nostalgic', 'optimistic',
+      'kiên cường', 'đồng cảm', 'lo âu', 'căng thẳng', 'trì hoãn', 'biết ơn', 'tâm lý', 'cảm xúc', 'tự tin',
+    ],
+  },
+  {
+    topic: 'Sức khỏe',
+    keywords: [
+      'health', 'healthy', 'workout', 'exercise', 'nutrition', 'diet', 'sleep', 'fatigue',
+      'therapy', 'medicine', 'doctor', 'hospital', 'immune', 'vitamin', 'fitness', 'yoga',
+      'sức khỏe', 'dinh dưỡng', 'tập luyện', 'giấc ngủ', 'bệnh', 'bác sĩ', 'thể chất',
+    ],
+  },
+  {
+    topic: 'Du lịch',
+    keywords: [
+      'travel', 'trip', 'itinerary', 'flight', 'airport', 'hotel', 'luggage', 'passport',
+      'visa', 'destination', 'tour', 'tourist', 'embark', 'journey', 'commute', 'cruise',
+      'du lịch', 'chuyến bay', 'hành trình', 'khách sạn', 'hộ chiếu', 'hành lý', 'điểm đến',
+    ],
+  },
+  {
+    topic: 'IELTS & Học thuật',
+    keywords: [
+      'mitigate', 'exacerbate', 'ubiquitous', 'paradigm', 'empirical', 'sustainable', 'phenomenon',
+      'hypothesis', 'methodology', 'significant', 'fluctuate', 'consequently', 'ambiguous',
+      'eloquent', 'comprehensive', 'preliminary', 'curriculum', 'dissertation', 'research',
+      'học thuật', 'nghiên cứu', 'giảm thiểu', 'trầm trọng', 'phổ biến', 'bền vững', 'giả thuyết', 'luận văn',
+    ],
+  },
+  {
+    topic: 'Giao tiếp',
+    keywords: [
+      'greet', 'apologize', 'compliment', 'persuade', 'fluent', 'conversation', 'discuss',
+      'clarify', 'respond', 'feedback', 'polite', 'casual', 'colleague', 'acquaintance',
+      'giao tiếp', 'xin lỗi', 'khen ngợi', 'thuyết phục', 'trò chuyện', 'phản hồi', 'lịch sự',
+    ],
+  },
+];
+
+export function classifyTopicByKeywords(
+  word: string,
+  meaning = '',
+  example = '',
+  requestedTopic?: string
+): string {
+  const cleanReq = (requestedTopic || '').trim();
+  if (cleanReq && !['chung', 'tự động', 'auto'].includes(cleanReq.toLowerCase())) {
+    return cleanReq;
+  }
+
+  const haystack = `${word} ${meaning} ${example}`.toLowerCase();
+  let bestTopic = 'Đời sống';
+  let bestScore = 0;
+
+  for (const rule of TOPIC_KEYWORD_RULES) {
+    let score = 0;
+    for (const kw of rule.keywords) {
+      if (haystack.includes(kw)) {
+        score += kw.includes(' ') ? 2 : 1;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestTopic = rule.topic;
+    }
+  }
+
+  return bestTopic;
+}
+
 class VocabService {
   private defaultApiKey = process.env.GEMINI_API_KEY || '';
   private activeWorkingModel: string = process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
@@ -99,15 +201,26 @@ class VocabService {
 
     return parsed
       .filter((item) => item && typeof item.word === 'string' && item.word.trim())
-      .map((item) => ({
-        word: String(item.word).trim(),
-        phonetic: String(item.phonetic || '').trim(),
-        partOfSpeech: String(item.partOfSpeech || '').trim(),
-        meaning: String(item.meaning || '').trim() || 'Chưa có nghĩa',
-        example: String(item.example || '').trim(),
-        exampleTranslation: String(item.exampleTranslation || '').trim(),
-        topic: String(item.topic || fallbackTopic || 'Chung').trim(),
-      }));
+      .map((item) => {
+        const word = String(item.word).trim();
+        const meaning = String(item.meaning || '').trim() || 'Chưa có nghĩa';
+        const example = String(item.example || '').trim();
+        const aiTopic = String(item.topic || '').trim();
+        const useAuto = !fallbackTopic || ['chung', 'tự động', 'auto'].includes(fallbackTopic.trim().toLowerCase());
+        const resolvedTopic = useAuto
+          ? classifyTopicByKeywords(word, meaning, example, aiTopic)
+          : fallbackTopic.trim();
+
+        return {
+          word,
+          phonetic: String(item.phonetic || '').trim(),
+          partOfSpeech: String(item.partOfSpeech || '').trim(),
+          meaning,
+          example,
+          exampleTranslation: String(item.exampleTranslation || '').trim(),
+          topic: resolvedTopic,
+        };
+      });
   }
 
   /**
@@ -118,11 +231,16 @@ class VocabService {
     topic?: string;
     customApiKey?: string;
   }): Promise<ExtractedVocabItem[]> {
-    const { text, topic = 'Chung', customApiKey } = options;
+    const { text, topic = 'Tự động', customApiKey } = options;
     const trimmed = text.trim();
     if (!trimmed) {
       throw new Error('Vui lòng nhập danh sách từ, đoạn văn tiếng Anh hoặc chủ đề.');
     }
+
+    const isAutoTopic = !topic || ['chung', 'tự động', 'auto'].includes(topic.trim().toLowerCase());
+    const topicInstruction = isAutoTopic
+      ? `Classify EACH word individually into the single best-fitting tag from: ["IT & Tech", "Kinh doanh", "Tài chính", "IELTS & Học thuật", "Cảm xúc & Tâm lý", "Sức khỏe", "Du lịch", "Giao tiếp", "Đời sống"]. Different words in the list SHOULD get different tags if they belong to different domains!`
+      : `Set "topic" to "${topic.trim()}".`;
 
     const prompt = `
 You are an expert English-Vietnamese lexicographer for the Gencoore learning app.
@@ -139,7 +257,7 @@ Return ONLY a valid JSON array (no markdown commentary) of up to 25 objects, eac
 - "meaning": clear, natural Vietnamese meaning (string)
 - "example": 1 short, practical English example sentence using the word (string)
 - "exampleTranslation": concise Vietnamese translation of the example (string)
-- "topic": "${topic}" (or a concise 1-2 word Vietnamese/English topic tag if "${topic}" is "Chung" and input implies a clear domain)
+- "topic": ${topicInstruction}
 
 USER INPUT:
 """
@@ -173,7 +291,7 @@ ${trimmed.slice(0, 6000)}
     topic?: string;
     customApiKey?: string;
   }): Promise<ExtractedVocabItem[]> {
-    const { imageBase64, mimeType = 'image/jpeg', topic = 'Từ ảnh', customApiKey } = options;
+    const { imageBase64, mimeType = 'image/jpeg', topic = 'Tự động', customApiKey } = options;
 
     // Strip data URL prefix if present
     const match = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
@@ -184,12 +302,18 @@ ${trimmed.slice(0, 6000)}
       throw new Error('Dữ liệu ảnh không hợp lệ.');
     }
 
+    const isAutoTopic = !topic || ['chung', 'tự động', 'auto', 'từ ảnh'].includes(topic.trim().toLowerCase());
+    const topicRule = isAutoTopic
+      ? 'Classify EACH word individually into one of: ["IT & Tech", "Kinh doanh", "Tài chính", "IELTS & Học thuật", "Cảm xúc & Tâm lý", "Sức khỏe", "Du lịch", "Giao tiếp", "Đời sống"].'
+      : `Set "topic" to "${topic.trim()}".`;
+
     const prompt = `
 Read the English text or vocabulary list in this image carefully.
 Extract up to 20 useful English words or short phrases to learn (skip trivial stop-words like "the, a, is, in").
 If the image already shows Vietnamese meanings next to the words, preserve/refine them.
+${topicRule}
 Return ONLY a valid JSON array of objects with exact keys:
-"word", "phonetic", "partOfSpeech", "meaning", "example", "exampleTranslation", "topic" (default "${topic}").
+"word", "phonetic", "partOfSpeech", "meaning", "example", "exampleTranslation", "topic".
 `.trim();
 
     const data = await this.callGemini(
@@ -259,7 +383,12 @@ Return ONLY a valid JSON array of objects with exact keys:
       meaning: payload.meaning?.trim() || '',
       example: payload.example?.trim() || '',
       exampleTranslation: payload.exampleTranslation?.trim() || '',
-      topic: payload.topic?.trim() || 'Chung',
+      topic: classifyTopicByKeywords(
+        cleanWord,
+        payload.meaning || '',
+        payload.example || '',
+        payload.topic
+      ),
       srsLevel: 0,
       nextReviewAt: new Date(),
     });
@@ -305,7 +434,12 @@ Return ONLY a valid JSON array of objects with exact keys:
         meaning: cleanMeaning,
         example: item.example?.trim() || '',
         exampleTranslation: item.exampleTranslation?.trim() || '',
-        topic: item.topic?.trim() || 'Chung',
+        topic: classifyTopicByKeywords(
+          cleanWord,
+          cleanMeaning,
+          item.example || '',
+          item.topic
+        ),
         srsLevel: 0,
         nextReviewAt: new Date(),
         reviewCount: 0,
@@ -411,6 +545,33 @@ Return ONLY a valid JSON array of objects with exact keys:
     }
     const deleted = await VocabModel.findOneAndDelete(query);
     return !!deleted;
+  }
+
+  /**
+   * Automatically re-tag existing uncategorized ("Chung" / "Đời sống" / empty) words into domain tags
+   */
+  public async autoTagExistingVocab(userId?: string) {
+    const scopeQuery = userId
+      ? { userId }
+      : { $or: [{ userId: null }, { userId: { $exists: false } }] };
+
+    const docs = await VocabModel.find(scopeQuery);
+    let updatedCount = 0;
+
+    for (const doc of docs) {
+      const curr = (doc.topic || '').trim().toLowerCase();
+      if (!curr || curr === 'chung' || curr === 'tự động' || curr === 'từ ảnh') {
+        const nextTopic = classifyTopicByKeywords(doc.word, doc.meaning, doc.example || '');
+        if (nextTopic !== doc.topic) {
+          doc.topic = nextTopic;
+          await doc.save();
+          updatedCount++;
+        }
+      }
+    }
+
+    const words = await this.getAllVocab(userId);
+    return { updatedCount, words };
   }
 }
 

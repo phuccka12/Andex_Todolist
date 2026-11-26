@@ -34,6 +34,108 @@ export interface ExtractedVocabDraft {
 
 const VOCAB_CACHE_KEY = 'gencoore_cached_vocab_v1';
 
+const TOPIC_KEYWORD_RULES: Array<{ topic: string; keywords: string[] }> = [
+  {
+    topic: 'IT & Tech',
+    keywords: [
+      'code', 'coding', 'software', 'server', 'database', 'api', 'deploy', 'bug', 'algorithm',
+      'framework', 'frontend', 'backend', 'cloud', 'network', 'cyber', 'security', 'encrypt',
+      'debug', 'compile', 'latency', 'cache', 'query', 'interface', 'system', 'hardware',
+      'lập trình', 'phần mềm', 'dữ liệu', 'máy chủ', 'thuật toán', 'bảo mật', 'hệ thống', 'mạng',
+    ],
+  },
+  {
+    topic: 'Kinh doanh',
+    keywords: [
+      'business', 'company', 'client', 'customer', 'deadline', 'meeting', 'strategy', 'startup',
+      'negotiate', 'negotiation', 'contract', 'marketing', 'brand', 'sales', 'product', 'launch',
+      'workflow', 'streamline', 'manage', 'leadership', 'stakeholder', 'enterprise', 'pitch',
+      'kinh doanh', 'khách hàng', 'chiến lược', 'hợp đồng', 'họp', 'thương lượng', 'lãnh đạo', 'dự án',
+    ],
+  },
+  {
+    topic: 'Tài chính',
+    keywords: [
+      'finance', 'financial', 'invest', 'investment', 'stock', 'market', 'budget', 'revenue',
+      'profit', 'loss', 'inflation', 'debt', 'asset', 'equity', 'tax', 'bank', 'interest',
+      'tài chính', 'đầu tư', 'ngân sách', 'doanh thu', 'lợi nhuận', 'lạm phát', 'cổ phiếu', 'thuế',
+    ],
+  },
+  {
+    topic: 'Cảm xúc & Tâm lý',
+    keywords: [
+      'resilient', 'resilience', 'empathy', 'anxious', 'anxiety', 'burnout', 'stress', 'calm',
+      'grateful', 'gratitude', 'mindset', 'emotion', 'confidence', 'overwhelm', 'procrastinate',
+      'motivation', 'inspire', 'frustrated', 'peaceful', 'nostalgic', 'optimistic',
+      'kiên cường', 'đồng cảm', 'lo âu', 'căng thẳng', 'trì hoãn', 'biết ơn', 'tâm lý', 'cảm xúc', 'tự tin',
+    ],
+  },
+  {
+    topic: 'Sức khỏe',
+    keywords: [
+      'health', 'healthy', 'workout', 'exercise', 'nutrition', 'diet', 'sleep', 'fatigue',
+      'therapy', 'medicine', 'doctor', 'hospital', 'immune', 'vitamin', 'fitness', 'yoga',
+      'sức khỏe', 'dinh dưỡng', 'tập luyện', 'giấc ngủ', 'bệnh', 'bác sĩ', 'thể chất',
+    ],
+  },
+  {
+    topic: 'Du lịch',
+    keywords: [
+      'travel', 'trip', 'itinerary', 'flight', 'airport', 'hotel', 'luggage', 'passport',
+      'visa', 'destination', 'tour', 'tourist', 'embark', 'journey', 'commute', 'cruise',
+      'du lịch', 'chuyến bay', 'hành trình', 'khách sạn', 'hộ chiếu', 'hành lý', 'điểm đến',
+    ],
+  },
+  {
+    topic: 'IELTS & Học thuật',
+    keywords: [
+      'mitigate', 'exacerbate', 'ubiquitous', 'paradigm', 'empirical', 'sustainable', 'phenomenon',
+      'hypothesis', 'methodology', 'significant', 'fluctuate', 'consequently', 'ambiguous',
+      'eloquent', 'comprehensive', 'preliminary', 'curriculum', 'dissertation', 'research',
+      'học thuật', 'nghiên cứu', 'giảm thiểu', 'trầm trọng', 'phổ biến', 'bền vững', 'giả thuyết', 'luận văn',
+    ],
+  },
+  {
+    topic: 'Giao tiếp',
+    keywords: [
+      'greet', 'apologize', 'compliment', 'persuade', 'fluent', 'conversation', 'discuss',
+      'clarify', 'respond', 'feedback', 'polite', 'casual', 'colleague', 'acquaintance',
+      'giao tiếp', 'xin lỗi', 'khen ngợi', 'thuyết phục', 'trò chuyện', 'phản hồi', 'lịch sự',
+    ],
+  },
+];
+
+export function classifyTopicByKeywords(
+  word: string,
+  meaning = '',
+  example = '',
+  requestedTopic?: string
+): string {
+  const cleanReq = (requestedTopic || '').trim();
+  if (cleanReq && !['chung', 'tự động', 'auto'].includes(cleanReq.toLowerCase())) {
+    return cleanReq;
+  }
+
+  const haystack = `${word} ${meaning} ${example}`.toLowerCase();
+  let bestTopic = 'Đời sống';
+  let bestScore = 0;
+
+  for (const rule of TOPIC_KEYWORD_RULES) {
+    let score = 0;
+    for (const kw of rule.keywords) {
+      if (haystack.includes(kw)) {
+        score += kw.includes(' ') ? 2 : 1;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestTopic = rule.topic;
+    }
+  }
+
+  return bestTopic;
+}
+
 function readCachedVocab(): VocabItem[] {
   if (typeof window === 'undefined') return [];
   try {
@@ -91,7 +193,12 @@ export async function createVocab(payload: Partial<VocabItem>): Promise<VocabIte
       meaning: payload.meaning?.trim() || '',
       example: payload.example?.trim() || '',
       exampleTranslation: payload.exampleTranslation?.trim() || '',
-      topic: payload.topic?.trim() || 'Chung',
+      topic: classifyTopicByKeywords(
+        cleanWord,
+        payload.meaning || '',
+        payload.example || '',
+        payload.topic
+      ),
       srsLevel: 0,
       nextReviewAt: new Date().toISOString(),
       reviewCount: 0,
@@ -153,7 +260,7 @@ export async function bulkCreateVocab(
         meaning: cleanMeaning,
         example: item.example || '',
         exampleTranslation: item.exampleTranslation || '',
-        topic: item.topic || 'Chung',
+        topic: classifyTopicByKeywords(cleanWord, cleanMeaning, item.example || '', item.topic),
         srsLevel: 0,
         nextReviewAt: new Date().toISOString(),
         reviewCount: 0,
@@ -331,6 +438,45 @@ export async function deleteVocab(id: string): Promise<boolean> {
   }
 }
 
+export async function autoTagExistingVocab(): Promise<{ updatedCount: number; words: VocabItem[] }> {
+  const autoTagLocally = () => {
+    const cached = readCachedVocab();
+    let updatedCount = 0;
+    const next = cached.map((item) => {
+      const curr = (item.topic || '').trim().toLowerCase();
+      if (!curr || curr === 'chung' || curr === 'tự động' || curr === 'từ ảnh') {
+        const nextTopic = classifyTopicByKeywords(item.word, item.meaning, item.example || '');
+        if (nextTopic !== item.topic) {
+          updatedCount++;
+          return { ...item, topic: nextTopic };
+        }
+      }
+      return item;
+    });
+    writeCachedVocab(next);
+    return { updatedCount, words: next };
+  };
+
+  if (!authService.getToken()) {
+    return autoTagLocally();
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/vocab/auto-tag`, {
+      method: 'POST',
+      headers: { ...authService.getAuthHeaders() },
+    });
+    if (!res.ok) throw new Error('Auto-tag failed');
+    const data = await res.json();
+    if (Array.isArray(data.words)) {
+      writeCachedVocab(data.words);
+    }
+    return { updatedCount: data.updatedCount || 0, words: data.words || [] };
+  } catch {
+    return autoTagLocally();
+  }
+}
+
 /**
  * Parses CSV/TSV or delimited lines ("word,meaning" / "word - meaning" / "word | meaning").
  * Returns null if the input looks like raw words-only or paragraph text that needs AI extraction.
@@ -380,7 +526,7 @@ export function parseStructuredVocabLines(
         partOfSpeech: '',
         example: parts[3] || '',
         exampleTranslation: '',
-        topic: parts[4] || defaultTopic || 'Chung',
+        topic: classifyTopicByKeywords(parts[0], parts[1], parts[3] || '', parts[4] || defaultTopic),
         selected: true,
       });
     }

@@ -110,6 +110,16 @@ vocabRouter.put('/:id', optionalAuth, async (req: AuthenticatedRequest, res: Res
   }
 });
 
+// POST /api/vocab/auto-tag - Auto-classify existing uncategorized words into domain tags
+vocabRouter.post('/auto-tag', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const result = await vocabService.autoTagExistingVocab(req.user?.id);
+    res.json({ success: true, ...result });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Không thể tự động phân loại chủ đề', details: err.message });
+  }
+});
+
 // DELETE /api/vocab/:id - Delete vocab card
 vocabRouter.delete('/:id', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
