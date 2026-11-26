@@ -36,6 +36,8 @@ import {
   ChevronDown,
   RotateCcw,
   Star,
+  FolderOpen,
+  ArrowRight,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import * as XLSX from 'xlsx';
@@ -81,9 +83,17 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
   // Main 3 Modes: Học & Kho Từ (learn), Đã Lưu (saved) & Review (review)
   const [mode, setMode] = useState<'learn' | 'saved' | 'review'>('learn');
+  const [topicPopupName, setTopicPopupName] = useState<string | null>(null);
   const [isStudyPopupOpen, setIsStudyPopupOpen] = useState(false);
 
-  // Filters & Pagination
+  // Topic Decks Filters & Pagination (for main Học & Kho Từ view)
+  const [deckSearchQuery, setDeckSearchQuery] = useState('');
+  const [deckFilter, setDeckFilter] = useState<'all' | 'has_due' | 'in_progress' | 'completed'>('all');
+  const [deckSort, setDeckSort] = useState<'most_words' | 'most_due' | 'az' | 'progress_desc'>('most_words');
+  const [deckPage, setDeckPage] = useState(1);
+  const [deckPageSize, setDeckPageSize] = useState(8);
+
+  // Word-level Filters & Pagination (for Đã Lưu & Topic Popup)
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTopic, setSelectedTopic] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'due' | 'new' | 'learning' | 'mastered'>('all');
@@ -272,6 +282,198 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
   const topTopics = useMemo(() => topics.slice(0, 6), [topics]);
   const extraTopics = useMemo(() => topics.slice(6), [topics]);
+
+  const topicDecks = useMemo(() => {
+    const now = Date.now();
+    const map = new Map<string, { total: number; mastered: number; due: number; previewWords: string[] }>();
+
+    for (const w of words) {
+      const tp = w.topic?.trim() || 'Chung';
+      let bucket = map.get(tp);
+      if (!bucket) {
+        bucket = { total: 0, mastered: 0, due: 0, previewWords: [] };
+        map.set(tp, bucket);
+      }
+      bucket.total++;
+      if ((w.srsLevel || 0) >= 3) bucket.mastered++;
+      if (!w.nextReviewAt || new Date(w.nextReviewAt).getTime() <= now) bucket.due++;
+      if (bucket.previewWords.length < 3) bucket.previewWords.push(w.word);
+    }
+
+    return topics.map((tp) => {
+      const b = map.get(tp) || { total: 0, mastered: 0, due: 0, previewWords: [] };
+      return {
+        topic: tp,
+        total: b.total,
+        mastered: b.mastered,
+        due: b.due,
+        pct: b.total > 0 ? Math.round((b.mastered / b.total) * 100) : 0,
+        previewWords: b.previewWords,
+      };
+    });
+  }, [topics, words]);
+
+  const filteredTopicDecks = useMemo(() => {
+    const q = deckSearchQuery.toLowerCase().trim();
+    const list = topicDecks.filter((d) => {
+      if (q && !d.topic.toLowerCase().includes(q)) return false;
+      if (deckFilter === 'has_due' && d.due === 0) return false;
+      if (deckFilter === 'in_progress' && d.mastered >= d.total) return false;
+      if (deckFilter === 'completed' && d.pct < 100) return false;
+      return true;
+    });
+
+    if (deckSort === 'most_due') {
+      return [...list].sort((a, b) => b.due - a.due || b.total - a.total);
+    }
+    if (deckSort === 'az') {
+      return [...list].sort((a, b) => a.topic.localeCompare(b.topic, 'vi'));
+    }
+    if (deckSort === 'progress_desc') {
+      return [...list].sort((a, b) => b.pct - a.pct || b.total - a.total);
+    }
+    return list;
+  }, [topicDecks, deckSearchQuery, deckFilter, deckSort]);
+
+  const hasDeckFilters =
+    deckSearchQuery.trim().length > 0 || deckFilter !== 'all' || deckSort !== 'most_words';
+
+  const deckTotalPages = useMemo(
+    () => Math.max(1, Math.ceil(filteredTopicDecks.length / deckPageSize)),
+    [filteredTopicDecks.length, deckPageSize]
+  );
+
+  const safeDeckPage = Math.min(deckPage, deckTotalPages);
+
+  const paginatedTopicDecks = useMemo(() => {
+    const start = (safeDeckPage - 1) * deckPageSize;
+    return filteredTopicDecks.slice(start, start + deckPageSize);
+  }, [filteredTopicDecks, safeDeckPage, deckPageSize]);
+
+  useEffect(() => {
+    setDeckPage(1);
+  }, [deckSearchQuery, deckFilter, deckSort, deckPageSize]);
+
+  useEffect(() => {
+    if (deckPage > deckTotalPages) {
+      setDeckPage(deckTotalPages);
+    }
+  }, [deckPage, deckTotalPages]);
+
+  const getTopicDeckStyle = (topicName: string) => {
+    const palettes = [
+      {
+        lightCard: 'bg-gradient-to-br from-indigo-50/90 via-white to-blue-50/60 border-indigo-200/80 hover:border-indigo-400',
+        darkCard: 'bg-gradient-to-br from-indigo-950/60 via-[#12151E] to-indigo-900/20 border-indigo-500/25 hover:border-indigo-400/60',
+        icon: isDark ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600',
+        bar: isDark ? 'bg-indigo-400' : 'bg-indigo-600',
+        link: isDark ? 'text-indigo-300' : 'text-indigo-600',
+      },
+      {
+        lightCard: 'bg-gradient-to-br from-sky-50/90 via-white to-cyan-50/60 border-sky-200/80 hover:border-sky-400',
+        darkCard: 'bg-gradient-to-br from-sky-950/60 via-[#12151E] to-sky-900/20 border-sky-500/25 hover:border-sky-400/60',
+        icon: isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-100 text-sky-600',
+        bar: isDark ? 'bg-sky-400' : 'bg-sky-600',
+        link: isDark ? 'text-sky-300' : 'text-sky-600',
+      },
+      {
+        lightCard: 'bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/60 border-emerald-200/80 hover:border-emerald-400',
+        darkCard: 'bg-gradient-to-br from-emerald-950/60 via-[#12151E] to-emerald-900/20 border-emerald-500/25 hover:border-emerald-400/60',
+        icon: isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-600',
+        bar: isDark ? 'bg-[#1DB954]' : 'bg-emerald-600',
+        link: isDark ? 'text-[#1DB954]' : 'text-emerald-600',
+      },
+      {
+        lightCard: 'bg-gradient-to-br from-violet-50/90 via-white to-purple-50/60 border-violet-200/80 hover:border-violet-400',
+        darkCard: 'bg-gradient-to-br from-violet-950/60 via-[#12151E] to-violet-900/20 border-violet-500/25 hover:border-violet-400/60',
+        icon: isDark ? 'bg-violet-500/20 text-violet-300' : 'bg-violet-100 text-violet-600',
+        bar: isDark ? 'bg-violet-400' : 'bg-violet-600',
+        link: isDark ? 'text-violet-300' : 'text-violet-600',
+      },
+      {
+        lightCard: 'bg-gradient-to-br from-rose-50/90 via-white to-pink-50/60 border-rose-200/80 hover:border-rose-400',
+        darkCard: 'bg-gradient-to-br from-rose-950/60 via-[#12151E] to-rose-900/20 border-rose-500/25 hover:border-rose-400/60',
+        icon: isDark ? 'bg-rose-500/20 text-rose-300' : 'bg-rose-100 text-rose-600',
+        bar: isDark ? 'bg-rose-400' : 'bg-rose-600',
+        link: isDark ? 'text-rose-300' : 'text-rose-600',
+      },
+      {
+        lightCard: 'bg-gradient-to-br from-amber-50/90 via-white to-orange-50/60 border-amber-200/80 hover:border-amber-400',
+        darkCard: 'bg-gradient-to-br from-amber-950/60 via-[#12151E] to-amber-900/20 border-amber-500/25 hover:border-amber-400/60',
+        icon: isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-600',
+        bar: isDark ? 'bg-amber-400' : 'bg-amber-500',
+        link: isDark ? 'text-amber-300' : 'text-amber-600',
+      },
+      {
+        lightCard: 'bg-gradient-to-br from-cyan-50/90 via-white to-sky-50/60 border-cyan-200/80 hover:border-cyan-400',
+        darkCard: 'bg-gradient-to-br from-cyan-950/60 via-[#12151E] to-cyan-900/20 border-cyan-500/25 hover:border-cyan-400/60',
+        icon: isDark ? 'bg-cyan-500/20 text-cyan-300' : 'bg-cyan-100 text-cyan-600',
+        bar: isDark ? 'bg-cyan-400' : 'bg-cyan-600',
+        link: isDark ? 'text-cyan-300' : 'text-cyan-600',
+      },
+      {
+        lightCard: 'bg-gradient-to-br from-teal-50/90 via-white to-emerald-50/60 border-teal-200/80 hover:border-teal-400',
+        darkCard: 'bg-gradient-to-br from-teal-950/60 via-[#12151E] to-teal-900/20 border-teal-500/25 hover:border-teal-400/60',
+        icon: isDark ? 'bg-teal-500/20 text-teal-300' : 'bg-teal-100 text-teal-600',
+        bar: isDark ? 'bg-teal-400' : 'bg-teal-600',
+        link: isDark ? 'text-teal-300' : 'text-teal-600',
+      },
+    ];
+
+    const namedIndex: Record<string, number> = {
+      'IT & Tech': 1,
+      'Kinh doanh': 3,
+      'Tài chính': 2,
+      'Cảm xúc & Tâm lý': 4,
+      'Sức khỏe': 2,
+      'Du lịch': 6,
+      'IELTS & Học thuật': 5,
+      'Giao tiếp': 0,
+      'Đời sống': 7,
+    };
+
+    let idx = namedIndex[topicName];
+    if (idx === undefined) {
+      let hash = 0;
+      for (let i = 0; i < topicName.length; i++) {
+        hash = (hash * 31 + topicName.charCodeAt(i)) >>> 0;
+      }
+      idx = hash % palettes.length;
+    }
+
+    const p = palettes[idx];
+    return {
+      card: isDark ? p.darkCard : `${p.lightCard} shadow-2xs hover:shadow-md`,
+      icon: p.icon,
+      bar: p.bar,
+      link: p.link,
+    };
+  };
+
+  const resetDeckFilters = () => {
+    soundEngine.playSoftClick();
+    setDeckSearchQuery('');
+    setDeckFilter('all');
+    setDeckSort('most_words');
+  };
+
+  const openTopicPopup = (topicName: string) => {
+    soundEngine.playSoftClick();
+    setSearchQuery('');
+    setStatusFilter('all');
+    setPosFilter('all');
+    setSortBy('newest');
+    setSelectedTopic(topicName);
+    setTopicPopupName(topicName);
+    setIsMoreTopicsOpen(false);
+    setTopicSearchQuery('');
+  };
+
+  const closeTopicPopup = () => {
+    setTopicPopupName(null);
+    setSelectedTopic('all');
+    setSearchQuery('');
+  };
 
   const filteredExtraTopics = useMemo(() => {
     const q = topicSearchQuery.toLowerCase().trim();
@@ -472,6 +674,15 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     if (!dictResult) return;
     setIsSavingDictWord(true);
     try {
+      const existing = words.find((w) => w.word.toLowerCase() === dictResult.term.toLowerCase());
+      if (existing) {
+        const updated = await updateVocab(existing.id, { isSaved: true });
+        setWords((prev) => prev.map((w) => (w.id === updated.id ? updated : w)));
+        soundEngine.playPentatonicChime(5);
+        notify.success(`Đã ghim "${dictResult.term}" vào mục Đã Lưu ⭐!`);
+        return;
+      }
+
       const firstEx = dictResult.examples?.[0];
       const created = await createVocab({
         word: dictResult.term,
@@ -561,6 +772,15 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
 
   const handleSaveBonusVocabFromTutor = async (bonus: NonNullable<TutorChatMessage['bonusVocab']>) => {
     try {
+      const existing = words.find((w) => w.word.toLowerCase() === bonus.word.toLowerCase());
+      if (existing) {
+        const updated = await updateVocab(existing.id, { isSaved: true });
+        setWords((prev) => prev.map((w) => (w.id === updated.id ? updated : w)));
+        soundEngine.playPentatonicChime(5);
+        notify.success(`Đã ghim "${bonus.word}" vào mục Đã Lưu ⭐!`);
+        return;
+      }
+
       const created = await createVocab({
         word: bonus.word,
         phonetic: bonus.phonetic || '',
@@ -676,6 +896,15 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [mode, isWordModalOpen, isImportModalOpen]);
+
+  useEffect(() => {
+    if (!topicPopupName || isStudyPopupOpen || isWordModalOpen || isImportModalOpen || isDictOpen) return;
+    const handleEscTopic = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeTopicPopup();
+    };
+    window.addEventListener('keydown', handleEscTopic);
+    return () => window.removeEventListener('keydown', handleEscTopic);
+  }, [topicPopupName, isStudyPopupOpen, isWordModalOpen, isImportModalOpen, isDictOpen]);
 
   useEffect(() => {
     if (!isStudyPopupOpen || isWordModalOpen || isImportModalOpen) return;
@@ -1316,9 +1545,110 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
       {/* MODE 1: LEARN & VOCAB LIBRARY (Always visible behind blur modals)     */}
       {/* ===================================================================== */}
       <div className="flex-1 min-h-0 flex flex-col space-y-3.5">
-          {/* Search, Multi-Criteria Vocab Filters, Smart Topic Filter & Study Popup Trigger */}
+          {/* Search & Filters: Topic-level on Learn mode, Word-level on Saved mode */}
           <div className={`p-3 rounded-2xl border flex flex-col gap-2.5 shrink-0 min-w-0 w-full relative z-20 ${surfaceCls}`}>
-            {/* Row 1: Search + Status + POS + Sort + Study Popup CTA */}
+            {mode === 'learn' ? (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
+                  <div className="relative flex-1 min-w-[180px] max-w-xs">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={deckSearchQuery}
+                      onChange={(e) => setDeckSearchQuery(e.target.value)}
+                      placeholder="Tìm tên chủ đề (vd: IT, IELTS, Kinh doanh...)"
+                      className={`w-full pl-8 pr-7 py-1.5 rounded-xl border text-xs outline-none transition-all ${
+                        isDark
+                          ? 'bg-[#181C28] border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500'
+                          : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white focus:border-indigo-400'
+                      }`}
+                    />
+                    {deckSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setDeckSearchQuery('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+                        title="Xóa từ khóa"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Topic Status Filter */}
+                  <div className="flex items-center gap-1">
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
+                    <select
+                      value={deckFilter}
+                      onChange={(e) => setDeckFilter(e.target.value as any)}
+                      className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                        isDark
+                          ? 'bg-[#181C28] border-white/10 text-slate-200'
+                          : 'bg-slate-50 border-slate-200 text-slate-700'
+                      }`}
+                      title="Lọc chủ đề theo tiến độ"
+                    >
+                      <option value="all">Tất cả chủ đề ({topicDecks.length})</option>
+                      <option value="has_due">Có từ cần ôn</option>
+                      <option value="in_progress">Đang học dở</option>
+                      <option value="completed">Đã thuộc hết</option>
+                    </select>
+                  </div>
+
+                  {/* Topic Sort Dropdown */}
+                  <div className="flex items-center gap-1">
+                    <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
+                    <select
+                      value={deckSort}
+                      onChange={(e) => setDeckSort(e.target.value as any)}
+                      className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                        isDark
+                          ? 'bg-[#181C28] border-white/10 text-slate-200'
+                          : 'bg-slate-50 border-slate-200 text-slate-700'
+                      }`}
+                      title="Sắp xếp chủ đề"
+                    >
+                      <option value="most_words">Nhiều từ nhất</option>
+                      <option value="most_due">Cần ôn nhiều nhất</option>
+                      <option value="az">Tên chủ đề A → Z</option>
+                      <option value="progress_desc">Tiến độ cao → thấp</option>
+                    </select>
+                  </div>
+
+                  {hasDeckFilters && (
+                    <button
+                      type="button"
+                      onClick={resetDeckFilters}
+                      className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer ${
+                        isDark
+                          ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                          : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Đặt lại</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Big Centered Study Popup Trigger */}
+                <button
+                  type="button"
+                  disabled={words.length === 0}
+                  onClick={() => openStudyPopupAt(0)}
+                  className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 shrink-0 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                    isDark
+                      ? 'bg-[#1DB954]/15 border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
+                      : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                  }`}
+                  title="Mở cửa sổ học lật thẻ lớn ở giữa màn hình"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span>Học Thẻ Lớn (Popup)</span>
+                </button>
+              </div>
+            ) : (
+            /* Row 1 (Saved mode): Search + Status + POS + Sort + Study Popup CTA */
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
                 <div className="relative flex-1 min-w-[180px] max-w-xs">
@@ -1442,6 +1772,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 <span>Học Thẻ Lớn (Popup)</span>
               </button>
             </div>
+            )}
 
             {/* Row 2: Smart Topic Pills + Searchable Overflow Topics Dropdown */}
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -1465,10 +1796,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               {topTopics.map((tp) => (
                 <button
                   key={tp}
-                  onClick={() => {
-                    setSelectedTopic(tp);
-                    setIsMoreTopicsOpen(false);
-                  }}
+                  onClick={() => openTopicPopup(tp)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1 border ${
                     selectedTopic === tp
                       ? 'bg-indigo-600 text-white border-indigo-600'
@@ -1536,11 +1864,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                             <button
                               key={tp}
                               type="button"
-                              onClick={() => {
-                                setSelectedTopic(tp);
-                                setIsMoreTopicsOpen(false);
-                                setTopicSearchQuery('');
-                              }}
+                              onClick={() => openTopicPopup(tp)}
                               className={`w-full px-2.5 py-1.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between cursor-pointer ${
                                 selectedTopic === tp
                                   ? 'bg-indigo-600 text-white'
@@ -1656,6 +1980,234 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                 </button>
               </div>
             </div>
+          ) : mode === 'learn' && words.length > 0 ? (
+            /* TOPIC DECKS GRID (Click any topic card to open its Vocabulary Popup) */
+            <div className="space-y-3 pb-6">
+              <div className="flex items-center justify-between px-0.5">
+                <p className="text-xs font-bold text-slate-500">
+                  Chọn một <strong className={isDark ? 'text-white' : 'text-slate-800'}>chủ đề</strong> để mở popup từ vựng ({filteredTopicDecks.length}/{topicDecks.length} chủ đề)
+                </p>
+              </div>
+              {filteredTopicDecks.length === 0 ? (
+                <div className={`rounded-2xl border p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
+                  <p className="text-sm font-bold">Không tìm thấy chủ đề phù hợp</p>
+                  <button
+                    type="button"
+                    onClick={resetDeckFilters}
+                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Xóa bộ lọc chủ đề</span>
+                  </button>
+                </div>
+              ) : (
+              <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+                {paginatedTopicDecks.map((deck) => {
+                  const deckTheme = getTopicDeckStyle(deck.topic);
+                  return (
+                  <div
+                    key={deck.topic}
+                    onClick={() => openTopicPopup(deck.topic)}
+                    className={`rounded-2xl border p-4 flex flex-col justify-between gap-3.5 cursor-pointer transition-all hover:-translate-y-0.5 group ${deckTheme.card}`}
+                  >
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`text-[10.5px] font-bold px-2.5 py-0.5 rounded-lg border truncate ${getTopicBadgeCls(
+                            deck.topic
+                          )}`}
+                        >
+                          {deck.topic}
+                        </span>
+                        <span className={`text-[11px] font-mono font-bold shrink-0 ${
+                          isDark ? 'text-slate-300' : 'text-slate-500'
+                        }`}>
+                          {deck.total} từ
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${deckTheme.icon}`}
+                        >
+                          <FolderOpen className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-sm font-extrabold truncate">{deck.topic}</h3>
+                          <p className={`text-[11px] truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                            {deck.previewWords.join(', ')}
+                            {deck.total > deck.previewWords.length ? '...' : ''}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {/* Mastery progress bar */}
+                      <div className="space-y-1">
+                        <div className={`flex items-center justify-between text-[10.5px] font-semibold ${
+                          isDark ? 'text-slate-400' : 'text-slate-500'
+                        }`}>
+                          <span>Thuộc {deck.mastered}/{deck.total}</span>
+                          {deck.due > 0 && (
+                            <span className="text-rose-500 font-bold">{deck.due} cần ôn</span>
+                          )}
+                        </div>
+                        <div className={`w-full h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-white/10' : 'bg-slate-200/70'}`}>
+                          <div
+                            className={`h-full rounded-full transition-all ${deckTheme.bar}`}
+                            style={{ width: `${deck.pct}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div
+                        className={`pt-2 border-t flex items-center justify-between text-[11px] font-bold ${
+                          isDark ? 'border-white/[0.08]' : 'border-slate-200/60'
+                        }`}
+                      >
+                        <span className={`inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform ${deckTheme.link}`}>
+                          <span>Mở bộ từ</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMode('review');
+                            startReviewSession('all', deck.topic);
+                          }}
+                          className={`px-2.5 py-0.5 rounded-lg text-[10.5px] cursor-pointer ${
+                            isDark
+                              ? 'bg-white/10 hover:bg-white/15 text-slate-200'
+                              : 'bg-white/80 border border-slate-200/80 hover:bg-white text-slate-700'
+                          }`}
+                        >
+                          Ôn tập
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  );
+                })}
+              </div>
+
+              {/* Topic Decks Pagination Bar */}
+              {filteredTopicDecks.length > 0 && (
+                <div
+                  className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-2xl border text-xs ${
+                    isDark
+                      ? 'bg-[#12151E] border-white/[0.08] text-slate-300'
+                      : 'bg-white border-slate-200/80 text-slate-600 shadow-2xs'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="font-medium">
+                      Hiển thị{' '}
+                      <strong className={isDark ? 'text-white' : 'text-slate-900'}>
+                        {(safeDeckPage - 1) * deckPageSize + 1}–{Math.min(safeDeckPage * deckPageSize, filteredTopicDecks.length)}
+                      </strong>{' '}
+                      / <strong className={isDark ? 'text-white' : 'text-slate-900'}>{filteredTopicDecks.length}</strong> chủ đề
+                    </span>
+
+                    <label className="flex items-center gap-1.5 text-[11px]">
+                      <span className="text-slate-400">Mỗi trang:</span>
+                      <select
+                        value={deckPageSize}
+                        onChange={(e) => setDeckPageSize(Number(e.target.value))}
+                        className={`px-2 py-1 rounded-lg border font-bold outline-none cursor-pointer ${
+                          isDark ? 'bg-[#181C28] border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'
+                        }`}
+                      >
+                        <option value={8}>8 chủ đề</option>
+                        <option value={12}>12 chủ đề</option>
+                        <option value={16}>16 chủ đề</option>
+                        <option value={24}>24 chủ đề</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      disabled={safeDeckPage <= 1}
+                      onClick={() => {
+                        soundEngine.playSoftClick();
+                        setDeckPage((p) => Math.max(1, p - 1));
+                      }}
+                      className={`px-2.5 py-1.5 rounded-xl border font-bold flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                        isDark
+                          ? 'bg-[#181C28] border-white/10 hover:bg-white/10 text-slate-200'
+                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Trước</span>
+                    </button>
+
+                    {Array.from({ length: deckTotalPages }, (_, idx) => idx + 1)
+                      .filter(
+                        (page) =>
+                          page === 1 ||
+                          page === deckTotalPages ||
+                          Math.abs(page - safeDeckPage) <= 1
+                      )
+                      .reduce<(number | 'ellipsis')[]>((acc, page, idx, arr) => {
+                        if (idx > 0 && page - arr[idx - 1] > 1) {
+                          acc.push('ellipsis');
+                        }
+                        acc.push(page);
+                        return acc;
+                      }, [])
+                      .map((entry, idx) =>
+                        entry === 'ellipsis' ? (
+                          <span key={`deck-el-${idx}`} className="px-1.5 text-slate-400 select-none">
+                            …
+                          </span>
+                        ) : (
+                          <button
+                            key={entry}
+                            type="button"
+                            onClick={() => {
+                              soundEngine.playSoftClick();
+                              setDeckPage(entry);
+                            }}
+                            className={`min-w-[30px] h-7 px-2 rounded-xl font-bold text-xs cursor-pointer transition-colors ${
+                              safeDeckPage === entry
+                                ? 'bg-indigo-600 text-white shadow-2xs'
+                                : isDark
+                                ? 'hover:bg-white/10 text-slate-300'
+                                : 'hover:bg-slate-100 text-slate-600'
+                            }`}
+                          >
+                            {entry}
+                          </button>
+                        )
+                      )}
+
+                    <button
+                      type="button"
+                      disabled={safeDeckPage >= deckTotalPages}
+                      onClick={() => {
+                        soundEngine.playSoftClick();
+                        setDeckPage((p) => Math.min(deckTotalPages, p + 1));
+                      }}
+                      className={`px-2.5 py-1.5 rounded-xl border font-bold flex items-center gap-1 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                        isDark
+                          ? 'bg-[#181C28] border-white/10 hover:bg-white/10 text-slate-200'
+                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      <span className="hidden sm:inline">Sau</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+              </>
+              )}
+            </div>
           ) : (
             /* GRID OF VOCAB CARDS + PAGINATION */
             <div className="space-y-4 pb-6">
@@ -1683,7 +2235,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedTopic(topicLabel);
+                            openTopicPopup(topicLabel);
                           }}
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-md border truncate cursor-pointer hover:opacity-80 ${getTopicBadgeCls(
                             topicLabel
@@ -2428,7 +2980,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4">
               {/* Source Tabs */}
               <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-bold">
                 <button
@@ -3283,7 +3835,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4">
               {/* Category Tabs */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 {(
@@ -3529,6 +4081,268 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
       )}
 
       {/* ===================================================================== */}
+      {/* MODAL 5: TOPIC WORDS POPUP (SHOWS WORDS WHEN CLICKING A TOPIC DECK)   */}
+      {/* ===================================================================== */}
+      {typeof document !== 'undefined' && topicPopupName && createPortal(
+        <div
+          onClick={closeTopicPopup}
+          className="fixed inset-0 z-[140] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={`w-full max-w-5xl max-h-[90dvh] rounded-3xl border shadow-2xl overflow-hidden flex flex-col ${
+              isDark
+                ? 'bg-[#0E1118] border-white/10 text-white'
+                : 'bg-[#F8FAFC] border-slate-200 text-slate-900'
+            }`}
+          >
+            {/* Topic Popup Header */}
+            <div
+              className={`px-5 py-4 border-b flex flex-wrap items-center justify-between gap-3 shrink-0 ${
+                isDark ? 'bg-[#12151E] border-white/[0.08]' : 'bg-white border-slate-200/80'
+              }`}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span
+                  className={`text-xs font-extrabold px-3 py-1 rounded-xl border ${getTopicBadgeCls(
+                    topicPopupName
+                  )}`}
+                >
+                  {topicPopupName}
+                </span>
+                <span className="text-xs font-bold text-slate-400">
+                  ({filteredWords.length} từ)
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  disabled={filteredWords.length === 0}
+                  onClick={() => openStudyPopupAt(0)}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-40 ${
+                    isDark
+                      ? 'bg-[#1DB954]/15 border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
+                      : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                  }`}
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span>Học Thẻ Lớn</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={filteredWords.length === 0}
+                  onClick={() => {
+                    const tp = topicPopupName;
+                    closeTopicPopup();
+                    setMode('review');
+                    startReviewSession('all', tp);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+                >
+                  <Brain className="w-3.5 h-3.5" />
+                  <span>Ôn chủ đề này</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={closeTopicPopup}
+                  className={`p-2 rounded-xl cursor-pointer ${
+                    isDark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-500'
+                  }`}
+                  title="Đóng (Esc)"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Topic Popup Quick Filter Bar */}
+            <div
+              className={`px-5 py-2.5 border-b flex flex-wrap items-center gap-2 shrink-0 ${
+                isDark ? 'bg-[#12151E]/60 border-white/[0.06]' : 'bg-white/70 border-slate-100'
+              }`}
+            >
+              <div className="relative flex-1 min-w-[180px]">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={`Tìm từ trong chủ đề ${topicPopupName}...`}
+                  className={`w-full pl-8 pr-3 py-1.5 rounded-xl border text-xs outline-none ${
+                    isDark
+                      ? 'bg-[#181C28] border-white/10 text-white placeholder:text-slate-500'
+                      : 'bg-slate-50 border-slate-200 text-slate-800'
+                  }`}
+                />
+              </div>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                  isDark ? 'bg-[#181C28] border-white/10 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}
+              >
+                <option value="all">Mọi trạng thái</option>
+                <option value="due">Cần Review</option>
+                <option value="new">Từ mới</option>
+                <option value="learning">Đang nhớ</option>
+                <option value="mastered">Thuộc làu</option>
+              </select>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold outline-none cursor-pointer ${
+                  isDark ? 'bg-[#181C28] border-white/10 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}
+              >
+                <option value="newest">Mới thêm nhất</option>
+                <option value="due_first">Ưu tiên cần ôn</option>
+                <option value="az">Từ A → Z</option>
+                <option value="za">Từ Z → A</option>
+                <option value="mastery_asc">Từ yếu nhớ trước</option>
+              </select>
+            </div>
+
+            {/* Topic Popup Scrollable Cards + Pagination */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-4">
+              {paginatedWords.length === 0 ? (
+                <div className="py-12 text-center text-xs text-slate-400">
+                  Không có từ vựng nào khớp bộ lọc trong chủ đề này.
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {paginatedWords.map((item) => {
+                      const badge = getMasteryBadge(item.srsLevel);
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => {
+                            const idx = filteredWords.findIndex((w) => w.id === item.id);
+                            openStudyPopupAt(idx >= 0 ? idx : 0);
+                          }}
+                          className={`rounded-2xl border p-4 flex flex-col justify-between gap-2.5 cursor-pointer transition-all hover:-translate-y-0.5 select-none ${
+                            isDark
+                              ? 'bg-[#12151E] border-white/[0.08] hover:border-emerald-400/40'
+                              : 'bg-white border-slate-200/80 hover:border-indigo-300 shadow-2xs'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <h4 className="text-base font-extrabold tracking-tight truncate">{item.word}</h4>
+                              <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400 mt-0.5">
+                                {item.partOfSpeech && (
+                                  <span className="text-indigo-500 font-bold">{item.partOfSpeech}</span>
+                                )}
+                                {item.phonetic && <span className="truncate">{item.phonetic}</span>}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleSaved(item);
+                                }}
+                                className={`p-1 rounded-lg cursor-pointer ${
+                                  item.isSaved ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'
+                                }`}
+                                title={item.isSaved ? 'Bỏ khỏi Đã Lưu' : 'Lưu vào Đã Lưu ⭐'}
+                              >
+                                <Star className={`w-3.5 h-3.5 ${item.isSaved ? 'fill-amber-400 text-amber-500' : ''}`} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  speakEnglishWord(item.word, false);
+                                }}
+                                className={`p-1.5 rounded-xl cursor-pointer ${
+                                  isDark ? 'bg-indigo-500/15 text-indigo-300' : 'bg-indigo-50 text-indigo-600'
+                                }`}
+                                title="Nghe phát âm"
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <p className={`text-xs font-bold line-clamp-2 ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                            {item.meaning}
+                          </p>
+
+                          <div className={`pt-2 border-t flex items-center justify-between text-[10.5px] text-slate-400 ${
+                            isDark ? 'border-white/[0.06]' : 'border-slate-100'
+                          }`}>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.cls}`}>
+                              {badge.label}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEditWordModal(item);
+                                }}
+                                className="p-1 rounded-lg hover:bg-slate-100 hover:text-indigo-600 cursor-pointer"
+                                title="Sửa"
+                              >
+                                <Edit3 className="w-3 h-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteWord(item.id);
+                                }}
+                                className="p-1 rounded-lg hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+                                title="Xóa"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Topic Popup Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between gap-2 pt-2">
+                      <span className="text-xs text-slate-400">
+                        Trang <strong className={isDark ? 'text-white' : 'text-slate-800'}>{safePage}</strong> / {totalPages}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          disabled={safePage <= 1}
+                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          className={`px-3 py-1.5 rounded-xl border text-xs font-bold cursor-pointer disabled:opacity-40 ${surfaceCls}`}
+                        >
+                          ← Trước
+                        </button>
+                        <button
+                          type="button"
+                          disabled={safePage >= totalPages}
+                          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                          className={`px-3 py-1.5 rounded-xl border text-xs font-bold cursor-pointer disabled:opacity-40 ${surfaceCls}`}
+                        >
+                          Sau →
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ===================================================================== */}
       {/* FLOATING CUTE ENGLISH TUTOR ICON & RIGHT-SIDE MINI CHAT POPUP         */}
       {/* ===================================================================== */}
       {typeof document !== 'undefined' && createPortal(
@@ -3613,7 +4427,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
               </div>
 
               {/* Messages Feed */}
-              <div ref={tutorScrollRef} className="flex-1 overflow-y-auto p-3.5 space-y-3">
+              <div ref={tutorScrollRef} className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3">
                 {tutorMessages.map((msg) => (
                   <div
                     key={msg.id}
