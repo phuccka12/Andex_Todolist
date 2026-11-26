@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Clock, BookOpen, Flame, Bot, Menu } from 'lucide-react';
+import { Clock, BookOpen, Flame, Bot, Menu, Calendar, Kanban, LayoutGrid, FolderKanban, Tag } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { BentoTrackerCards } from '@/components/BentoTrackerCards';
@@ -18,7 +18,6 @@ import { PomodoroFocusModal } from '@/components/PomodoroFocusModal';
 import { HabitTrackerModal } from '@/components/HabitTrackerModal';
 import { QuickNotesModal } from '@/components/QuickNotesModal';
 import { AIAssistantDrawer } from '@/components/AIAssistantDrawer';
-import { FloatingAiWidget } from '@/components/FloatingAiWidget';
 import { JournalView } from '@/components/JournalView';
 import { EmailPostcardModal } from '@/components/EmailPostcardModal';
 import { ScheduleReminderModal } from '@/components/ScheduleReminderModal';
@@ -60,6 +59,7 @@ export default function WorkspaceApp() {
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('tracker');
+  const [trackerLayout, setTrackerLayout] = useState<'schedule' | 'kanban' | 'split'>('schedule');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Application Settings State
@@ -421,32 +421,32 @@ export default function WorkspaceApp() {
     switch (activeTab) {
       case 'projects':
         return {
-          title: 'Projects Workspace',
-          subtitle: 'Không gian điều phối và theo dõi tiến độ các dự án trọng tâm',
+          title: 'Dự Án & Nhãn',
+          subtitle: 'Điều phối dự án trọng tâm và phân loại công việc',
         };
       case 'reports':
         return {
-          title: 'Productivity Reports',
-          subtitle: 'Báo cáo năng suất, nhịp làm việc và phân tích thói quen Deep Work',
+          title: 'Thống Kê Năng Suất',
+          subtitle: 'Theo dõi nhịp làm việc Deep Work và tỷ lệ hoàn thành',
         };
       case 'tags':
         return {
-          title: 'Tags & Categories',
+          title: 'Dự Án & Nhãn',
           subtitle: 'Lọc và quản lý công việc theo các nhãn phân loại',
         };
       case 'archive':
         return {
-          title: 'Completed Archive',
-          subtitle: 'Kho lưu trữ và khôi phục các công việc đã chốt hoàn thành',
+          title: 'Kho Đã Hoàn Thành',
+          subtitle: 'Lưu trữ và khôi phục các công việc đã chốt xong',
         };
       case 'journal':
         return {
           title: 'Nhật Ký Ký Ức',
-          subtitle: 'Bảng lưu giữ khoảnh khắc, ảnh polaroid và những dòng suy ngẫm theo từng tháng',
+          subtitle: 'Lưu giữ khoảnh khắc và những dòng suy ngẫm theo tháng',
         };
       default:
         return {
-          title: 'Time Tracker',
+          title: 'Lịch Biểu',
           subtitle: 'Gencoore • Không gian làm việc cá nhân',
         };
     }
@@ -454,7 +454,7 @@ export default function WorkspaceApp() {
 
   const headerMeta = getHeaderMeta();
 
-  // Dynamic Theme Styling for Frame and Canvas
+  // Dynamic Theme Styling for Full-Bleed Canvas
   const isCustomTheme = settings.theme === 'custom';
   const customCanvasStyle =
     isCustomTheme && settings.customTheme
@@ -472,39 +472,21 @@ export default function WorkspaceApp() {
       case 'sage':
         return 'bg-[#F4F8F5] text-[#1B3624]';
       case 'midnight':
-        return 'bg-[#141A24] text-[#F1F5F9]';
+        return 'bg-[#090A0F] text-[#F1F5F9]';
       case 'custom':
         return '';
       case 'slate':
       default:
-        return 'bg-[#FAFBFD] text-[#1E2433]';
-    }
-  };
-
-  const getFrameThemeClass = () => {
-    switch (settings.theme) {
-      case 'cream':
-        return 'border-[#DCCEB9] bg-[#FAF7F2]';
-      case 'graphite':
-        return 'border-[#CBD5E1] bg-[#F8FAFC]';
-      case 'sage':
-        return 'border-[#C9D9CD] bg-[#F4F8F5]';
-      case 'midnight':
-        return 'border-[#1E2638] bg-[#141A24]';
-      case 'custom':
-        return 'border-black/10';
-      case 'slate':
-      default:
-        return 'border-[#E2E8F0] bg-[#FAFBFD]';
+        return 'bg-[#F8FAFC] text-[#1E2433]';
     }
   };
 
   if (!isMounted) {
     return (
-      <div className="w-full max-w-[1760px] 2xl:max-w-[1880px] h-full md:h-[98dvh] jiron-app-frame !rounded-none md:!rounded-[32px] flex items-center justify-center bg-[#FAFBFD] border-0 md:border border-[#E2E8F0] shadow-app">
+      <div className="w-full h-dvh flex items-center justify-center bg-[#F8FAFC]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#4F46E5] to-[#EC4899] flex items-center justify-center font-black text-white text-lg shadow-lg shadow-indigo-500/25 animate-pulse">
-            G
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#4F46E5] to-[#EC4899] flex items-center justify-center font-black text-white text-base shadow-lg shadow-indigo-500/20 animate-pulse">
+            GC
           </div>
           <p className="text-xs font-bold text-slate-500 tracking-wider">Đang tải Gencoore...</p>
         </div>
@@ -528,8 +510,8 @@ export default function WorkspaceApp() {
 
       <div
         style={!userProfile.background && isCustomTheme ? customCanvasStyle : undefined}
-        className={`w-full max-w-[1760px] 2xl:max-w-[1880px] h-full md:h-[98dvh] jiron-app-frame !rounded-none md:!rounded-[32px] !border-0 md:!border flex overflow-hidden shadow-app relative z-10 transition-all ${
-          userProfile.background ? 'bg-white/92 backdrop-blur-xl' : getFrameThemeClass()
+        className={`w-full h-dvh flex overflow-hidden relative z-10 transition-colors ${
+          userProfile.background ? 'bg-white/90 backdrop-blur-xl' : getCanvasThemeClass()
         }`}
       >
         {/* Desktop Sidebar */}
@@ -615,10 +597,10 @@ export default function WorkspaceApp() {
         <main
           id="main-content-scroll"
           style={activeTab !== 'journal' ? customCanvasStyle : undefined}
-          className={`flex-1 h-full overflow-y-auto overflow-x-hidden ${
+          className={`flex-1 h-full overflow-y-auto overflow-x-hidden flex flex-col ${
             activeTab === 'journal'
               ? 'p-0 pb-20 md:pb-0 bg-[#F3EBDD]'
-              : `p-3.5 sm:p-5 md:p-6 pb-24 md:pb-12 space-y-5 md:space-y-6 ${getCanvasThemeClass()}`
+              : `p-3.5 sm:p-5 md:px-6 md:py-4 pb-24 md:pb-6 space-y-4 ${getCanvasThemeClass()}`
           } custom-main-scroll scroll-smooth transition-colors duration-200`}
         >
           {/* Top Header - Rendered for standard workspace tabs */}
@@ -653,27 +635,60 @@ export default function WorkspaceApp() {
             />
           )}
 
-          {activeTab === 'projects' && (
-            <ProjectsView
-              tasks={tasks}
-              onBackToTracker={() => setActiveTab('tracker')}
-              onOpenTaskModal={handleOpenNewTask}
-              onTaskClick={handleEditTask}
-            />
+          {(activeTab === 'projects' || activeTab === 'tags') && (
+            <div className="space-y-4">
+              <div className="inline-flex items-center p-1 rounded-xl bg-slate-200/70 border border-slate-200/80 gap-1">
+                <button
+                  onClick={() => {
+                    soundEngine.playSoftClick();
+                    setActiveTab('projects');
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === 'projects'
+                      ? 'bg-white text-slate-900 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <FolderKanban className="w-3.5 h-3.5" />
+                  <span>Dự Án</span>
+                </button>
+                <button
+                  onClick={() => {
+                    soundEngine.playSoftClick();
+                    setActiveTab('tags');
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === 'tags'
+                      ? 'bg-white text-slate-900 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>Nhãn & Phân Loại</span>
+                </button>
+              </div>
+
+              {activeTab === 'projects' ? (
+                <ProjectsView
+                  tasks={tasks}
+                  onBackToTracker={() => setActiveTab('tracker')}
+                  onOpenTaskModal={handleOpenNewTask}
+                  onTaskClick={handleEditTask}
+                />
+              ) : (
+                <TagsView
+                  tasks={tasks}
+                  onTaskClick={handleEditTask}
+                  onOpenTaskModal={handleOpenNewTask}
+                />
+              )}
+            </div>
           )}
 
           {activeTab === 'reports' && (
             <ReportsView
               tasks={tasks}
               onBackToTracker={() => setActiveTab('tracker')}
-            />
-          )}
-
-          {activeTab === 'tags' && (
-            <TagsView
-              tasks={tasks}
-              onTaskClick={handleEditTask}
-              onOpenTaskModal={handleOpenNewTask}
             />
           )}
 
@@ -685,33 +700,97 @@ export default function WorkspaceApp() {
           )}
 
           {activeTab === 'tracker' && (
-            <>
-              {/* Section 1: Dynamic Bento Tracker Cards */}
-              <BentoTrackerCards tasks={tasks} />
+            <div className="flex-1 min-h-0 flex flex-col space-y-3.5">
+              {/* Compact Architectural KPI Strip */}
+              <BentoTrackerCards tasks={tasks} theme={settings.theme || 'slate'} />
 
-              {/* Section 2: Real Interactive Kanban Boards with Drag & Drop */}
-              <KanbanSection
-                tasks={tasks}
-                onTaskClick={handleEditTask}
-                onToggleChecklist={handleToggleChecklist}
-                onMoveColumn={handleMoveColumn}
-                onAddTaskToColumn={handleAddTaskToColumn}
-                onDeleteTask={handleDeleteTask}
-              />
+              {/* Workspace Focus Switcher: Timetable dominates by default */}
+              <div className="flex items-center justify-between gap-2 flex-wrap shrink-0">
+                <div
+                  className={`inline-flex items-center p-0.5 rounded-xl border text-xs font-bold ${
+                    settings.theme === 'midnight'
+                      ? 'bg-[#12151E] border-white/[0.08] text-slate-400'
+                      : 'bg-slate-200/60 border-slate-200/80 text-slate-600'
+                  }`}
+                >
+                  <button
+                    onClick={() => {
+                      soundEngine.playSoftClick();
+                      setTrackerLayout('schedule');
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      trackerLayout === 'schedule'
+                        ? settings.theme === 'midnight'
+                          ? 'bg-[#181C28] text-white shadow-xs'
+                          : 'bg-white text-slate-900 shadow-2xs'
+                        : 'hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+                    <span>Thời Khóa Biểu</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      soundEngine.playSoftClick();
+                      setTrackerLayout('kanban');
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      trackerLayout === 'kanban'
+                        ? settings.theme === 'midnight'
+                          ? 'bg-[#181C28] text-white shadow-xs'
+                          : 'bg-white text-slate-900 shadow-2xs'
+                        : 'hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <Kanban className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Bảng Kanban ({tasks.length})</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      soundEngine.playSoftClick();
+                      setTrackerLayout('split');
+                    }}
+                    className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      trackerLayout === 'split'
+                        ? settings.theme === 'midnight'
+                          ? 'bg-[#181C28] text-white shadow-xs'
+                          : 'bg-white text-slate-900 shadow-2xs'
+                        : 'hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Kết Hợp</span>
+                  </button>
+                </div>
+              </div>
 
-              {/* Section 3: Hero Timetable with Drag & Drop and date-fns Month Calendar */}
-              <CenterStageTimetable
-                tasks={tasks}
-                onTaskClick={handleEditTask}
-                onAddSlotClick={handleAddSlotClick}
-                onToggleComplete={handleToggleComplete}
-                onToggleChecklist={handleToggleChecklist}
-                onRescheduleTask={handleRescheduleTask}
-                onOpenArchive={() => setActiveTab('archive')}
-                onOpenScheduleReminder={() => setIsScheduleReminderOpen(true)}
-                settings={settings}
-              />
-            </>
+              {/* Kanban View */}
+              {(trackerLayout === 'kanban' || trackerLayout === 'split') && (
+                <KanbanSection
+                  tasks={tasks}
+                  onTaskClick={handleEditTask}
+                  onToggleChecklist={handleToggleChecklist}
+                  onMoveColumn={handleMoveColumn}
+                  onAddTaskToColumn={handleAddTaskToColumn}
+                  onDeleteTask={handleDeleteTask}
+                />
+              )}
+
+              {/* Hero Center-Stage Timetable */}
+              {(trackerLayout === 'schedule' || trackerLayout === 'split') && (
+                <CenterStageTimetable
+                  tasks={tasks}
+                  onTaskClick={handleEditTask}
+                  onAddSlotClick={handleAddSlotClick}
+                  onToggleComplete={handleToggleComplete}
+                  onToggleChecklist={handleToggleChecklist}
+                  onRescheduleTask={handleRescheduleTask}
+                  onOpenArchive={() => setActiveTab('archive')}
+                  onOpenScheduleReminder={() => setIsScheduleReminderOpen(true)}
+                  settings={settings}
+                />
+              )}
+            </div>
           )}
         </main>
 
@@ -770,12 +849,6 @@ export default function WorkspaceApp() {
             setIsHelpOpen(false);
           }}
           onResetSeedData={handleResetSeedData}
-        />
-
-        {/* Floating AI Assistant Widget (Corner trigger) */}
-        <FloatingAiWidget
-          isOpen={isAiOpen}
-          onOpen={() => setIsAiOpen(true)}
         />
 
         {/* Advanced Full Settings Modal */}

@@ -386,16 +386,22 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const monthDays = eachDayOfInterval({ start: startDate, end: endDate });
 
+  const isDark = settings?.theme === 'midnight';
+
   return (
-    <div className="flex-1 min-h-0 flex flex-col pt-1">
+    <div className="flex-1 min-h-0 flex flex-col">
       {/* Top Header: Title, Controls & Switchers */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 shrink-0">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-2.5 pb-2.5 shrink-0">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-sm font-extrabold text-[#1E2433] tracking-tight">
-              Lịch Biểu & Quản Lý Công Việc
+            <h2 className={`text-sm font-extrabold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Thời Khóa Biểu Trung Tâm
             </h2>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#EBF3FF] text-[#2563EB] border border-[#BFDBFE]/60">
+            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+              isDark
+                ? 'bg-indigo-500/15 text-indigo-300 border-indigo-400/30'
+                : 'bg-indigo-50 text-indigo-600 border-indigo-200/70'
+            }`}>
               {viewMode === 'Week'
                 ? `Tuần: ${weekDays[0].shortDate} — ${weekDays[6].shortDate}`
                 : viewMode === 'Agenda'
@@ -405,21 +411,12 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
                 : `Tháng ${format(currentMonth, 'MM/yyyy')}`}
             </span>
             {viewMode === 'Week' && timeSpanMode === 'autofit' && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]/60 flex items-center gap-1">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center gap-1">
                 <Sparkle className="w-2.5 h-2.5" />
                 Tự co giãn ({activeTimeRows[0]} - {activeTimeRows[activeTimeRows.length - 1]})
               </span>
             )}
           </div>
-          <p className="text-[11px] text-[#8F9CAE] mt-0.5">
-            {viewMode === 'Week'
-              ? 'Thẻ công việc màu sắc đậm đà chuẩn Designer Palettes (Twilight, Deep Forest, Sunset Amber)'
-              : viewMode === 'Agenda'
-              ? 'Xem dòng thời gian không khoảng trống: hiển thị đúng các công việc cần làm trong tuần'
-              : viewMode === 'Day'
-              ? 'Chi tiết từng khung giờ trong ngày, bấm để tạo nhanh công việc'
-              : 'Tổng quan cả tháng: Bấm vào ngày để lên lịch cho tuần tương lai'}
-          </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -721,8 +718,8 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
       {/* VIEW 1: WEEK GRID VIEW (TỐI ƯU 1-TIẾNG, GỌN GÀNG, KÉO THẢ DRAG & DROP)     */}
       {/* ========================================================================= */}
       {viewMode === 'Week' && (
-        <div className="border border-[#DCE4F0] rounded-2xl overflow-hidden bg-white shadow-2xs flex-1 flex flex-col">
-          <div className="overflow-x-auto overflow-y-auto max-h-[62dvh] md:max-h-[calc(100dvh-280px)]">
+        <div className="border border-[#DCE4F0] rounded-xl overflow-hidden bg-white shadow-2xs flex-1 min-h-[420px] flex flex-col">
+          <div className="overflow-x-auto overflow-y-auto flex-1">
             <div className="min-w-[840px]">
               {/* Day Headers Row */}
               <div className="grid grid-cols-[64px_repeat(7,1fr)] bg-[#F8FAFD] border-b border-[#DCE4F0] text-center sticky top-0 z-20 shadow-xs">

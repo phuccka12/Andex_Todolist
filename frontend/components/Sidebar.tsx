@@ -6,16 +6,12 @@ import {
   Clock,
   FolderKanban,
   BarChart3,
-  Tag,
-  CheckCircle,
   Flame,
   Target,
   StickyNote,
-  Image as ImageIcon,
   BookOpen,
   Menu,
   Settings,
-  Sparkles,
 } from 'lucide-react';
 import { soundEngine } from '../lib/audio';
 import { UserProfileData } from '../lib/types';
@@ -50,9 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenHabitTracker,
   onOpenQuickNotes,
   onOpenUserProfile,
-  onOpenBackground,
   onOpenSettings,
-  completedCount = 0,
   profile,
   authUser,
   onOpenAuth,
@@ -67,14 +61,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const customIsDark = customTheme?.isDark ?? true;
   const isDark = isCustom ? customIsDark : theme === 'midnight';
 
-  // Theme-specific styles for the sidebar
   const getThemeStyles = () => {
     if (isCustom && customTheme) {
       return {
         aside: '',
         asideStyle: {
           backgroundColor: customTheme.sidebarBg,
-          borderColor: customIsDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
+          borderColor: customIsDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
           color: customIsDark ? '#F1F5F9' : '#1E2433',
         },
         sectionTitle: customIsDark ? 'text-slate-400' : 'text-slate-500',
@@ -82,9 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ? 'text-slate-300 hover:bg-white/10 hover:text-white'
           : 'text-slate-700 hover:bg-black/5 hover:text-slate-900',
         btnActive: 'text-white shadow-xs font-bold',
-        btnActiveStyle: {
-          backgroundColor: customTheme.accentColor,
-        },
+        btnActiveStyle: { backgroundColor: customTheme.accentColor },
         iconActive: 'text-white',
         iconDefault: customIsDark ? 'text-slate-400' : 'text-slate-500',
         badgeNew: customIsDark
@@ -94,9 +85,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         toggleBtn: customIsDark
           ? 'text-slate-300 hover:text-white hover:bg-white/10'
           : 'text-slate-600 hover:text-slate-900 hover:bg-black/5',
-        quickUploadBg: customIsDark
-          ? 'border-white/15 bg-white/5 hover:bg-white/10 text-slate-200'
-          : 'border-black/10 bg-white hover:bg-black/5 text-slate-700',
       };
     }
 
@@ -114,11 +102,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badgeNew: 'bg-[#DFCDB9] text-[#3D2514] border-[#CBB39C]',
           borderSeparator: 'border-[#DCCEB9]',
           toggleBtn: 'text-[#5C4535] hover:text-[#2C180C] hover:bg-[#FAF7F2]/80',
-          quickUploadBg: 'border-[#DCCEB9] bg-[#FAF7F2] hover:bg-[#F2EAE0] text-[#5C4535]',
         };
       case 'graphite':
         return {
-          aside: 'bg-[#E5E9F0] border-r border-[#CBD5E1] text-[#0F172A]',
+          aside: 'bg-[#EEF2F6] border-r border-[#CBD5E1] text-[#0F172A]',
           asideStyle: {},
           sectionTitle: 'text-[#64748B]',
           btnDefault: 'text-[#334155] hover:bg-white/90 hover:text-[#0F172A]',
@@ -129,7 +116,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badgeNew: 'bg-slate-200 text-slate-800 border-slate-300',
           borderSeparator: 'border-[#CBD5E1]',
           toggleBtn: 'text-[#475569] hover:text-[#0F172A] hover:bg-white/80',
-          quickUploadBg: 'border-[#CBD5E1] bg-white hover:bg-slate-100 text-[#334155]',
         };
       case 'sage':
         return {
@@ -144,38 +130,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badgeNew: 'bg-[#D1E2D6] text-[#14301C] border-[#B7CEBE]',
           borderSeparator: 'border-[#C9D9CD]',
           toggleBtn: 'text-[#2C4A34] hover:text-[#14301C] hover:bg-white/80',
-          quickUploadBg: 'border-[#C9D9CD] bg-[#F2F7F4] hover:bg-white text-[#2C4A34]',
         };
       case 'midnight':
         return {
-          aside: 'bg-[#0E131F] border-r border-[#1E2638] text-[#F1F5F9]',
+          aside: 'bg-[#090A0F] border-r border-white/[0.08] text-[#F1F5F9]',
           asideStyle: {},
-          sectionTitle: 'text-[#64748B]',
-          btnDefault: 'text-[#94A3B8] hover:bg-[#1A2234] hover:text-white',
-          btnActive: 'bg-[#2563EB] text-white shadow-sm font-bold',
+          sectionTitle: 'text-slate-500',
+          btnDefault: 'text-slate-400 hover:bg-white/[0.06] hover:text-white',
+          btnActive: 'bg-[#1DB954] text-[#090A0F] shadow-sm font-bold',
           btnActiveStyle: {},
-          iconActive: 'text-white',
-          iconDefault: 'text-[#64748B]',
-          badgeNew: 'bg-blue-900/60 text-blue-200 border-blue-700/50',
-          borderSeparator: 'border-[#1E2638]',
-          toggleBtn: 'text-[#94A3B8] hover:text-white hover:bg-[#1A2234]',
-          quickUploadBg: 'border-[#1E2638] bg-[#141A26] hover:bg-[#1E2638] text-slate-300',
+          iconActive: 'text-[#090A0F]',
+          iconDefault: 'text-slate-500',
+          badgeNew: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+          borderSeparator: 'border-white/[0.08]',
+          toggleBtn: 'text-slate-400 hover:text-white hover:bg-white/[0.08]',
         };
       case 'slate':
       default:
         return {
-          aside: 'bg-[#F1F4F9] border-r border-[#E2E8F0] text-[#1E2433]',
+          aside: 'bg-white border-r border-slate-200/80 text-slate-800',
           asideStyle: {},
-          sectionTitle: 'text-[#64748B]',
-          btnDefault: 'text-[#475569] hover:bg-white/80 hover:text-[#1E2433]',
-          btnActive: 'bg-[#2563EB] text-white shadow-xs font-bold',
+          sectionTitle: 'text-slate-400',
+          btnDefault: 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900',
+          btnActive: 'bg-indigo-600 text-white shadow-xs font-bold',
           btnActiveStyle: {},
           iconActive: 'text-white',
-          iconDefault: 'text-[#64748B]',
-          badgeNew: 'bg-[#EFF6FF] text-[#2563EB] border-[#DBEAFE]',
-          borderSeparator: 'border-[#E2E8F0]',
-          toggleBtn: 'text-[#64748B] hover:text-[#1E2433] hover:bg-white/80',
-          quickUploadBg: 'border-[#E2E8F0] bg-white hover:bg-[#EFF6FF] text-[#475569]',
+          iconDefault: 'text-slate-400',
+          badgeNew: 'bg-indigo-50 text-indigo-600 border-indigo-200/70',
+          borderSeparator: 'border-slate-200/80',
+          toggleBtn: 'text-slate-500 hover:text-slate-900 hover:bg-slate-100',
         };
     }
   };
@@ -191,164 +174,132 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (onToggleCollapse) onToggleCollapse();
   };
 
+  const isProjectsGroup = activeTab === 'projects' || activeTab === 'tags';
+
   return (
     <aside
       style={themeStyles.asideStyle}
       className={`${
-        isCollapsed ? 'w-[72px] p-2.5' : 'w-60 p-3.5'
-      } flex flex-col justify-between select-none h-full shrink-0 border-r transition-all duration-300 ease-in-out overflow-y-auto ${
+        isCollapsed ? 'w-[68px] p-2.5' : 'w-56 p-3.5'
+      } flex flex-col justify-between select-none h-full shrink-0 transition-all duration-200 ease-in-out overflow-y-auto ${
         themeStyles.aside
       } ${className}`}
     >
-      <div className="space-y-4">
-        {/* Brand Logo & 3-stripe Toggle Header */}
+      <div className="space-y-5">
+        {/* Brand Header */}
         {!isCollapsed ? (
-          <div className="flex items-center justify-between px-1.5 pt-0.5 pb-1">
-            <div className="flex items-center gap-2 text-left">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#2563EB] via-[#4F46E5] to-[#7C3AED] shadow-[0_4px_12px_rgba(37,99,235,0.35)] flex items-center justify-center text-white font-black text-xs tracking-tighter shrink-0">
+          <div className="flex items-center justify-between px-1 pt-0.5">
+            <Link
+              href="/"
+              className="flex items-center gap-2.5 text-left group"
+              title="Về trang giới thiệu Gencoore"
+            >
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#4F46E5] via-[#7C3AED] to-[#EC4899] shadow-sm flex items-center justify-center text-white font-black text-xs tracking-tighter shrink-0 group-hover:scale-105 transition-transform">
                 GC
               </div>
               <div className="flex flex-col text-left">
-                <span className={`font-black text-base tracking-tight ${isDark ? 'text-white' : 'text-[#1E2433]'}`}>
+                <span className={`font-black text-sm tracking-tight leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   Gencoore
                 </span>
-                <span className="text-[8px] font-bold text-[#98A2B3] tracking-widest uppercase -mt-0.5 text-left">
-                  Workspace OS
+                <span className="text-[9px] font-bold text-slate-400 tracking-wider uppercase">
+                  Workspace
                 </span>
               </div>
-            </div>
+            </Link>
 
-            {/* 3-stripe Hamburger Button */}
             <button
               onClick={handleToggle}
-              className={`p-1.5 rounded-lg transition-colors ${themeStyles.toggleBtn}`}
-              title="Thu gọn menu (3 sọc)"
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${themeStyles.toggleBtn}`}
+              title={onCloseMobile ? 'Đóng menu' : 'Thu gọn menu'}
             >
               <Menu className="w-4 h-4" />
             </button>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2 pt-0.5 pb-1">
+          <div className="flex flex-col items-center gap-2 pt-0.5">
             <button
               onClick={handleToggle}
-              className={`p-2 rounded-xl transition-all group ${themeStyles.toggleBtn}`}
-              title="Mở rộng menu (3 sọc)"
+              className={`p-2 rounded-xl transition-all cursor-pointer ${themeStyles.toggleBtn}`}
+              title="Mở rộng menu"
             >
-              <Menu className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              <Menu className="w-4 h-4" />
             </button>
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#2563EB] via-[#4F46E5] to-[#7C3AED] shadow-sm flex items-center justify-center text-white font-black text-xs shrink-0">
+            <Link
+              href="/"
+              title="Gencoore"
+              className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#4F46E5] via-[#7C3AED] to-[#EC4899] shadow-sm flex items-center justify-center text-white font-black text-xs shrink-0"
+            >
               GC
-            </div>
+            </Link>
           </div>
         )}
 
-        {/* Section 1: Main Workspaces */}
+        {/* Group 1: Workspace (4 Core Tabs) */}
         <div className="space-y-1">
           {!isCollapsed && (
-            <span className={`text-[10px] font-bold tracking-wider uppercase px-2 text-left block ${themeStyles.sectionTitle}`}>
-              Main
+            <span className={`text-[10px] font-bold tracking-wider uppercase px-2.5 block mb-1.5 ${themeStyles.sectionTitle}`}>
+              Không Gian
             </span>
           )}
-          <nav className="space-y-0.5">
-            {/* Time Tracker */}
+          <nav className="space-y-1">
             <button
               onClick={() => setActiveTab('tracker')}
               style={activeTab === 'tracker' ? themeStyles.btnActiveStyle : undefined}
               className={`w-full flex items-center ${
-                isCollapsed ? 'justify-center p-2 rounded-xl' : 'gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left'
-              } transition-all relative group ${
+                isCollapsed ? 'justify-center p-2.5 rounded-xl' : 'gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
+              } transition-all cursor-pointer ${
                 activeTab === 'tracker' ? themeStyles.btnActive : themeStyles.btnDefault
               }`}
-              title="Time Tracker"
+              title="Lịch Biểu & Công Việc"
             >
-              <Clock
-                className={`w-4 h-4 shrink-0 ${
-                  activeTab === 'tracker' ? themeStyles.iconActive : themeStyles.iconDefault
-                }`}
-              />
-              {!isCollapsed && <span>Time Tracker</span>}
+              <Clock className={`w-4 h-4 shrink-0 ${activeTab === 'tracker' ? themeStyles.iconActive : themeStyles.iconDefault}`} />
+              {!isCollapsed && <span>Lịch Biểu</span>}
             </button>
 
-            {/* Projects */}
             <button
               onClick={() => setActiveTab('projects')}
-              style={activeTab === 'projects' ? themeStyles.btnActiveStyle : undefined}
+              style={isProjectsGroup ? themeStyles.btnActiveStyle : undefined}
               className={`w-full flex items-center ${
-                isCollapsed ? 'justify-center p-2 rounded-xl' : 'gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left'
-              } transition-all relative group ${
-                activeTab === 'projects' ? themeStyles.btnActive : themeStyles.btnDefault
+                isCollapsed ? 'justify-center p-2.5 rounded-xl' : 'gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
+              } transition-all cursor-pointer ${
+                isProjectsGroup ? themeStyles.btnActive : themeStyles.btnDefault
               }`}
-              title="Projects"
+              title="Dự Án & Nhãn"
             >
-              <FolderKanban
-                className={`w-4 h-4 shrink-0 ${
-                  activeTab === 'projects' ? themeStyles.iconActive : themeStyles.iconDefault
-                }`}
-              />
-              {!isCollapsed && <span>Projects</span>}
+              <FolderKanban className={`w-4 h-4 shrink-0 ${isProjectsGroup ? themeStyles.iconActive : themeStyles.iconDefault}`} />
+              {!isCollapsed && <span>Dự Án & Nhãn</span>}
             </button>
 
-            {/* Reports */}
             <button
               onClick={() => setActiveTab('reports')}
               style={activeTab === 'reports' ? themeStyles.btnActiveStyle : undefined}
               className={`w-full flex items-center ${
-                isCollapsed ? 'justify-center p-2 rounded-xl' : 'gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left'
-              } transition-all relative group ${
+                isCollapsed ? 'justify-center p-2.5 rounded-xl' : 'gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
+              } transition-all cursor-pointer ${
                 activeTab === 'reports' ? themeStyles.btnActive : themeStyles.btnDefault
               }`}
-              title="Reports"
+              title="Báo Cáo Năng Suất"
             >
-              <BarChart3
-                className={`w-4 h-4 shrink-0 ${
-                  activeTab === 'reports' ? themeStyles.iconActive : themeStyles.iconDefault
-                }`}
-              />
-              {!isCollapsed && <span>Reports</span>}
+              <BarChart3 className={`w-4 h-4 shrink-0 ${activeTab === 'reports' ? themeStyles.iconActive : themeStyles.iconDefault}`} />
+              {!isCollapsed && <span>Thống Kê</span>}
             </button>
 
-            {/* Tags */}
-            <button
-              onClick={() => setActiveTab('tags')}
-              style={activeTab === 'tags' ? themeStyles.btnActiveStyle : undefined}
-              className={`w-full flex items-center ${
-                isCollapsed ? 'justify-center p-2 rounded-xl' : 'gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left'
-              } transition-all relative group ${
-                activeTab === 'tags' ? themeStyles.btnActive : themeStyles.btnDefault
-              }`}
-              title="Tags & Phân Loại"
-            >
-              <Tag
-                className={`w-4 h-4 shrink-0 ${
-                  activeTab === 'tags' ? themeStyles.iconActive : themeStyles.iconDefault
-                }`}
-              />
-              {!isCollapsed && <span>Tags</span>}
-            </button>
-
-            {/* Nhật Ký Ký Ức */}
             <button
               onClick={() => setActiveTab('journal')}
               className={`w-full flex items-center ${
-                isCollapsed
-                  ? 'justify-center p-2 rounded-xl'
-                  : 'justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left'
-              } transition-all relative group ${
+                isCollapsed ? 'justify-center p-2.5 rounded-xl' : 'justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
+              } transition-all relative cursor-pointer ${
                 activeTab === 'journal'
-                  ? 'bg-[#EDE0CE] text-[#2C180C] font-bold shadow-xs border border-[#DECDB8]'
+                  ? 'bg-[#EDE0CE] text-[#2C180C] font-bold shadow-xs'
                   : themeStyles.btnDefault
               }`}
               title="Nhật Ký Ký Ức"
             >
-              <div className="flex items-center gap-2.5 text-left">
-                <BookOpen
-                  className={`w-4 h-4 shrink-0 ${
-                    activeTab === 'journal' ? 'text-[#8C5D35]' : themeStyles.iconDefault
-                  }`}
-                />
-                {!isCollapsed && <span>Nhật Ký Ký Ức</span>}
+              <div className="flex items-center gap-2.5">
+                <BookOpen className={`w-4 h-4 shrink-0 ${activeTab === 'journal' ? 'text-[#8C5D35]' : themeStyles.iconDefault}`} />
+                {!isCollapsed && <span>Nhật Ký</span>}
               </div>
-              {!isCollapsed ? (
+              {!isCollapsed && (
                 <span
                   className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${
                     activeTab === 'journal'
@@ -356,181 +307,89 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       : themeStyles.badgeNew
                   }`}
                 >
-                  New
+                  Chill
                 </span>
-              ) : (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#8C5D35]" />
               )}
-            </button>
-
-            {/* Đã Hoàn Thành */}
-            <button
-              onClick={() => setActiveTab('archive')}
-              className={`w-full flex items-center ${
-                isCollapsed
-                  ? 'justify-center p-2 rounded-xl'
-                  : 'justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left'
-              } transition-all relative group ${
-                activeTab === 'archive' ? 'bg-[#E6F9F0] text-[#059669] font-bold' : themeStyles.btnDefault
-              }`}
-              title="Đã Hoàn Thành"
-            >
-              <div className="flex items-center gap-2.5 text-left">
-                <CheckCircle
-                  className={`w-4 h-4 shrink-0 ${
-                    activeTab === 'archive' ? 'text-[#059669]' : themeStyles.iconDefault
-                  }`}
-                />
-                {!isCollapsed && <span>Đã Hoàn Thành</span>}
-              </div>
-              {completedCount > 0 &&
-                (!isCollapsed ? (
-                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#A7F3D0] text-[#065F46] shrink-0">
-                    {completedCount}
-                  </span>
-                ) : (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[15px] h-3.5 px-1 rounded-full bg-emerald-500 text-white text-[8px] font-black flex items-center justify-center">
-                    {completedCount}
-                  </span>
-                ))}
             </button>
           </nav>
         </div>
 
-        {/* Section 2: Personal Productivity Tools */}
+        {/* Group 2: Tools (3 Compact Items) */}
         <div className="space-y-1">
           {!isCollapsed && (
-            <span className={`text-[10px] font-bold tracking-wider uppercase px-2 text-left block ${themeStyles.sectionTitle}`}>
-              Năng Suất Cá Nhân
+            <span className={`text-[10px] font-bold tracking-wider uppercase px-2.5 block mb-1.5 ${themeStyles.sectionTitle}`}>
+              Công Cụ
             </span>
           )}
-          <nav className="space-y-0.5">
-            {/* Pomodoro */}
+          <nav className="space-y-1">
             <button
               onClick={onOpenPomodoro}
               className={`w-full flex items-center ${
-                isCollapsed ? 'justify-center p-2 rounded-xl' : 'gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
-              } ${themeStyles.btnDefault} transition-colors group relative`}
+                isCollapsed ? 'justify-center p-2.5 rounded-xl' : 'gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
+              } ${themeStyles.btnDefault} transition-colors cursor-pointer`}
               title="Đồng Hồ Pomodoro (25m)"
             >
-              <Flame className="w-4 h-4 text-[#F43F5E] shrink-0" />
-              {!isCollapsed ? (
+              <Flame className="w-4 h-4 text-rose-500 shrink-0" />
+              {!isCollapsed && (
                 <>
-                  <span className="flex-1 text-left font-medium text-xs truncate">Đồng Hồ Pomodoro</span>
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 shrink-0 ml-auto">
+                  <span className="flex-1 truncate">Pomodoro</span>
+                  <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-md ${isDark ? 'bg-rose-500/15 text-rose-400' : 'bg-rose-50 text-rose-600'}`}>
                     25m
                   </span>
                 </>
-              ) : (
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#F43F5E]" />
               )}
             </button>
 
-            {/* Habit Tracker */}
             <button
               onClick={onOpenHabitTracker}
               className={`w-full flex items-center ${
-                isCollapsed ? 'justify-center p-2 rounded-xl' : 'gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
-              } ${themeStyles.btnDefault} transition-colors group relative`}
+                isCollapsed ? 'justify-center p-2.5 rounded-xl' : 'gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
+              } ${themeStyles.btnDefault} transition-colors cursor-pointer`}
               title="Thói Quen Hàng Ngày (Streak)"
             >
-              <Target className="w-4 h-4 text-[#F59E0B] shrink-0" />
-              {!isCollapsed ? (
+              <Target className="w-4 h-4 text-amber-500 shrink-0" />
+              {!isCollapsed && (
                 <>
-                  <span className="flex-1 text-left font-medium text-xs truncate">Thói Quen Hàng Ngày</span>
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 shrink-0 ml-auto">
+                  <span className="flex-1 truncate">Thói Quen</span>
+                  <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-md ${isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
                     Streak
                   </span>
                 </>
-              ) : (
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
               )}
             </button>
 
-            {/* Quick Notes */}
             <button
               onClick={onOpenQuickNotes}
               className={`w-full flex items-center ${
-                isCollapsed ? 'justify-center p-2 rounded-xl' : 'gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
-              } ${themeStyles.btnDefault} transition-colors group`}
+                isCollapsed ? 'justify-center p-2.5 rounded-xl' : 'gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
+              } ${themeStyles.btnDefault} transition-colors cursor-pointer`}
               title="Ghi Chú Nhanh"
             >
-              <StickyNote className="w-4 h-4 text-[#7B61FF] shrink-0" />
-              {!isCollapsed && <span className="flex-1 text-left font-medium text-xs truncate">Ghi Chú Nhanh</span>}
+              <StickyNote className="w-4 h-4 text-violet-500 shrink-0" />
+              {!isCollapsed && <span className="flex-1 truncate">Ghi Chú</span>}
             </button>
           </nav>
         </div>
-
-        {/* Quick Wallpaper Upload Trigger */}
-        <button
-          onClick={onOpenBackground}
-          className={`w-full ${
-            isCollapsed ? 'p-2 flex justify-center' : 'py-1.5 px-2.5 flex items-center justify-between'
-          } rounded-xl border text-[11px] font-bold transition-all shadow-2xs group ${themeStyles.quickUploadBg}`}
-          title="Tự tải ảnh nền cá nhân hoặc đổi wallpaper"
-        >
-          <div className="flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 text-[#3B82F6] shrink-0" />
-            {!isCollapsed && <span>Đổi Background</span>}
-          </div>
-          {!isCollapsed && (
-            <span className="text-[9px] font-extrabold text-[#3B82F6] bg-blue-50 group-hover:bg-blue-100 px-1.5 py-0.5 rounded-md">
-              Upload
-            </span>
-          )}
-        </button>
       </div>
 
-      {/* Bottom Area: Settings + User Profile Card */}
-      <div className="space-y-2">
-        {/* Landing Page Link */}
-        <div className={`pt-2 border-t ${themeStyles.borderSeparator}`}>
-          <Link
-            href="/"
-            className={`w-full flex items-center ${
-              isCollapsed ? 'justify-center p-2 rounded-xl' : 'gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
-            } ${themeStyles.btnDefault} transition-all group`}
-            title="Xem Trang Giới Thiệu Gencoore"
-          >
-            <Sparkles className={`w-4 h-4 shrink-0 text-[#2563EB] group-hover:scale-110 transition-transform`} />
-            {!isCollapsed && (
-              <div className="flex items-center justify-between flex-1">
-                <span>Trang Giới Thiệu</span>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-[#2563EB]">
-                  Landing
-                </span>
-              </div>
-            )}
-          </Link>
-        </div>
-
-        {/* Settings Navigation Item - Directly in Sidebar */}
-        <div className={`pt-1`}>
+      {/* Bottom Area: Settings + Account */}
+      <div className="space-y-2 pt-3">
+        <div className={`pt-2.5 border-t ${themeStyles.borderSeparator}`}>
           <button
             onClick={() => {
               soundEngine.playSoftClick();
-              if (onOpenSettings) onOpenSettings();
+              onOpenSettings?.();
             }}
             className={`w-full flex items-center ${
-              isCollapsed ? 'justify-center p-2 rounded-xl' : 'gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
-            } ${themeStyles.btnDefault} transition-all group`}
-            title="Cài Đặt Hệ Thống & Tùy Biến Theme"
+              isCollapsed ? 'justify-center p-2.5 rounded-xl' : 'gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
+            } ${themeStyles.btnDefault} transition-all group cursor-pointer`}
+            title="Cài Đặt, Giao Diện & Hình Nền"
           >
-            <Settings className={`w-4 h-4 shrink-0 ${themeStyles.iconDefault} group-hover:rotate-90 transition-transform duration-300`} />
-            {!isCollapsed && (
-              <div className="flex items-center justify-between flex-1">
-                <span>Cài Đặt Hệ Thống</span>
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                  isDark ? 'bg-white/10 text-slate-300' : 'bg-black/5 text-slate-500'
-                }`}>
-                  Theme
-                </span>
-              </div>
-            )}
+            <Settings className={`w-4 h-4 shrink-0 ${themeStyles.iconDefault} group-hover:rotate-45 transition-transform duration-300`} />
+            {!isCollapsed && <span className="flex-1">Cài Đặt</span>}
           </button>
         </div>
 
-        {/* User Profile Card */}
         <div className={`pt-2 border-t ${themeStyles.borderSeparator}`}>
           {authUser ? (
             <div
@@ -540,7 +399,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               } hover:bg-black/5 cursor-pointer rounded-xl transition-colors group`}
               title={`${authUser.name} - Hồ sơ cá nhân`}
             >
-              <div className="w-8 h-8 rounded-full bg-slate-800 text-white font-bold flex items-center justify-center text-[11px] shadow-xs overflow-hidden shrink-0 border border-white">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px] overflow-hidden shrink-0">
                 {authUser.avatar || profile?.avatar ? (
                   <img
                     src={authUser.avatar || profile?.avatar}
@@ -549,7 +408,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   />
                 ) : (
                   <span>
-                    {(authUser.name || 'CBP')
+                    {(authUser.name || 'GC')
                       .split(' ')
                       .map((n) => n[0])
                       .slice(0, 2)
@@ -560,12 +419,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               {!isCollapsed && (
                 <div className="overflow-hidden flex-1 text-left">
-                  <h4 className="text-xs font-bold truncate group-hover:text-[#3B82F6] transition-colors text-left">
-                    {authUser.name}
-                  </h4>
-                  <span className="text-[9px] text-emerald-600 font-semibold truncate block text-left flex items-center gap-1">
+                  <h4 className="text-xs font-bold truncate">{authUser.name}</h4>
+                  <span className="text-[9.5px] text-emerald-500 font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                    <span>Cloud Sync 🍃</span>
+                    <span>Cloud Sync</span>
                   </span>
                 </div>
               )}
@@ -575,20 +432,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={onOpenAuth}
               className={`flex items-center ${
                 isCollapsed ? 'justify-center p-1.5' : 'gap-2.5 p-2'
-              } hover:bg-blue-50 cursor-pointer rounded-xl transition-all group`}
+              } ${isDark ? 'hover:bg-white/[0.06]' : 'hover:bg-indigo-50'} cursor-pointer rounded-xl transition-all group`}
               title="Đăng Nhập / Đăng Ký Tài Khoản"
             >
-              <div className="w-8 h-8 rounded-full bg-blue-100 text-[#2563EB] font-black flex items-center justify-center text-xs shrink-0 group-hover:bg-[#2563EB] group-hover:text-white transition-colors">
+              <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-500 font-black flex items-center justify-center text-sm shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                 +
               </div>
               {!isCollapsed && (
                 <div className="overflow-hidden flex-1 text-left">
-                  <h4 className="text-xs font-bold text-[#2563EB] truncate text-left">
-                    Đăng Nhập / Đăng Ký
-                  </h4>
-                  <span className="text-[9px] text-[#98A2B3] truncate block text-left">
-                    Lưu & Đồng bộ dữ liệu ▾
-                  </span>
+                  <h4 className="text-xs font-bold text-indigo-500 truncate">Đăng Nhập</h4>
+                  <span className="text-[9.5px] text-slate-400 truncate block">Đồng bộ Cloud</span>
                 </div>
               )}
             </div>

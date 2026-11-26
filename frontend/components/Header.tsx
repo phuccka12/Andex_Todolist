@@ -1,20 +1,15 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
 import {
-  Settings,
-  HelpCircle,
-  Bell,
   Plus,
   Sparkles,
-  Mail,
-  Image as ImageIcon,
   LogIn,
   LogOut,
   User as UserIcon,
   ChevronDown,
   Menu,
+  Bot,
 } from 'lucide-react';
 import { UserProfileData } from '../lib/types';
 import { AuthUser } from '../lib/authService';
@@ -25,7 +20,7 @@ interface HeaderProps {
   subtitle?: string;
   onOpenNewTaskModal: () => void;
   onOpenAiDrawer: () => void;
-  onOpenEmailModal: () => void;
+  onOpenEmailModal?: () => void;
   onOpenSettings?: () => void;
   onOpenNotifications?: () => void;
   onOpenHelp?: () => void;
@@ -40,15 +35,10 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  title = 'Time Tracker',
+  title = 'Lịch Biểu',
   subtitle = 'Gencoore • Không gian làm việc cá nhân',
   onOpenNewTaskModal,
   onOpenAiDrawer,
-  onOpenEmailModal,
-  onOpenSettings,
-  onOpenNotifications,
-  onOpenHelp,
-  onOpenBackground,
   profile,
   onOpenProfile,
   authUser,
@@ -60,7 +50,6 @@ export const Header: React.FC<HeaderProps> = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -74,17 +63,25 @@ export const Header: React.FC<HeaderProps> = ({
   const isDark = theme === 'midnight';
 
   return (
-    <header className={`flex items-center justify-between gap-2 pb-3 md:pb-3.5 border-b select-none shrink-0 ${
-      isDark ? 'border-[#1E2638]' : theme === 'cream' ? 'border-[#DCCEB9]' : theme === 'sage' ? 'border-[#C9D9CD]' : 'border-[#EEF2F8]'
-    }`}>
+    <header
+      className={`flex items-center justify-between gap-3 pb-3 border-b select-none shrink-0 ${
+        isDark
+          ? 'border-white/[0.08]'
+          : theme === 'cream'
+          ? 'border-[#DCCEB9]'
+          : theme === 'sage'
+          ? 'border-[#C9D9CD]'
+          : 'border-slate-200/80'
+      }`}
+    >
       <div className="flex items-center gap-2.5 min-w-0">
         {onOpenMobileMenu && (
           <button
             onClick={onOpenMobileMenu}
             className={`md:hidden p-2 -ml-1 rounded-xl border transition-colors shrink-0 ${
               isDark
-                ? 'border-[#1E2638] text-slate-200 hover:bg-[#1A2234]'
-                : 'border-[#E2E8F0] bg-white text-[#1E2433] hover:bg-slate-50'
+                ? 'border-white/10 text-slate-200 hover:bg-white/10'
+                : 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50'
             }`}
             aria-label="Mở menu điều hướng"
           >
@@ -92,26 +89,43 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
         <div className="min-w-0">
-          <h1 className={`text-base sm:text-lg font-extrabold tracking-tight truncate ${isDark ? 'text-white' : 'text-[#1E2433]'}`}>{title}</h1>
-          <p className="text-[11px] text-[#8F9CAE] hidden sm:block truncate">{subtitle}</p>
+          <h1
+            className={`text-base sm:text-lg font-extrabold tracking-tight truncate ${
+              isDark ? 'text-white' : 'text-slate-900'
+            }`}
+          >
+            {title}
+          </h1>
+          <p className={`text-[11px] hidden sm:block truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            {subtitle}
+          </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-        {/* Landing Page link */}
-        <Link
-          href="/"
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-200/80 bg-blue-50/70 hover:bg-blue-100 text-[#2563EB] text-xs font-bold transition-all shadow-2xs hover:scale-[1.02]"
-          title="Xem trang giới thiệu Gencoore"
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Gencoore AI Trigger (Moved cleanly into Header so it never blocks bottom-right UI) */}
+        <button
+          onClick={onOpenAiDrawer}
+          className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer active:scale-95 ${
+            isDark
+              ? 'bg-indigo-500/15 hover:bg-indigo-500/25 border-indigo-400/30 text-indigo-300'
+              : 'bg-indigo-50/80 hover:bg-indigo-100 border-indigo-200/80 text-indigo-700'
+          }`}
+          title="Mở Trợ lý Gencoore AI"
         >
-          <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
-          <span>Giới thiệu</span>
-        </Link>
+          <Bot className="w-3.5 h-3.5" />
+          <span>Gencoore AI</span>
+          <Sparkles className="w-3 h-3 text-pink-500" />
+        </button>
 
         {/* Create Task button */}
         <button
           onClick={onOpenNewTaskModal}
-          className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-[#1E2433] hover:bg-[#2B3448] text-white rounded-full text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+          className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer ${
+            isDark
+              ? 'bg-[#1DB954] hover:bg-[#1ed760] text-[#090A0F]'
+              : 'bg-slate-900 hover:bg-slate-800 text-white'
+          }`}
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
           <span className="hidden sm:inline">Tạo công việc</span>
@@ -120,13 +134,17 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* User Account / Auth Section */}
         {authUser ? (
-          <div className="relative ml-1" ref={dropdownRef}>
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-full border border-[#CBD5E1] hover:border-[#3B82F6] bg-white transition-all shadow-2xs group"
+              className={`flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-xl border transition-all group cursor-pointer ${
+                isDark
+                  ? 'border-white/10 bg-[#12151E] hover:border-white/25 text-slate-100'
+                  : 'border-slate-200 bg-white hover:border-slate-300 text-slate-800'
+              }`}
               title={`Đã đăng nhập: ${authUser.name}`}
             >
-              <div className="w-7 h-7 rounded-full overflow-hidden bg-slate-800 text-white font-bold text-[10px] flex items-center justify-center shrink-0 border border-white">
+              <div className="w-6 h-6 rounded-lg overflow-hidden bg-indigo-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">
                 {authUser.avatar || profile?.avatar ? (
                   <img
                     src={authUser.avatar || profile?.avatar}
@@ -135,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
                   />
                 ) : (
                   <span>
-                    {(authUser.name || 'CBP')
+                    {(authUser.name || 'GC')
                       .split(' ')
                       .map((n) => n[0])
                       .slice(0, 2)
@@ -144,18 +162,17 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 )}
               </div>
-              <span className="text-xs font-bold text-[#1E2433] max-w-[100px] truncate hidden sm:inline">
+              <span className="text-xs font-bold max-w-[90px] truncate hidden sm:inline">
                 {authUser.name.split(' ')[0]}
               </span>
-              <ChevronDown className="w-3 h-3 text-[#64748B] group-hover:text-[#1E2433]" />
+              <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
 
-            {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-[#EEF2F8] p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1">
-                <div className="px-3 py-2 border-b border-[#F1F5F9]">
-                  <p className="text-xs font-bold text-[#1E2433] truncate">{authUser.name}</p>
-                  <p className="text-[10px] text-[#64748B] truncate">{authUser.email}</p>
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-200 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1">
+                <div className="px-3 py-2 border-b border-slate-100">
+                  <p className="text-xs font-bold text-slate-900 truncate">{authUser.name}</p>
+                  <p className="text-[10px] text-slate-500 truncate">{authUser.email}</p>
                 </div>
 
                 <button
@@ -163,9 +180,9 @@ export const Header: React.FC<HeaderProps> = ({
                     setIsDropdownOpen(false);
                     onOpenProfile?.();
                   }}
-                  className="w-full px-2.5 py-1.5 rounded-xl text-xs font-medium text-[#334155] hover:bg-[#F8FAFD] hover:text-[#2563EB] flex items-center gap-2 transition-colors text-left"
+                  className="w-full px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600 flex items-center gap-2 transition-colors text-left"
                 >
-                  <UserIcon className="w-3.5 h-3.5 text-[#3B82F6]" />
+                  <UserIcon className="w-3.5 h-3.5 text-indigo-500" />
                   <span>Hồ sơ cá nhân</span>
                 </button>
 
@@ -185,7 +202,7 @@ export const Header: React.FC<HeaderProps> = ({
         ) : (
           <button
             onClick={onOpenAuth}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-[#2563EB] to-[#4F46E5] hover:from-[#1D4ED8] hover:to-[#4338CA] text-white rounded-full text-xs font-bold transition-all shadow-sm active:scale-95 ml-1"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
           >
             <LogIn className="w-3.5 h-3.5" />
             <span>Đăng Nhập</span>
