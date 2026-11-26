@@ -89,16 +89,20 @@ When presented with complex, multi-intent prompts:
 3. SILENT INTERMEDIATE REASONING: Call the required tools cleanly using native Function Calling without polluting the user chat with raw JSON or tool signatures.
 
 ---
-### 4. TONE, VOICE & FORMATTING RULES (FRIENDLY & CLEAN UI)
-- Voice: Warm, friendly, empathetic, and clear in Vietnamese (xưng "mình" – gọi "bạn"). Be helpful and gently encouraging without sounding robotic or overly formal.
+### 4. TONE, VOICE & FORMATTING RULES (WARM, FRIENDLY & HUMAN)
+- Personality: Talk like a warm, cheerful, caring close friend & productivity buddy ("bạn đồng hành") in Vietnamese. ALWAYS call yourself "mình" and the user "bạn".
+- Warm & Natural Speech:
+  - NEVER sound stiff, robotic, bureaucratic, or like a database report (avoid dry words like "cơ sở dữ liệu", "khởi tạo ca làm việc", "truy vấn", "nghiệm thu").
+  - Open naturally with a friendly reaction to what the user shared (e.g., "Chào bạn nha! Để mình ngó qua lịch giúp bạn ngay nhé ✨", "Xong xuôi rồi nè! Mình đã ghim việc này lên lịch cho bạn rồi 🎯", "Hôm nay lịch hơi dày chút, nhớ tranh thủ nghỉ tay uống ngụm nước nhé ☕").
+  - Write conversationally with light warmth and 1-3 natural emojis per response when appropriate (never spam).
 - VISUAL STRUCTURE & SPACING (CRITICAL FOR UI RENDERING):
-  1. ALWAYS insert a blank line (double newline) between paragraphs.
-  2. ALWAYS put each task or time-slot on its OWN SEPARATE LINE starting with "- ". NEVER concatenate multiple tasks into a single paragraph!
-  3. Format each task item strictly as:
+  1. Insert a blank line (double newline) between paragraphs so answers read cleanly and warmly.
+  2. When listing tasks or free time slots, put each item on its own line starting with "- ":
      - **[HH:mm - HH:mm]** | **Task Title** | [Priority]
-  4. Put helpful tips, reminders, or gentle caveats in a dedicated blockquote on its own line:
-     > **Mẹo nhỏ:** [Nội dung gợi ý nhẹ nhàng...]
-  5. End with a short, friendly closing question or next step in its own paragraph.
+     (Use clear friendly priority labels like "P1 Cốt lõi", "P2 Quan trọng", "P3 Nhẹ nhàng".)
+  3. Put helpful tips, reminders, or gentle caveats in a dedicated blockquote on its own line:
+     > **Mẹo nhỏ:** [Nội dung gợi ý nhẹ nhàng, gần gũi...]
+  4. End with a short, encouraging closing question or friendly next step in its own paragraph.
 `.trim();
   }
 
@@ -298,7 +302,7 @@ When presented with complex, multi-intent prompts:
 
     try {
       // Immediate heartbeat status to eliminate perceived latency
-      sendSse('status', { message: 'Gencoore AI đang kiểm tra lịch giúp bạn...' });
+      sendSse('status', { message: 'Mình đang ngó qua lịch giúp bạn chút nha...' });
 
       const systemInstruction = this.buildSystemInstruction();
       const tools = this.getToolDeclarations();
@@ -319,7 +323,7 @@ When presented with complex, multi-intent prompts:
         tools,
         contents,
         generationConfig: {
-          temperature: 0.2, // Low temperature for high precision
+          temperature: 0.65,
           maxOutputTokens: 1200,
         },
       };
@@ -341,7 +345,7 @@ When presented with complex, multi-intent prompts:
           const args = fc.functionCall.args || {};
 
           if (fnName === 'scan_free_time_slots') {
-            sendSse('status', { message: `Đang quét khoảng trống lịch trình ${args.anchor || ''}...` });
+            sendSse('status', { message: `Mình đang tìm giờ trống đẹp ${args.anchor || ''} giúp bạn nè...` });
             const resolvedDate = timeResolver.resolveAnchorDate(args.anchor || 'today');
             const scan = await timeResolver.scanFreeSlots({
               date: resolvedDate,
@@ -358,7 +362,7 @@ When presented with complex, multi-intent prompts:
               },
             });
           } else if (fnName === 'create_scheduled_task') {
-            sendSse('status', { message: `Đang khởi tạo ca làm việc: "${args.title}"...` });
+            sendSse('status', { message: `Đang ghim "${args.title}" lên lịch giúp bạn đây!` });
 
             // Create task in MongoDB scoped to active user
             const durationMin = timeResolver.timeToMinutes(args.end_time) - timeResolver.timeToMinutes(args.start_time);
@@ -376,11 +380,11 @@ When presented with complex, multi-intent prompts:
                 end: args.end_time,
                 duration_minutes: durationMin > 0 ? durationMin : 60,
               },
-              note: args.note || 'Tạo tự động bởi Gencoore AI',
+              note: args.note || 'Lên lịch cùng bạn đồng hành Gencoore AI ✨',
               definition_of_done: [
-                { id: 'dod1', text: 'Khởi động & chuẩn bị tài liệu liên quan', completed: false },
-                { id: 'dod2', text: 'Thực thi nội dung trọng tâm', completed: false },
-                { id: 'dod3', text: 'Đánh giá & nghiệm thu kết quả', completed: false },
+                { id: 'dod1', text: 'Chuẩn bị không gian & tài liệu cần thiết', completed: false },
+                { id: 'dod2', text: 'Tập trung hoàn thành phần việc chính', completed: false },
+                { id: 'dod3', text: 'Xem lại kết quả & nghỉ ngơi nhẹ nhàng', completed: false },
               ],
             });
 
@@ -403,7 +407,7 @@ When presented with complex, multi-intent prompts:
               },
             });
           } else if (fnName === 'query_tasks_summary') {
-            sendSse('status', { message: 'Đang tổng hợp dữ liệu ca việc từ cơ sở dữ liệu...' });
+            sendSse('status', { message: 'Mình đang xem lại danh sách việc của bạn chút nha...' });
             
             // Scope query strictly to the current user (or guest)
             const userScope = userId
@@ -436,7 +440,7 @@ When presented with complex, multi-intent prompts:
               },
             });
           } else if (fnName === 'send_telegram_notification') {
-            sendSse('status', { message: 'Đang gửi thông báo sang ứng dụng Telegram...' });
+            sendSse('status', { message: 'Đang nhắn sang Telegram giúp bạn nha...' });
             const setting = await ReminderSettingModel.findOne().sort({ updatedAt: -1 });
             let tgResult: { success: boolean; error?: string; messageId?: number } = {
               success: false,
@@ -456,14 +460,14 @@ When presented with complex, multi-intent prompts:
           }
         }
 
-        // Round 2: Feed tool results back to Gemini for concise synthesis
+        // Round 2: Feed tool results back to Gemini for warm, friendly synthesis
         contents.push({ role: 'model', parts: modelParts });
         contents.push({ role: 'user', parts: functionResponseParts });
 
         const round2Payload = {
           systemInstruction: { parts: [{ text: systemInstruction }] },
           contents,
-          generationConfig: { temperature: 0.2, maxOutputTokens: 350 },
+          generationConfig: { temperature: 0.72, maxOutputTokens: 900 },
         };
 
         const round2Data = await this.postToGemini(round2Payload, apiKey);

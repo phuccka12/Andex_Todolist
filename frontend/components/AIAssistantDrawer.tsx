@@ -15,6 +15,9 @@ import {
   Lightbulb,
   Loader2,
   RotateCcw,
+  Maximize2,
+  Minimize2,
+  GripVertical,
 } from 'lucide-react';
 import { TaskItem } from '../lib/types';
 import { soundEngine } from '../lib/audio';
@@ -38,7 +41,7 @@ interface ChatMsg {
 const INITIAL_WELCOME_MSG: ChatMsg = {
   id: 'init-1',
   sender: 'ai',
-  text: 'Chào bạn! Mình là **Gencoore AI** — người bạn đồng hành sắp xếp thời gian của bạn.\n\nMình có thể tìm khung giờ rảnh trên lịch, tạo nhanh ca việc ưu tiên hoặc gửi nhắc nhở qua Telegram. Hôm nay bạn muốn mình hỗ trợ việc gì nào?',
+  text: 'Chào bạn nha! Mình là **Gencoore AI** ✨\n\nMình có thể tìm giúp bạn khung giờ rảnh đẹp nhất, ghim nhanh việc quan trọng lên lịch hoặc gửi nhắc nhở qua Telegram. Hôm nay mình phụ bạn việc gì trước nào? 😊',
 };
 
 const QUICK_SUGGESTIONS = [
@@ -67,12 +70,12 @@ const QUICK_SUGGESTIONS = [
 function getPriorityStyle(priority: string): string {
   const lower = priority.toLowerCase();
   if (lower.includes('1') || lower.includes('cốt lõi')) {
-    return 'bg-rose-50 text-[#E11D48] border-rose-200/80';
+    return 'bg-[#FFE4E6] text-[#E11D48] border-[#0F172A]';
   }
   if (lower.includes('2') || lower.includes('quan trọng')) {
-    return 'bg-amber-50 text-amber-700 border-amber-200/80';
+    return 'bg-[#FEF9C3] text-[#0F172A] border-[#0F172A]';
   }
-  return 'bg-emerald-50 text-emerald-700 border-emerald-200/80';
+  return 'bg-[#DCFCE7] text-[#0F172A] border-[#0F172A]';
 }
 
 function renderInlineTokens(str: string): React.ReactNode {
@@ -86,7 +89,7 @@ function renderInlineTokens(str: string): React.ReactNode {
         return (
           <span
             key={idx}
-            className={`inline-flex items-center text-[10.5px] font-semibold px-2 py-0.5 rounded-full border mx-1 align-baseline ${getPriorityStyle(cleanPriority)}`}
+            className={`inline-flex items-center text-[10.5px] font-black px-2 py-0.5 rounded-full border mx-1 align-baseline ${getPriorityStyle(cleanPriority)}`}
           >
             {cleanPriority}
           </span>
@@ -97,7 +100,7 @@ function renderInlineTokens(str: string): React.ReactNode {
         return (
           <span
             key={idx}
-            className="inline-flex items-center gap-1 text-[11.5px] font-semibold px-2 py-0.5 rounded-lg bg-rose-50 text-[#E11D48] border border-rose-200/70 mx-1 align-baseline"
+            className="inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-lg bg-[#FEF9C3] text-[#0F172A] border border-[#0F172A] mx-1 align-baseline"
           >
             <Clock className="w-3 h-3 text-[#E11D48]" />
             {inner.replace(/[\[\]]/g, '')}
@@ -106,7 +109,7 @@ function renderInlineTokens(str: string): React.ReactNode {
       }
 
       return (
-        <strong key={idx} className="font-semibold text-slate-900">
+        <strong key={idx} className="font-bold text-[#0F172A]">
           {inner}
         </strong>
       );
@@ -129,7 +132,7 @@ const GencooreFormattedMessage: React.FC<{ text: string }> = ({ text }) => {
   const blocks = normalized.split(/\n\n+/);
 
   return (
-    <div className="space-y-2.5 text-[13.5px] leading-[1.65] text-slate-700 font-normal">
+    <div className="space-y-2.5 text-[13.5px] leading-[1.65] text-[#0F172A] font-medium">
       {blocks.map((block, bIdx) => {
         const trimmed = block.trim();
         if (!trimmed) return null;
@@ -154,14 +157,14 @@ const GencooreFormattedMessage: React.FC<{ text: string }> = ({ text }) => {
           return (
             <div
               key={bIdx}
-              className="p-3.5 rounded-2xl bg-amber-50/85 border border-amber-200/75 text-slate-700 text-xs flex items-start gap-2.5 my-2 shadow-2xs"
+              className="p-3 rounded-2xl bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A] text-xs flex items-start gap-2.5 my-2"
             >
-              <div className="w-6 h-6 rounded-xl bg-white border border-amber-200/80 text-amber-500 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded-xl bg-white border border-[#0F172A] text-[#E11D48] flex items-center justify-center shrink-0 mt-0.5">
                 <Lightbulb className="w-3.5 h-3.5" />
               </div>
               <div className="flex-1 leading-relaxed">
-                <span className="font-semibold text-amber-900 block mb-0.5">Gợi ý nhỏ</span>
-                <span className="text-slate-600">{cleanNote}</span>
+                <span className="font-black text-[#0F172A] block mb-0.5">Mẹo nhỏ cho bạn</span>
+                <span className="text-[#0F172A]/85 font-semibold">{cleanNote}</span>
               </div>
             </div>
           );
@@ -196,9 +199,9 @@ const GencooreFormattedMessage: React.FC<{ text: string }> = ({ text }) => {
                   // Plain bullet item when there's no timebox or priority metadata
                   if (!timeStr && !priorityStr) {
                     return (
-                      <div key={lIdx} className="flex items-start gap-2.5 pl-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0 mt-2.5" />
-                        <p className="text-[13.5px] text-slate-700 leading-[1.65] flex-1">
+                      <div key={lIdx} className="flex items-start gap-2 pl-1">
+                        <span className="w-2 h-2 rounded-full bg-[#E11D48] border border-[#0F172A] shrink-0 mt-2" />
+                        <p className="text-[13.5px] text-[#0F172A] leading-[1.65] flex-1">
                           {renderInlineTokens(content)}
                         </p>
                       </div>
@@ -208,16 +211,16 @@ const GencooreFormattedMessage: React.FC<{ text: string }> = ({ text }) => {
                   return (
                     <div
                       key={lIdx}
-                      className="p-3 rounded-2xl bg-[#FFF9FA] hover:bg-[#FFF1F2] border border-rose-100/90 shadow-2xs transition-colors flex items-center justify-between gap-3"
+                      className="p-3 rounded-2xl bg-[#FFFDF7] hover:bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] transition-all flex items-center justify-between gap-3"
                     >
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        <div className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-[#E11D48] border border-[#0F172A] shrink-0" />
                         <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-slate-800 text-[12.5px] leading-snug">
+                          <p className="font-bold text-[#0F172A] text-[12.5px] leading-snug">
                             {cleanTitle || content.replace(/\*\*/g, '')}
                           </p>
                           {timeStr && (
-                            <div className="inline-flex items-center gap-1 text-[11px] font-medium text-[#E11D48] bg-white border border-rose-100 px-2 py-0.5 rounded-lg mt-1">
+                            <div className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#0F172A] bg-[#FEF9C3] border border-[#0F172A] px-2 py-0.5 rounded-md mt-1">
                               <Clock className="w-3 h-3 text-[#E11D48]" />
                               <span>{timeStr}</span>
                             </div>
@@ -227,7 +230,7 @@ const GencooreFormattedMessage: React.FC<{ text: string }> = ({ text }) => {
 
                       {priorityStr && (
                         <span
-                          className={`shrink-0 px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold border ${getPriorityStyle(priorityStr)}`}
+                          className={`shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-black border ${getPriorityStyle(priorityStr)}`}
                         >
                           {priorityStr}
                         </span>
@@ -264,10 +267,64 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<string | null>(null);
   const [isAiReady, setIsAiReady] = useState(true);
+  const [drawerWidth, setDrawerWidth] = useState<number>(480);
+  const [isResizing, setIsResizing] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<ChatMsg[]>([INITIAL_WELCOME_MSG]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('genncore_ai_drawer_width');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 340 && parsed <= 1040) {
+          setDrawerWidth(parsed);
+        }
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const maxAllowed = Math.min(980, window.innerWidth - 24);
+      const nextWidth = Math.max(340, Math.min(maxAllowed, window.innerWidth - e.clientX));
+      setDrawerWidth(nextWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      try {
+        localStorage.setItem('genncore_ai_drawer_width', String(drawerWidth));
+      } catch {}
+    };
+
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing, drawerWidth]);
+
+  const handleToggleDrawerSize = () => {
+    soundEngine.playSoftClick();
+    const maxAllowed = typeof window !== 'undefined' ? Math.min(920, window.innerWidth - 32) : 920;
+    const nextWidth = drawerWidth < 560 ? Math.min(680, maxAllowed) : drawerWidth < 780 ? maxAllowed : 460;
+    setDrawerWidth(nextWidth);
+    try {
+      localStorage.setItem('genncore_ai_drawer_width', String(nextWidth));
+    } catch {}
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -387,48 +444,80 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-[110] w-full max-w-md sm:max-w-lg bg-gradient-to-b from-[#FFFDFB] via-[#FFF9F8] to-[#FFF5F6] shadow-[-12px_0_36px_-8px_rgba(15,23,42,0.14)] border-l border-rose-200/80 flex flex-col justify-between transition-all transform animate-in slide-in-from-right duration-200">
+    <div
+      style={{ width: `min(100vw, ${drawerWidth}px)` }}
+      className={`fixed inset-y-0 right-0 z-[110] bg-[#FFFDF7] shadow-[-6px_0px_0px_#0F172A] border-l-2 border-[#0F172A] flex flex-col justify-between transform animate-in slide-in-from-right duration-200 ${
+        isResizing ? 'transition-none select-none' : 'transition-[width] duration-150'
+      }`}
+    >
+      {/* Drag-to-resize Left Edge Handle */}
+      <div
+        onMouseDown={(e) => {
+          e.preventDefault();
+          setIsResizing(true);
+        }}
+        title="Kéo để chỉnh độ rộng khung Gencoore AI"
+        className="hidden sm:flex items-center justify-center absolute left-0 top-0 bottom-0 w-2.5 -translate-x-1/2 cursor-ew-resize z-30 group"
+      >
+        <div className="w-5 h-11 rounded-full bg-[#FEF08A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] flex items-center justify-center opacity-80 group-hover:opacity-100 group-hover:bg-[#E11D48] group-hover:text-white transition-all">
+          <GripVertical className="w-3 h-3" />
+        </div>
+      </div>
+
       {/* Header */}
-      <div className="px-5 py-4 border-b border-rose-100 bg-gradient-to-r from-[#FFF1F2] via-[#FFF8F6] to-[#FEFCE8] flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-white border border-rose-200/80 p-1.5 flex items-center justify-center shadow-sm shadow-rose-500/10 relative shrink-0">
+      <div className="px-5 py-4 border-b-2 border-[#0F172A] bg-[#FFF1F2] flex items-center justify-between shrink-0 gap-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-2xl bg-white border-2 border-[#0F172A] p-1.5 flex items-center justify-center shadow-[3px_3px_0px_#0F172A] relative shrink-0">
             <img src="/images/logo-mark.png" alt="Gencoore AI" className="w-full h-full object-contain" />
-            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#0F172A]" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-extrabold text-sm text-slate-900">Gencoore AI</h3>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-black text-sm text-[#0F172A]">Gencoore AI</h3>
               <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1 border ${
+                className={`px-2 py-0.5 rounded-full text-[10px] font-black flex items-center gap-1 border-2 border-[#0F172A] ${
                   isAiReady
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-                    : 'bg-amber-50 text-amber-700 border-amber-200/80'
+                    ? 'bg-[#DCFCE7] text-[#0F172A]'
+                    : 'bg-[#FEF08A] text-[#0F172A]'
                 }`}
               >
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${
-                    isAiReady ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+                    isAiReady ? 'bg-emerald-600 animate-pulse' : 'bg-amber-600'
                   }`}
                 />
                 {isAiReady ? 'Sẵn sàng' : 'Đang đồng bộ'}
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 font-medium">Trợ lý đồng hành sắp xếp thời gian</p>
+            <p className="text-[11px] text-slate-600 font-bold truncate">Bạn đồng hành sắp xếp thời gian</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={handleToggleDrawerSize}
+            className="hidden sm:inline-flex items-center gap-1 px-2.5 py-2 rounded-xl bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A] hover:bg-[#FDE047] text-[10.5px] font-black transition-all cursor-pointer"
+            title="Chỉnh kích thước khung AI (Nhỏ / Vừa / Rộng)"
+          >
+            {drawerWidth >= 700 ? (
+              <Minimize2 className="w-3.5 h-3.5" />
+            ) : (
+              <Maximize2 className="w-3.5 h-3.5" />
+            )}
+            <span>{drawerWidth < 560 ? 'S' : drawerWidth < 780 ? 'M' : 'L'}</span>
+          </button>
           <button
             onClick={handleResetChat}
             disabled={isProcessing}
-            className="p-2 rounded-xl bg-white/80 border border-rose-100 text-slate-500 hover:text-[#E11D48] hover:bg-white shadow-2xs transition-all cursor-pointer disabled:opacity-40"
+            className="p-2 rounded-xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A] hover:bg-[#FEF9C3] transition-all cursor-pointer disabled:opacity-40"
             title="Cuộc trò chuyện mới"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-white/80 border border-rose-100 text-slate-500 hover:text-[#E11D48] hover:bg-white shadow-2xs transition-all cursor-pointer"
+            className="p-2 rounded-xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A] hover:bg-[#FFE4E6] transition-all cursor-pointer"
             title="Đóng trợ lý"
           >
             <X className="w-4 h-4" />
@@ -444,48 +533,48 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
             className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.sender === 'user' ? (
-              <div className="max-w-[82%] px-4 py-2.5 rounded-3xl rounded-tr-md bg-gradient-to-br from-[#FB7185] via-[#E11D48] to-[#BE123C] text-white shadow-md shadow-rose-500/20 text-[13.5px] font-medium leading-relaxed">
+              <div className="max-w-[85%] px-4 py-3 rounded-2xl rounded-tr-sm bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[13px] font-bold leading-relaxed">
                 {msg.text}
               </div>
             ) : (
               <div className="flex items-start gap-2.5 max-w-[92%]">
-                <div className="w-8 h-8 rounded-full bg-[#FFF1F2] border border-rose-200 p-1.5 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
+                <div className="w-8 h-8 rounded-xl bg-white border-2 border-[#0F172A] p-1 flex items-center justify-center shadow-[2px_2px_0px_#0F172A] shrink-0 mt-0.5">
                   <img src="/images/logo-mark.png" alt="AI" className="block w-full h-full object-contain" />
                 </div>
-                <div className="flex-1 px-4 py-3.5 rounded-3xl rounded-tl-md bg-white text-slate-700 border border-rose-100/90 shadow-[0_4px_20px_-4px_rgba(225,29,72,0.08)]">
+                <div className="flex-1 p-4 rounded-2xl rounded-tl-sm bg-white text-[#0F172A] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]">
                   {msg.text ? (
                     <GencooreFormattedMessage text={msg.text} />
                   ) : (
                     <div className="flex items-center gap-2 text-[#E11D48] py-1">
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span className="text-xs font-medium text-slate-500">
-                        Đang kiểm tra lịch và chuẩn bị câu trả lời...
+                      <span className="text-xs font-bold text-[#0F172A]">
+                        Mình đang ngó lịch và chuẩn bị câu trả lời cho bạn nè...
                       </span>
                     </div>
                   )}
 
                   {/* Task Created Confirmation Card */}
                   {msg.createdTask && (
-                    <div className="mt-3 p-3.5 rounded-2xl bg-emerald-50/90 border border-emerald-200/80 shadow-2xs text-emerald-950 space-y-1.5 animate-in zoom-in-95 duration-150">
+                    <div className="mt-3 p-3.5 rounded-2xl bg-[#DCFCE7] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A] space-y-1.5 animate-in zoom-in-95 duration-150">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="flex items-center gap-1.5 font-semibold text-xs text-emerald-800">
-                          <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                        <span className="flex items-center gap-1.5 font-black text-[11px] text-[#0F172A]">
+                          <span className="w-4 h-4 rounded-full bg-[#16A34A] border border-[#0F172A] text-white flex items-center justify-center">
                             <Check className="w-2.5 h-2.5 stroke-[3]" />
                           </span>
-                          Đã thêm vào lịch Gencoore!
+                          Mình đã thêm vào lịch cho bạn rồi nè!
                         </span>
-                        <span className="text-[10.5px] font-semibold bg-white text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        <span className="text-[10px] font-black bg-white text-[#0F172A] px-2 py-0.5 rounded-full border border-[#0F172A]">
                           {msg.createdTask.priority || '#1 Cốt Lõi'}
                         </span>
                       </div>
-                      <p className="font-semibold text-[13px] text-slate-900">{msg.createdTask.title}</p>
-                      <div className="flex items-center gap-2 text-[11.5px] text-emerald-700 font-medium">
-                        <Clock className="w-3 h-3 text-emerald-600" />
+                      <p className="font-black text-xs text-[#0F172A]">{msg.createdTask.title}</p>
+                      <div className="flex items-center gap-2 text-[11px] text-[#0F172A] font-bold">
+                        <Clock className="w-3 h-3 text-[#E11D48]" />
                         <span>
                           {msg.createdTask.time_box?.start} - {msg.createdTask.time_box?.end}
                         </span>
                         <span>•</span>
-                        <Calendar className="w-3 h-3 text-emerald-600" />
+                        <Calendar className="w-3 h-3 text-[#E11D48]" />
                         <span>{msg.createdTask.scheduled_date || 'Hôm nay'}</span>
                       </div>
                     </div>
@@ -498,7 +587,7 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
 
         {/* Live Status Heartbeat */}
         {currentStatus && (
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-rose-100 shadow-sm text-[#E11D48] text-xs font-medium">
+          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A] text-[11px] font-black">
             <Sparkles className="w-3.5 h-3.5 text-[#E11D48] animate-pulse" />
             <span>{currentStatus}</span>
           </div>
@@ -508,12 +597,12 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
       </div>
 
       {/* Quick Prompts Chips */}
-      <div className="px-4 py-3 border-t border-rose-100 bg-[#FFF8F9]/90 shrink-0">
-        <div className="flex items-center gap-1.5 text-[10.5px] font-semibold text-rose-500 uppercase tracking-wider mb-2">
+      <div className="px-4 py-3 border-t-2 border-[#0F172A] bg-[#FFF1F2] shrink-0">
+        <div className="flex items-center gap-1.5 text-[10px] font-black text-[#0F172A] uppercase tracking-wider mb-2">
           <Sparkles className="w-3 h-3 text-[#E11D48]" />
           <span>Gợi ý nhanh cho bạn</span>
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar">
           {QUICK_SUGGESTIONS.map((item, i) => {
             const Icon = item.icon;
             return (
@@ -522,7 +611,7 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
                 type="button"
                 onClick={() => handleSend(item.prompt)}
                 disabled={isProcessing}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-[#FFF1F2] text-slate-700 hover:text-[#E11D48] text-[11.5px] font-medium border border-rose-200/80 shadow-2xs transition-all shrink-0 cursor-pointer disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#FEF9C3] text-[#0F172A] text-[11px] font-black border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] transition-all shrink-0 cursor-pointer disabled:opacity-50"
               >
                 <Icon className="w-3.5 h-3.5 text-[#E11D48]" />
                 <span>{item.label}</span>
@@ -534,7 +623,7 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
 
       {/* Input Field */}
       <div
-        className="p-3.5 sm:p-4 border-t border-rose-100 bg-white/95 flex items-center gap-2 shrink-0"
+        className="p-3.5 sm:p-4 border-t-2 border-[#0F172A] bg-[#FFFDF7] flex items-center gap-2 shrink-0"
         style={{ paddingBottom: 'max(0.875rem, env(safe-area-inset-bottom))' }}
       >
         <input
@@ -544,12 +633,12 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           disabled={isProcessing}
-          className="flex-1 px-4 py-2.5 text-[13px] bg-[#FFF9FA] border border-rose-200/80 rounded-2xl text-slate-800 font-normal focus:bg-white focus:border-[#E11D48] focus:ring-2 focus:ring-rose-100 focus:outline-none placeholder:text-slate-400 transition-all"
+          className="flex-1 px-4 py-2.5 text-xs bg-white border-2 border-[#0F172A] rounded-xl text-[#0F172A] font-semibold focus:bg-[#FFF1F2] focus:outline-none placeholder:text-slate-400 transition-all"
         />
         <button
           onClick={() => handleSend()}
           disabled={!prompt.trim() || isProcessing}
-          className="p-2.5 bg-gradient-to-br from-[#FB7185] to-[#E11D48] hover:from-[#F43F5E] hover:to-[#BE123C] text-white shadow-sm shadow-rose-500/25 rounded-2xl transition-all disabled:opacity-45 disabled:cursor-not-allowed cursor-pointer active:scale-95"
+          className="p-2.5 bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] font-black rounded-xl transition-all disabled:opacity-45 disabled:cursor-not-allowed cursor-pointer active:translate-y-0.5"
           title="Gửi tin nhắn"
         >
           {isProcessing ? (
