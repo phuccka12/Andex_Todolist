@@ -120,11 +120,16 @@ export function classifyTopicByKeywords(
 
 class VocabService {
   private defaultApiKey = process.env.GEMINI_API_KEY || '';
-  private activeWorkingModel: string = process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
+  private activeWorkingModel: string = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
   private ttsCache = new Map<string, Buffer>();
   private dictionaryCache = new Map<string, any>();
+  private extractCache = new Map<string, ExtractedVocabItem[]>();
 
-  private async callGemini(payload: any, customApiKey?: string): Promise<any> {
+  private async callGemini(
+    payload: any,
+    customApiKey?: string,
+    timeoutMs: number = 14000
+  ): Promise<any> {
     const apiKey = (customApiKey && customApiKey.trim()) || this.defaultApiKey;
     if (!apiKey) {
       throw new Error('Chưa cấu hình GEMINI_API_KEY trên máy chủ.');
@@ -135,8 +140,9 @@ class VocabService {
         [
           this.activeWorkingModel,
           process.env.GEMINI_MODEL,
+          'gemini-2.5-flash-lite',
           'gemini-flash-lite-latest',
-          'gemini-3.5-flash-lite',
+          'gemini-2.0-flash',
           'gemini-flash-latest',
         ].filter(Boolean)
       )
@@ -145,12 +151,29 @@ class VocabService {
     let lastError: any = null;
 
     for (const model of candidateModels) {
+      const controller = new AbortController();
+      const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
+
       try {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+        // Disable hidden thinking tokens on Gemini 2.5 models for much faster JSON extraction
+        const modelPayload =
+          model.includes('2.5') && payload?.generationConfig
+            ? {
+                ...payload,
+                generationConfig: {
+                  ...payload.generationConfig,
+                  thinkingConfig: { thinkingBudget: 0 },
+                },
+              }
+            : payload;
+
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(modelPayload),
+          signal: controller.signal,
         });
 
         const data = await res.json();
@@ -178,8 +201,13 @@ class VocabService {
 
         throw new Error(errMsg || `HTTP ${res.status}`);
       } catch (err: any) {
-        lastError = err;
+        const isAbort = err?.name === 'AbortError' || String(err?.message || '').toLowerCase().includes('abort');
+        lastError = isAbort
+          ? new Error(`AI phản hồi quá lâu (hơn ${Math.round(timeoutMs / 1000)}s), thử model khác...`)
+          : err;
         await new Promise((r) => setTimeout(r, 30));
+      } finally {
+        clearTimeout(timeoutHandle);
       }
     }
 
@@ -240,20 +268,31 @@ class VocabService {
       throw new Error('Vui lòng nhập danh sách từ, đoạn văn tiếng Anh hoặc chủ đề.');
     }
 
+    const cacheKey = `${topic.trim().toLowerCase()}|${trimmed.toLowerCase()}`;
+    const cached = this.extractCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const isAutoTopic = !topic || ['chung', 'tự động', 'auto'].includes(topic.trim().toLowerCase());
     const topicInstruction = isAutoTopic
-      ? `Classify EACH word individually into the single best-fitting tag from: ["IT & Tech", "Kinh doanh", "Tài chính", "IELTS & Học thuật", "Cảm xúc & Tâm lý", "Sức khỏe", "Du lịch", "Giao tiếp", "Đời sống"]. Different words in the list SHOULD get different tags if they belong to different domains!`
+      ? `Classify EACH word individually into the single best-fitting tag from: ["IT & Tech", "Kinh doanh", "Tài chính", "IELTS & Học thuật", "Cảm xúc & Tâm lý", "Sức khỏe", "Du lịch", "Giao tiếp", "Đời sống"].`
       : `Set "topic" to "${topic.trim()}".`;
 
-    const prompt = `
-You are an expert English-Vietnamese lexicographer for the Gencoore learning app.
-Analyze the user's input below. It may be:
-- A list of English words/phrases (comma, newline, or space separated)
-- An English paragraph or article excerpt (extract the 6-20 most valuable, learnable English words/phrases from it; skip trivial words like "the, is, a, and, of")
-- A topic request in Vietnamese or English (e.g., "10 từ vựng IELTS chủ đề môi trường" -> generate 10 useful words)
-- Word + rough meaning pairs (keep/improve the Vietnamese meaning and fill missing phonetic, partOfSpeech, example)
+    // Fast compact path when user asks AI to auto-fill a single word/short phrase
+    const isSingleShortEntry = !trimmed.includes('\n') && trimmed.split(/\s+/).length <= 4 && trimmed.length <= 48;
 
-Return ONLY a valid JSON array (no markdown commentary) of up to 25 objects, each with exact keys:
+    const prompt = isSingleShortEntry
+      ? `
+You are an English-Vietnamese dictionary assistant.
+For the English word/phrase "${trimmed}", return a JSON array with 1 object having exact keys:
+"word", "phonetic" (IPA), "partOfSpeech" (noun/verb/adj/adv/phrase), "meaning" (clear Vietnamese), "example" (1 short practical English sentence), "exampleTranslation" (Vietnamese), "topic" (${topicInstruction}).
+Return ONLY raw JSON array.
+`.trim()
+      : `
+You are an expert English-Vietnamese lexicographer for the Gencoore learning app.
+Analyze the user's input below (word list, English paragraph, topic request like "10 từ vựng...", or word+meaning pairs).
+Return ONLY a valid JSON array (no markdown commentary) of up to 20 objects, each with exact keys:
 - "word": English word or short collocation (string)
 - "phonetic": IPA pronunciation like "/rɪˈzɪl.jənt/" (string)
 - "partOfSpeech": concise part of speech like "noun", "verb", "adj", "adv", "phrase" (string)
@@ -273,16 +312,27 @@ ${trimmed.slice(0, 6000)}
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.2,
-          maxOutputTokens: 4096,
+          maxOutputTokens: isSingleShortEntry ? 512 : 3072,
           responseMimeType: 'application/json',
         },
       },
-      customApiKey
+      customApiKey,
+      isSingleShortEntry ? 10000 : 18000
     );
 
     const rawText =
       data.candidates?.[0]?.content?.parts?.map((p: any) => p.text || '').join('') || '';
-    return this.parseJsonArrayFromGemini(rawText, topic);
+    const parsed = this.parseJsonArrayFromGemini(rawText, topic);
+
+    if (parsed.length > 0) {
+      if (this.extractCache.size >= 200) {
+        const oldest = this.extractCache.keys().next().value;
+        if (oldest) this.extractCache.delete(oldest);
+      }
+      this.extractCache.set(cacheKey, parsed);
+    }
+
+    return parsed;
   }
 
   /**

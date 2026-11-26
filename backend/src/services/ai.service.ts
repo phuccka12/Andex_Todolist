@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Response } from 'express';
 import { TaskModel } from '../models/Task.model';
 import { timeResolver } from './timeResolver.service';
@@ -141,7 +142,7 @@ When presented with complex, multi-intent prompts:
           },
           {
             name: 'create_scheduled_task',
-            description: 'Creates and commits a new task into the Gencoore workspace timetable and Kanban board',
+            description: 'Creates and commits a new task into the Gencoore workspace timetable and Kanban board. If start_time/end_time are omitted, it automatically picks the best free slot on that date.',
             parameters: {
               type: 'OBJECT',
               properties: {
@@ -152,14 +153,15 @@ When presented with complex, multi-intent prompts:
                 },
                 category: {
                   type: 'STRING',
-                  description: 'Category: "deep_work" | "admin" | "meeting" | "personal"',
+                  description: 'Category: "deep_work" | "optimization" | "research" | "meeting"',
                 },
-                date: { type: 'STRING', description: 'Scheduled date YYYY-MM-DD' },
-                start_time: { type: 'STRING', description: 'Start time HH:mm' },
-                end_time: { type: 'STRING', description: 'End time HH:mm' },
+                date: { type: 'STRING', description: 'Scheduled date YYYY-MM-DD (or anchor like "today", "tomorrow")' },
+                start_time: { type: 'STRING', description: 'Optional start time HH:mm (omit to auto-pick free slot)' },
+                end_time: { type: 'STRING', description: 'Optional end time HH:mm' },
+                duration_minutes: { type: 'INTEGER', description: 'Duration in minutes if auto-picking slot (default 60)' },
                 note: { type: 'STRING', description: 'Optional execution note or checklist details' },
               },
-              required: ['title', 'start_time', 'end_time'],
+              required: ['title'],
             },
           },
           {
@@ -191,12 +193,13 @@ When presented with complex, multi-intent prompts:
     ];
   }
 
-  private async postToGemini(payload: any, apiKey: string): Promise<any> {
+  private async postToGemini(payload: any, apiKey: string, timeoutMs: number = 14000): Promise<any> {
     const candidateModels = [
       this.activeWorkingModel,
       process.env.GEMINI_MODEL,
+      'gemini-2.5-flash-lite',
       'gemini-flash-lite-latest',
-      'gemini-3.5-flash-lite',
+      'gemini-2.0-flash',
       'gemini-flash-latest',
     ];
 
@@ -204,17 +207,33 @@ When presented with complex, multi-intent prompts:
     const modelsToTry = Array.from(new Set(candidateModels.filter(Boolean))) as string[];
 
     for (const model of modelsToTry) {
+      const controller = new AbortController();
+      const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
+
       try {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+        // Disable hidden thinking tokens on Gemini 2.5 models for instant chat latency
+        const modelPayload =
+          model.includes('2.5') && payload?.generationConfig
+            ? {
+                ...payload,
+                generationConfig: {
+                  ...payload.generationConfig,
+                  thinkingConfig: { thinkingBudget: 0 },
+                },
+              }
+            : payload;
+
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(modelPayload),
+          signal: controller.signal,
         });
 
         const data = await res.json();
         if (res.ok && !data.error) {
-          // Lock onto successful model so next requests execute instantly with 0ms delay!
           this.activeWorkingModel = model;
           return data;
         }
@@ -247,9 +266,13 @@ When presented with complex, multi-intent prompts:
 
         throw new Error(errMsg || `HTTP ${res.status}`);
       } catch (err: any) {
-        lastError = err;
-        const msgLower = (err.message || '').toLowerCase();
+        const isAbort = err?.name === 'AbortError' || String(err?.message || '').toLowerCase().includes('abort');
+        lastError = isAbort
+          ? new Error(`Model "${model}" phản hồi quá lâu (${Math.round(timeoutMs / 1000)}s).`)
+          : err;
+        const msgLower = (lastError.message || '').toLowerCase();
         if (
+          isAbort ||
           msgLower.includes('not found') ||
           msgLower.includes('no longer available') ||
           msgLower.includes('high demand') ||
@@ -261,6 +284,8 @@ When presented with complex, multi-intent prompts:
           continue;
         }
         throw err;
+      } finally {
+        clearTimeout(timeoutHandle);
       }
     }
 
@@ -317,27 +342,31 @@ When presented with complex, multi-intent prompts:
         parts: [{ text: prompt }],
       });
 
-      // Round 1: Call Gemini to check for Function Calls or direct response
-      const round1Payload = {
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        tools,
-        contents,
-        generationConfig: {
-          temperature: 0.65,
-          maxOutputTokens: 1200,
-        },
-      };
+      // Multi-round bounded agentic loop (supports up to 2 tool rounds, e.g. scan -> create -> reply)
+      let modelParts: any[] = [];
+      for (let step = 0; step < 3; step++) {
+        const allowTools = step < 2;
+        const payload: any = {
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          contents,
+          generationConfig: {
+            temperature: allowTools ? 0.55 : 0.72,
+            maxOutputTokens: 1000,
+          },
+        };
+        if (allowTools) {
+          payload.tools = tools;
+        }
 
-      const geminiData = await this.postToGemini(round1Payload, apiKey);
+        const geminiData = await this.postToGemini(payload, apiKey, 14000);
+        const candidate = geminiData.candidates?.[0];
+        modelParts = candidate?.content?.parts || [];
 
-      const candidate = geminiData.candidates?.[0];
-      const modelParts = candidate?.content?.parts || [];
+        const functionCalls = modelParts.filter((p: any) => Boolean(p.functionCall));
+        if (functionCalls.length === 0 || !allowTools) {
+          break;
+        }
 
-      // Check if Gemini invoked a tool (Function Call)
-      const functionCalls = modelParts.filter((p: any) => Boolean(p.functionCall));
-
-      if (functionCalls.length > 0) {
-        // Handle each tool call
         const functionResponseParts: any[] = [];
 
         for (const fc of functionCalls) {
@@ -362,23 +391,55 @@ When presented with complex, multi-intent prompts:
               },
             });
           } else if (fnName === 'create_scheduled_task') {
-            sendSse('status', { message: `Đang ghim "${args.title}" lên lịch giúp bạn đây!` });
+            const safeTitle = String(args.title || 'Công việc mới').trim();
+            sendSse('status', { message: `Đang ghim "${safeTitle}" lên lịch giúp bạn đây!` });
 
-            // Create task in MongoDB scoped to active user
-            const durationMin = timeResolver.timeToMinutes(args.end_time) - timeResolver.timeToMinutes(args.start_time);
-            const newTask = await TaskModel.create({
+            const resolvedDate = timeResolver.resolveAnchorDate(args.date || 'today');
+            const requestedDuration = Number(args.duration_minutes) > 0 ? Number(args.duration_minutes) : 60;
+
+            let startTime = typeof args.start_time === 'string' && /^\d{1,2}:\d{2}$/.test(args.start_time.trim())
+              ? args.start_time.trim().padStart(5, '0')
+              : '';
+            let endTime = typeof args.end_time === 'string' && /^\d{1,2}:\d{2}$/.test(args.end_time.trim())
+              ? args.end_time.trim().padStart(5, '0')
+              : '';
+
+            // Auto-find a free slot if AI didn't supply exact start/end times
+            if (!startTime || !endTime) {
+              const scan = await timeResolver.scanFreeSlots({
+                date: resolvedDate,
+                windowStart: '08:00',
+                windowEnd: '21:30',
+                durationMinutes: requestedDuration,
+                userId,
+              });
+              if (scan.selectedSlot) {
+                startTime = startTime || scan.selectedSlot.start;
+                endTime = endTime || timeResolver.minutesToTime(timeResolver.timeToMinutes(startTime) + requestedDuration);
+              } else {
+                startTime = startTime || '14:00';
+                endTime = endTime || timeResolver.minutesToTime(timeResolver.timeToMinutes(startTime) + requestedDuration);
+              }
+            }
+
+            const durationMin = timeResolver.timeToMinutes(endTime) - timeResolver.timeToMinutes(startTime);
+            const safeDuration = durationMin > 0 ? durationMin : requestedDuration;
+            const parsedDateObj = new Date(`${resolvedDate}T00:00:00Z`);
+            const computedDayIndex = isNaN(parsedDateObj.getTime()) ? 1 : (parsedDateObj.getUTCDay() + 6) % 7;
+
+            const taskDocData = {
               userId: userId || undefined,
-              title: args.title,
+              title: safeTitle,
               priority: args.priority || '#1 Cốt Lõi',
               category: args.category || 'deep_work',
               color_theme: 'twilight',
-              column: 'in_progress',
-              day_index: 1,
-              scheduled_date: args.date || new Date().toISOString().slice(0, 10),
+              column: 'in_progress' as const,
+              day_index: computedDayIndex,
+              scheduled_date: resolvedDate,
               time_box: {
-                start: args.start_time,
-                end: args.end_time,
-                duration_minutes: durationMin > 0 ? durationMin : 60,
+                start: startTime,
+                end: endTime,
+                duration_minutes: safeDuration,
               },
               note: args.note || 'Lên lịch cùng bạn đồng hành Gencoore AI ✨',
               definition_of_done: [
@@ -386,12 +447,31 @@ When presented with complex, multi-intent prompts:
                 { id: 'dod2', text: 'Tập trung hoàn thành phần việc chính', completed: false },
                 { id: 'dod3', text: 'Xem lại kết quả & nghỉ ngơi nhẹ nhàng', completed: false },
               ],
-            });
+            };
 
-            // Dispatch instant action event to client!
+            let emittedTask: any = {
+              id: `ai-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              ...taskDocData,
+            };
+
+            // Persist to MongoDB only when authenticated & DB connected (fast 4s guard so it never hangs)
+            if (userId && mongoose.connection.readyState === 1) {
+              try {
+                const dbTask = await Promise.race([
+                  TaskModel.create(taskDocData),
+                  new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
+                ]);
+                if (dbTask) {
+                  emittedTask = dbTask;
+                }
+              } catch (dbErr) {
+                console.warn('AI create_scheduled_task DB fallback:', dbErr);
+              }
+            }
+
             sendSse('action', {
               action: 'TASK_CREATED',
-              task: newTask,
+              task: emittedTask,
             });
 
             functionResponseParts.push({
@@ -399,17 +479,16 @@ When presented with complex, multi-intent prompts:
                 name: fnName,
                 response: {
                   success: true,
-                  taskId: newTask._id,
-                  title: newTask.title,
-                  time: `${newTask.time_box.start} - ${newTask.time_box.end}`,
-                  date: newTask.scheduled_date,
+                  taskId: emittedTask._id || emittedTask.id,
+                  title: emittedTask.title,
+                  time: `${startTime} - ${endTime}`,
+                  date: resolvedDate,
                 },
               },
             });
           } else if (fnName === 'query_tasks_summary') {
             sendSse('status', { message: 'Mình đang xem lại danh sách việc của bạn chút nha...' });
-            
-            // Scope query strictly to the current user (or guest)
+
             const userScope = userId
               ? { userId }
               : { $or: [{ userId: null }, { userId: { $exists: false } }] };
@@ -423,7 +502,21 @@ When presented with complex, multi-intent prompts:
               query.priority = { $regex: 'Cốt Lõi|P1', $options: 'i' };
             }
 
-            const activeTasks = await TaskModel.find(query).limit(15).select('title time_box priority column scheduled_date');
+            let activeTasks: any[] = [];
+            if (mongoose.connection.readyState === 1) {
+              try {
+                activeTasks = await Promise.race([
+                  TaskModel.find(query)
+                    .limit(15)
+                    .select('title time_box priority column scheduled_date')
+                    .maxTimeMS(3500)
+                    .lean(),
+                  new Promise<any[]>((resolve) => setTimeout(() => resolve([]), 4000)),
+                ]);
+              } catch {
+                activeTasks = [];
+              }
+            }
 
             functionResponseParts.push({
               functionResponse: {
@@ -432,7 +525,7 @@ When presented with complex, multi-intent prompts:
                   count: activeTasks.length,
                   tasks: activeTasks.map((t) => ({
                     title: t.title,
-                    time: `${t.time_box.start} - ${t.time_box.end}`,
+                    time: `${t.time_box?.start || '09:00'} - ${t.time_box?.end || '10:00'}`,
                     priority: t.priority,
                     date: t.scheduled_date,
                   })),
@@ -441,7 +534,17 @@ When presented with complex, multi-intent prompts:
             });
           } else if (fnName === 'send_telegram_notification') {
             sendSse('status', { message: 'Đang nhắn sang Telegram giúp bạn nha...' });
-            const setting = await ReminderSettingModel.findOne().sort({ updatedAt: -1 });
+            let setting: any = null;
+            if (mongoose.connection.readyState === 1) {
+              try {
+                setting = await Promise.race([
+                  ReminderSettingModel.findOne().sort({ updatedAt: -1 }).maxTimeMS(3000).lean(),
+                  new Promise<null>((resolve) => setTimeout(() => resolve(null), 3500)),
+                ]);
+              } catch {
+                setting = null;
+              }
+            }
             let tgResult: { success: boolean; error?: string; messageId?: number } = {
               success: false,
               error: 'Chưa cấu hình Telegram Chat ID',
@@ -460,37 +563,19 @@ When presented with complex, multi-intent prompts:
           }
         }
 
-        // Round 2: Feed tool results back to Gemini for warm, friendly synthesis
         contents.push({ role: 'model', parts: modelParts });
         contents.push({ role: 'user', parts: functionResponseParts });
+      }
 
-        const round2Payload = {
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          contents,
-          generationConfig: { temperature: 0.72, maxOutputTokens: 900 },
-        };
+      const rawReplyText = modelParts.map((p: any) => p.text || '').join('');
+      const finalReplyText = this.normalizeAtelierMarkdown(
+        rawReplyText || 'Mình đã xử lý xong giúp bạn rồi nha! Bạn kiểm tra lại trên lịch nhé ✨'
+      );
 
-        const round2Data = await this.postToGemini(round2Payload, apiKey);
-        const finalCandidate = round2Data.candidates?.[0];
-        const finalParts = finalCandidate?.content?.parts || [];
-        const rawReplyText = finalParts.map((p: any) => p.text || '').join('');
-        const finalReplyText = this.normalizeAtelierMarkdown(rawReplyText);
-
-        // Stream final synthesis tokens
-        const chunks = finalReplyText.match(/.{1,16}/g) || [finalReplyText];
-        for (const chunk of chunks) {
-          sendSse('token', { text: chunk });
-          await new Promise((r) => setTimeout(r, 10)); // Snappy typing simulation
-        }
-      } else {
-        // Direct answer without tools
-        const rawReplyText = modelParts.map((p: any) => p.text || '').join('');
-        const replyText = this.normalizeAtelierMarkdown(rawReplyText);
-        const chunks = replyText.match(/.{1,16}/g) || [replyText];
-        for (const chunk of chunks) {
-          sendSse('token', { text: chunk });
-          await new Promise((r) => setTimeout(r, 10));
-        }
+      const chunks = finalReplyText.match(/.{1,48}/g) || [finalReplyText];
+      for (const chunk of chunks) {
+        sendSse('token', { text: chunk });
+        await new Promise((r) => setTimeout(r, 4));
       }
 
       sendSse('done', {});

@@ -418,74 +418,94 @@ export async function streamAiChat(
     ...authService.getAuthHeaders(),
   };
 
-  const response = await fetch(`${API_BASE}/ai/chat`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      prompt,
-      conversationHistory,
-      customApiKey,
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), 35000);
+  let didComplete = false;
 
-  if (!response.ok) {
-    const errorJson = await response.json().catch(() => ({}));
-    throw new Error(errorJson.error || `HTTP error ${response.status}`);
-  }
+  try {
+    const response = await fetch(`${API_BASE}/ai/chat`, {
+      method: 'POST',
+      headers,
+      signal: controller.signal,
+      body: JSON.stringify({
+        prompt,
+        conversationHistory,
+        customApiKey,
+      }),
+    });
 
-  if (!response.body) {
-    throw new Error('ReadableStream not supported in browser environment');
-  }
+    if (!response.ok) {
+      const errorJson = await response.json().catch(() => ({}));
+      throw new Error(errorJson.error || `HTTP error ${response.status}`);
+    }
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder('utf-8');
-  let buffer = '';
+    if (!response.body) {
+      throw new Error('ReadableStream not supported in browser environment');
+    }
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
 
-    buffer += decoder.decode(value, { stream: true });
-    const events = buffer.split('\n\n');
-    buffer = events.pop() || ''; // Keep partial chunk in buffer
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-    for (const eventBlock of events) {
-      if (!eventBlock.trim() || eventBlock.startsWith(':')) continue;
+      buffer += decoder.decode(value, { stream: true });
+      const events = buffer.split('\n\n');
+      buffer = events.pop() || ''; // Keep partial chunk in buffer
 
-      const lines = eventBlock.split('\n');
-      let eventType = '';
-      let eventDataStr = '';
+      for (const eventBlock of events) {
+        if (!eventBlock.trim() || eventBlock.startsWith(':')) continue;
 
-      for (const line of lines) {
-        if (line.startsWith('event:')) {
-          eventType = line.replace('event:', '').trim();
-        } else if (line.startsWith('data:')) {
-          eventDataStr = line.replace('data:', '').trim();
+        const lines = eventBlock.split('\n');
+        let eventType = '';
+        let eventDataStr = '';
+
+        for (const line of lines) {
+          if (line.startsWith('event:')) {
+            eventType = line.replace('event:', '').trim();
+          } else if (line.startsWith('data:')) {
+            eventDataStr = line.replace('data:', '').trim();
+          }
         }
-      }
 
-      if (!eventDataStr) continue;
+        if (!eventDataStr) continue;
 
-      try {
-        const parsed = JSON.parse(eventDataStr);
-        if (eventType === 'status') {
-          callbacks.onStatus?.(parsed);
-        } else if (eventType === 'action') {
-          callbacks.onAction?.(parsed);
-        } else if (eventType === 'token') {
-          callbacks.onToken?.(parsed);
-        } else if (eventType === 'error') {
-          callbacks.onError?.(parsed);
-        } else if (eventType === 'done') {
-          callbacks.onDone?.();
+        try {
+          const parsed = JSON.parse(eventDataStr);
+          if (eventType === 'status') {
+            callbacks.onStatus?.(parsed);
+          } else if (eventType === 'action') {
+            callbacks.onAction?.(parsed);
+          } else if (eventType === 'token') {
+            callbacks.onToken?.(parsed);
+          } else if (eventType === 'error') {
+            callbacks.onError?.(parsed);
+          } else if (eventType === 'done') {
+            if (!didComplete) {
+              didComplete = true;
+              callbacks.onDone?.();
+            }
+          }
+        } catch (err) {
+          console.warn('SSE parse error:', err, eventDataStr);
         }
-      } catch (err) {
-        console.warn('SSE parse error:', err, eventDataStr);
       }
     }
-  }
 
-  callbacks.onDone?.();
+    if (!didComplete) {
+      didComplete = true;
+      callbacks.onDone?.();
+    }
+  } catch (err: any) {
+    if (err?.name === 'AbortError') {
+      throw new Error('Gencoore AI phản hồi hơi lâu (quá 35 giây). Bạn thử gửi lại giúp mình nha!');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
 }
 
 

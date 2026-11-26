@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { TaskModel } from '../models/Task.model';
 
 export interface TimeSlot {
@@ -31,6 +32,7 @@ class TimeResolverService {
    * Helper: Parse "HH:mm" to minutes from 00:00
    */
   public timeToMinutes(timeStr: string): number {
+    if (!timeStr || typeof timeStr !== 'string') return 0;
     const [h, m] = timeStr.split(':').map((x) => parseInt(x, 10));
     return (h || 0) * 60 + (m || 0);
   }
@@ -82,16 +84,29 @@ class TimeResolverService {
       ? { userId: options.userId }
       : { $or: [{ userId: null }, { userId: { $exists: false } }] };
 
-    // 1. Fetch all existing tasks for this date for this user
-    const dayTasks = await TaskModel.find({
-      ...userFilter,
-      $or: [
-        { scheduled_date: date },
-        { scheduled_date: { $exists: false } }, // fallback daily
-        { scheduled_date: '' },
-      ],
-      column: { $ne: 'done' }, // Ignore completed tasks
-    }).select('title time_box priority column');
+    // 1. Fetch existing tasks quickly (never hang if MongoDB is disconnected/sleeping)
+    let dayTasks: any[] = [];
+    if (mongoose.connection.readyState === 1) {
+      try {
+        dayTasks = await Promise.race([
+          TaskModel.find({
+            ...userFilter,
+            $or: [
+              { scheduled_date: date },
+              { scheduled_date: { $exists: false } }, // fallback daily
+              { scheduled_date: '' },
+            ],
+            column: { $ne: 'done' }, // Ignore completed tasks
+          })
+            .select('title time_box priority column')
+            .maxTimeMS(3500)
+            .lean(),
+          new Promise<any[]>((resolve) => setTimeout(() => resolve([]), 4000)),
+        ]);
+      } catch {
+        dayTasks = [];
+      }
+    }
 
     // 2. Extract and merge busy intervals
     const busyIntervals: Array<{ start: number; end: number; title: string }> = [];

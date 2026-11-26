@@ -427,8 +427,6 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
       });
     } catch (err: any) {
       console.error(err);
-      setIsProcessing(false);
-      setCurrentStatus(null);
       setMessages((prev) =>
         prev.map((m) =>
           m.id === aiMsgId
@@ -439,6 +437,12 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
               }
             : m
         )
+      );
+    } finally {
+      setIsProcessing(false);
+      setCurrentStatus(null);
+      setMessages((prev) =>
+        prev.map((m) => (m.id === aiMsgId && m.isStreaming ? { ...m, isStreaming: false } : m))
       );
     }
   };

@@ -248,7 +248,13 @@ export default function WorkspaceApp() {
             stats: raw.stats || { comments_count: 0, attachments_count: 0 },
             punctuality_status: raw.punctuality_status || 'on_track',
           };
-          return [normalized, ...prev];
+          const nextList = [normalized, ...prev];
+          if (!authService.getToken() && typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('andex_cached_tasks_v2', JSON.stringify(nextList));
+            } catch {}
+          }
+          return nextList;
         });
       }
     };

@@ -352,20 +352,36 @@ export async function bulkCreateVocab(
   }
 }
 
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 30000): Promise<Response> {
+  const controller = new AbortController();
+  const handle = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err: any) {
+    if (err?.name === 'AbortError') {
+      throw new Error(`Máy chủ AI phản hồi quá lâu (hơn ${Math.round(timeoutMs / 1000)}s). Bạn bấm thử lại nhé!`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(handle);
+  }
+}
+
 export async function aiExtractVocab(payload: {
   text?: string;
   imageBase64?: string;
   mimeType?: string;
   topic?: string;
 }): Promise<ExtractedVocabDraft[]> {
-  const res = await fetch(`${API_BASE}/vocab/ai-extract`, {
+  const timeoutMs = payload.imageBase64 ? 45000 : 28000;
+  const res = await fetchWithTimeout(`${API_BASE}/vocab/ai-extract`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...authService.getAuthHeaders(),
     },
     body: JSON.stringify(payload),
-  });
+  }, timeoutMs);
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.success) {
     throw new Error(data.error || 'Không thể tự động trích xuất từ vựng.');
@@ -381,14 +397,14 @@ export async function checkVocabSentence(payload: {
   partOfSpeech?: string;
   userSentence: string;
 }): Promise<SentenceCheckResult> {
-  const res = await fetch(`${API_BASE}/vocab/check-sentence`, {
+  const res = await fetchWithTimeout(`${API_BASE}/vocab/check-sentence`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...authService.getAuthHeaders(),
     },
     body: JSON.stringify(payload),
-  });
+  }, 25000);
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.success) {
     throw new Error(data.error || 'Chưa thể chấm câu lúc này.');
@@ -417,14 +433,14 @@ export async function lookupDictionary(payload: {
     } catch {}
   }
 
-  const res = await fetch(`${API_BASE}/vocab/dictionary`, {
+  const res = await fetchWithTimeout(`${API_BASE}/vocab/dictionary`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...authService.getAuthHeaders(),
     },
     body: JSON.stringify(payload),
-  });
+  }, 25000);
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.success || !data.entry) {
     throw new Error(data.error || 'Không thể tra cứu từ điển lúc này.');
@@ -451,14 +467,14 @@ export async function sendEnglishTutorMessage(payload: {
   history?: Array<{ role: 'user' | 'assistant'; text: string }>;
   activeWord?: { word: string; meaning?: string; partOfSpeech?: string } | null;
 }): Promise<TutorChatResponse> {
-  const res = await fetch(`${API_BASE}/vocab/tutor-chat`, {
+  const res = await fetchWithTimeout(`${API_BASE}/vocab/tutor-chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...authService.getAuthHeaders(),
     },
     body: JSON.stringify(payload),
-  });
+  }, 28000);
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.success) {
     if (res.status === 404) {
