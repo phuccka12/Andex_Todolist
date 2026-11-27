@@ -20,6 +20,7 @@ import { QuickNotesModal } from '@/components/QuickNotesModal';
 import { AIAssistantDrawer } from '@/components/AIAssistantDrawer';
 import { JournalView } from '@/components/JournalView';
 import { VocabView } from '@/components/VocabView';
+import { WritingView } from '@/components/WritingView';
 import { EmailPostcardModal } from '@/components/EmailPostcardModal';
 import { ScheduleReminderModal } from '@/components/ScheduleReminderModal';
 import { TaskModal } from '@/components/TaskModal';
@@ -477,6 +478,11 @@ export default function WorkspaceApp() {
           title: 'Học & Review Từ Vựng',
           subtitle: 'Flashcard tiếng Anh, phát âm, ôn tập giãn cách SRS & Import tự động bằng AI',
         };
+      case 'writing':
+        return {
+          title: 'IELTS Writing AI Examiner',
+          subtitle: 'Chấm điểm chuẩn 4 tiêu chí, Soi X-Quang lỗi, Rewrite Lab & kết nối kho Từ Vựng cá nhân',
+        };
       default:
         return {
           title: 'Lịch Biểu',
@@ -510,7 +516,7 @@ export default function WorkspaceApp() {
         return '';
       case 'slate':
       default:
-        return 'bg-gradient-to-b from-[#FFF8F1] via-[#FFF1F2] to-[#FEFCE8] text-[#0F172A]';
+        return 'bg-gradient-to-b from-[#FFFDF7] via-[#FFF9F6] to-[#FFF4F5] text-[#0F172A]';
     }
   };
 
@@ -545,10 +551,10 @@ export default function WorkspaceApp() {
       ) : (
         settings.theme !== 'midnight' && (
           <div
-            className="fixed inset-0 pointer-events-none z-10 opacity-[0.22]"
+            className="fixed inset-0 pointer-events-none z-10 opacity-[0.12]"
             style={{
-              backgroundImage: 'radial-gradient(#94A3B8 1.2px, transparent 1.2px)',
-              backgroundSize: '22px 22px',
+              backgroundImage: 'radial-gradient(#94A3B8 1.1px, transparent 1.1px)',
+              backgroundSize: '24px 24px',
             }}
           />
         )
@@ -704,16 +710,16 @@ export default function WorkspaceApp() {
 
           {(activeTab === 'projects' || activeTab === 'tags') && (
             <div className="space-y-4">
-              <div className="inline-flex items-center p-1 rounded-2xl bg-[#FFF1F2] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] gap-1">
+              <div className="inline-flex items-center p-0.5 rounded-xl bg-white border border-[#0F172A]/20 gap-1">
                 <button
                   onClick={() => {
                     soundEngine.playSoftClick();
                     setActiveTab('projects');
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     activeTab === 'projects'
-                      ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                      : 'text-[#0F172A] hover:bg-white/70'
+                      ? 'bg-[#E11D48] text-white font-extrabold'
+                      : 'text-[#0F172A] hover:bg-[#FFF1F2]'
                   }`}
                 >
                   <FolderKanban className="w-3.5 h-3.5" />
@@ -724,10 +730,10 @@ export default function WorkspaceApp() {
                     soundEngine.playSoftClick();
                     setActiveTab('tags');
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     activeTab === 'tags'
-                      ? 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                      : 'text-[#0F172A] hover:bg-white/70'
+                      ? 'bg-[#E11D48] text-white font-extrabold'
+                      : 'text-[#0F172A] hover:bg-[#FFF1F2]'
                   }`}
                 >
                   <Tag className="w-3.5 h-3.5" />
@@ -773,18 +779,25 @@ export default function WorkspaceApp() {
             />
           )}
 
+          {activeTab === 'writing' && (
+            <WritingView
+              theme={settings.theme || 'slate'}
+              authUserId={authUser?.id}
+            />
+          )}
+
           {activeTab === 'tracker' && (
-            <div className="flex-1 min-h-0 flex flex-col space-y-3.5">
+            <div className="flex-1 min-h-0 flex flex-col space-y-2.5">
               {/* Compact Architectural KPI Strip */}
               <BentoTrackerCards tasks={tasks} theme={settings.theme || 'slate'} />
 
               {/* Workspace Focus Switcher: Timetable dominates by default */}
               <div className="flex items-center justify-between gap-2 flex-wrap shrink-0">
                 <div
-                  className={`inline-flex items-center p-1 rounded-2xl border-2 text-xs font-extrabold ${
+                  className={`inline-flex items-center p-0.5 rounded-xl border text-xs font-bold ${
                     settings.theme === 'midnight'
                       ? 'bg-[#12151E] border-white/[0.08] text-slate-400'
-                      : 'bg-[#FFF1F2] border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A]'
+                      : 'bg-white border-[#0F172A]/20 text-[#0F172A] shadow-2xs'
                   }`}
                 >
                   <button
@@ -792,12 +805,12 @@ export default function WorkspaceApp() {
                       soundEngine.playSoftClick();
                       setTrackerLayout('schedule');
                     }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
                       trackerLayout === 'schedule'
                         ? settings.theme === 'midnight'
                           ? 'bg-[#181C28] text-white shadow-xs'
-                          : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                        : 'hover:bg-white/70'
+                          : 'bg-[#E11D48] text-white font-extrabold'
+                        : 'hover:bg-[#FFF1F2]'
                     }`}
                   >
                     <Calendar className={`w-3.5 h-3.5 ${trackerLayout === 'schedule' ? 'text-white' : 'text-[#E11D48]'}`} />
@@ -808,12 +821,12 @@ export default function WorkspaceApp() {
                       soundEngine.playSoftClick();
                       setTrackerLayout('kanban');
                     }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
                       trackerLayout === 'kanban'
                         ? settings.theme === 'midnight'
                           ? 'bg-[#181C28] text-white shadow-xs'
-                          : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                        : 'hover:bg-white/70'
+                          : 'bg-[#E11D48] text-white font-extrabold'
+                        : 'hover:bg-[#FFF1F2]'
                     }`}
                   >
                     <Kanban className={`w-3.5 h-3.5 ${trackerLayout === 'kanban' ? 'text-white' : 'text-emerald-600'}`} />
@@ -824,12 +837,12 @@ export default function WorkspaceApp() {
                       soundEngine.playSoftClick();
                       setTrackerLayout('split');
                     }}
-                    className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
                       trackerLayout === 'split'
                         ? settings.theme === 'midnight'
                           ? 'bg-[#181C28] text-white shadow-xs'
-                          : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                        : 'hover:bg-white/70'
+                          : 'bg-[#E11D48] text-white font-extrabold'
+                        : 'hover:bg-[#FFF1F2]'
                     }`}
                   >
                     <LayoutGrid className={`w-3.5 h-3.5 ${trackerLayout === 'split' ? 'text-white' : 'text-amber-600'}`} />

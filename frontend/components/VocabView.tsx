@@ -52,6 +52,10 @@ import {
   VocabItem,
   ReviewRating,
   ExtractedVocabDraft,
+  getCachedVocab,
+  getVocabDeckPosition,
+  saveVocabDeckPosition,
+  computeOptimisticReview,
   fetchVocab,
   createVocab,
   bulkCreateVocab,
@@ -80,9 +84,10 @@ interface VocabViewProps {
 
 export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserId }) => {
   const isDark = theme === 'midnight';
+  const initialCachedWords = useMemo(() => getCachedVocab(authUserId), [authUserId]);
 
-  const [words, setWords] = useState<VocabItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [words, setWords] = useState<VocabItem[]>(initialCachedWords);
+  const [isLoading, setIsLoading] = useState(initialCachedWords.length === 0);
 
   // Main 3 Modes: Học & Kho Từ (learn), Đã Lưu (saved) & Review (review)
   const [mode, setMode] = useState<'learn' | 'saved' | 'review'>('learn');
@@ -203,6 +208,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
   const [noteHighlightDrafts, setNoteHighlightDrafts] = useState<Record<string, string>>({});
   const [selectedPhraseByNote, setSelectedPhraseByNote] = useState<Record<string, string>>({});
   const [tutorInput, setTutorInput] = useState('');
+  const [tutorPendingImage, setTutorPendingImage] = useState<string | null>(null);
   const [isTutorTyping, setIsTutorTyping] = useState(false);
   const [tutorMessages, setTutorMessages] = useState<TutorChatMessage[]>([
     {
@@ -211,11 +217,12 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
       text: 'Chào bạn! Mình là **Gia sư IELTS 8.0+** của Genncore đây 🐱✨',
       replyEn: 'Hi there! Ready to practice English or master a new word together?',
       explanationVi:
-        'Bất cứ lúc nào đang học từ mà thấy bí — bạn cứ nhắn tiếng Anh để luyện chat, hoặc hỏi mình ngữ pháp, Modal Verbs, Idioms, Phrasal Verbs nhé!',
+        'Bất cứ lúc nào đang học từ mà thấy bí — bạn cứ nhắn tiếng Anh để luyện chat, hỏi ngữ pháp, hoặc **dán ảnh bài tập (Ctrl+V)** lên để mình giải thích giúp nhé!',
       bonusVocab: null,
     },
   ]);
   const tutorScrollRef = useRef<HTMLDivElement>(null);
+  const tutorImageInputRef = useRef<HTMLInputElement>(null);
 
   // Review Mode State
   const [reviewStyle, setReviewStyle] = useState<'flashcard' | 'quiz'>('flashcard');
@@ -255,9 +262,15 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const loadWords = async () => {
-    setIsLoading(true);
+    const cached = getCachedVocab(authUserId);
+    if (cached.length > 0) {
+      setWords(cached);
+      setIsLoading(false);
+    } else {
+      setIsLoading(true);
+    }
     try {
-      const list = await fetchVocab();
+      const list = await fetchVocab(authUserId);
       setWords(list);
     } finally {
       setIsLoading(false);
@@ -355,8 +368,8 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [words]);
 
-  const topTopics = useMemo(() => topics.slice(0, 6), [topics]);
-  const extraTopics = useMemo(() => topics.slice(6), [topics]);
+  const topTopics = useMemo(() => topics.slice(0, 4), [topics]);
+  const extraTopics = useMemo(() => topics.slice(4), [topics]);
 
   const topicDecks = useMemo(() => {
     const now = Date.now();
@@ -440,56 +453,56 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
       {
         lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
         darkCard: 'bg-gradient-to-br from-rose-950/60 via-[#12151E] to-rose-900/20 border border-rose-500/25 hover:border-rose-400/60',
-        icon: isDark ? 'bg-rose-500/20 text-rose-300' : 'bg-[#FFE4E6] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        icon: isDark ? 'bg-rose-500/20 text-rose-300' : 'bg-[#FFE4E6] text-[#E11D48] border border-[#E11D48]/30',
         bar: isDark ? 'bg-rose-400' : 'bg-[#E11D48]',
         link: isDark ? 'text-rose-300' : 'text-[#E11D48]',
       },
       {
         lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
         darkCard: 'bg-gradient-to-br from-sky-950/60 via-[#12151E] to-sky-900/20 border border-sky-500/25 hover:border-sky-400/60',
-        icon: isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-[#DBEAFE] text-[#1D4ED8] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        icon: isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-[#DBEAFE] text-[#1D4ED8] border border-[#1D4ED8]/25',
         bar: isDark ? 'bg-sky-400' : 'bg-[#1D4ED8]',
         link: isDark ? 'text-sky-300' : 'text-[#E11D48]',
       },
       {
         lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
         darkCard: 'bg-gradient-to-br from-emerald-950/60 via-[#12151E] to-emerald-900/20 border border-emerald-500/25 hover:border-emerald-400/60',
-        icon: isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-[#DCFCE7] text-[#15803D] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        icon: isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-[#DCFCE7] text-[#15803D] border border-[#15803D]/25',
         bar: isDark ? 'bg-[#1DB954]' : 'bg-[#16A34A]',
         link: isDark ? 'text-[#1DB954]' : 'text-[#E11D48]',
       },
       {
         lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
         darkCard: 'bg-gradient-to-br from-amber-950/60 via-[#12151E] to-amber-900/20 border border-amber-500/25 hover:border-amber-400/60',
-        icon: isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-[#FEF08A] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        icon: isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]/25',
         bar: isDark ? 'bg-amber-400' : 'bg-[#E11D48]',
         link: isDark ? 'text-amber-300' : 'text-[#E11D48]',
       },
       {
         lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
         darkCard: 'bg-gradient-to-br from-rose-950/60 via-[#12151E] to-rose-900/20 border border-rose-500/25 hover:border-rose-400/60',
-        icon: isDark ? 'bg-rose-500/20 text-rose-300' : 'bg-[#FFE4E6] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        icon: isDark ? 'bg-rose-500/20 text-rose-300' : 'bg-[#FFE4E6] text-[#E11D48] border border-[#E11D48]/30',
         bar: isDark ? 'bg-rose-400' : 'bg-[#E11D48]',
         link: isDark ? 'text-rose-300' : 'text-[#E11D48]',
       },
       {
         lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
         darkCard: 'bg-gradient-to-br from-amber-950/60 via-[#12151E] to-amber-900/20 border border-amber-500/25 hover:border-amber-400/60',
-        icon: isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-[#FEF9C3] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        icon: isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-[#FEF9C3] text-[#0F172A] border border-[#0F172A]/25',
         bar: isDark ? 'bg-amber-400' : 'bg-[#F59E0B]',
         link: isDark ? 'text-amber-300' : 'text-[#E11D48]',
       },
       {
         lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
         darkCard: 'bg-gradient-to-br from-cyan-950/60 via-[#12151E] to-cyan-900/20 border border-cyan-500/25 hover:border-cyan-400/60',
-        icon: isDark ? 'bg-cyan-500/20 text-cyan-300' : 'bg-[#DBEAFE] text-[#1D4ED8] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        icon: isDark ? 'bg-cyan-500/20 text-cyan-300' : 'bg-[#DBEAFE] text-[#1D4ED8] border border-[#1D4ED8]/25',
         bar: isDark ? 'bg-cyan-400' : 'bg-[#0284C7]',
         link: isDark ? 'text-cyan-300' : 'text-[#E11D48]',
       },
       {
         lightCard: 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:bg-[#FFFDF7]',
         darkCard: 'bg-gradient-to-br from-teal-950/60 via-[#12151E] to-teal-900/20 border border-teal-500/25 hover:border-teal-400/60',
-        icon: isDark ? 'bg-teal-500/20 text-teal-300' : 'bg-[#DCFCE7] text-[#15803D] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]',
+        icon: isDark ? 'bg-teal-500/20 text-teal-300' : 'bg-[#DCFCE7] text-[#15803D] border border-[#15803D]/25',
         bar: isDark ? 'bg-teal-400' : 'bg-[#16A34A]',
         link: isDark ? 'text-teal-300' : 'text-[#E11D48]',
       },
@@ -640,9 +653,10 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
 
   useEffect(() => {
     setCurrentPage(1);
-    setDeckIndex(0);
+    const savedPos = getVocabDeckPosition(selectedTopic, authUserId);
+    setDeckIndex(savedPos);
     setIsDeckFlipped(false);
-  }, [mode, selectedTopic, statusFilter, posFilter, sortBy, searchQuery, pageSize]);
+  }, [mode, selectedTopic, authUserId, statusFilter, posFilter, sortBy, searchQuery, pageSize]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -650,18 +664,24 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
     }
   }, [currentPage, totalPages]);
 
-  // Keep deck index bounded
+  // Keep deck index bounded and persist flashcard position per user ID & topic
   useEffect(() => {
-    if (deckIndex >= filteredWords.length) {
+    if (deckIndex >= filteredWords.length && filteredWords.length > 0) {
       setDeckIndex(0);
       setIsDeckFlipped(false);
+      return;
     }
-  }, [filteredWords.length, deckIndex]);
+    if (isStudyPopupOpen || topicPopupName) {
+      saveVocabDeckPosition(selectedTopic, deckIndex, authUserId);
+    }
+  }, [filteredWords.length, deckIndex, selectedTopic, authUserId, isStudyPopupOpen, topicPopupName]);
 
-  const openStudyPopupAt = (index = 0) => {
+  const openStudyPopupAt = (index?: number) => {
     if (filteredWords.length === 0) return;
     soundEngine.playSoftClick();
-    const bounded = Math.max(0, Math.min(index, filteredWords.length - 1));
+    const targetIndex =
+      typeof index === 'number' ? index : getVocabDeckPosition(selectedTopic, authUserId);
+    const bounded = Math.max(0, Math.min(targetIndex, filteredWords.length - 1));
     setDeckIndex(bounded);
     setIsDeckFlipped(false);
     setUserSentence('');
@@ -791,19 +811,58 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
     if (isTutorOpen && tutorScrollRef.current) {
       tutorScrollRef.current.scrollTop = tutorScrollRef.current.scrollHeight;
     }
-  }, [tutorMessages, isTutorOpen, isTutorTyping]);
+  }, [tutorMessages, isTutorOpen, isTutorTyping, tutorPendingImage]);
+
+  const attachTutorImageFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      notify.warning('Vui lòng chọn hoặc dán file hình ảnh (JPG, PNG, WebP).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const rawDataUrl = ev.target?.result as string;
+      if (!rawDataUrl) return;
+      const compressed = await compressImageDataUrl(rawDataUrl, 1280, 1280, 0.82);
+      setTutorPendingImage(compressed);
+      soundEngine.playSoftClick();
+    };
+    reader.readAsDataURL(file);
+  };
+
+  useEffect(() => {
+    if (!isTutorOpen || tutorViewMode !== 'chat') return;
+    const handleTutorPaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            e.preventDefault();
+            attachTutorImageFile(file);
+            break;
+          }
+        }
+      }
+    };
+    window.addEventListener('paste', handleTutorPaste);
+    return () => window.removeEventListener('paste', handleTutorPaste);
+  }, [isTutorOpen, tutorViewMode]);
 
   const handleSendTutorMessage = async (overrideMsg?: string) => {
     const msg = (overrideMsg ?? tutorInput).trim();
-    if (!msg || isTutorTyping) return;
+    const attachedImage = !overrideMsg ? tutorPendingImage : null;
+    if ((!msg && !attachedImage) || isTutorTyping) return;
 
     const userMsg: TutorChatMessage = {
       id: `u-${Date.now()}`,
       role: 'user',
-      text: msg,
+      text: msg || 'Giải thích hình ảnh này giúp mình nhé',
+      imageUrl: attachedImage || undefined,
     };
 
-    const nextHistory = [...tutorMessages, userMsg]
+    const nextHistory = tutorMessages
       .filter((m) => m.id !== 'welcome-tutor')
       .slice(-6)
       .map((m) => ({
@@ -812,7 +871,10 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
       }));
 
     setTutorMessages((prev) => [...prev, userMsg]);
-    if (!overrideMsg) setTutorInput('');
+    if (!overrideMsg) {
+      setTutorInput('');
+      setTutorPendingImage(null);
+    }
     setIsTutorTyping(true);
     soundEngine.playSoftClick();
 
@@ -821,20 +883,27 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
     try {
       const res = await sendEnglishTutorMessage({
         message: msg,
+        imageBase64: attachedImage || undefined,
+        mimeType: attachedImage ? 'image/jpeg' : undefined,
         history: nextHistory,
         activeWord: activeCard
           ? { word: activeCard.word, meaning: activeCard.meaning, partOfSpeech: activeCard.partOfSpeech }
           : null,
       });
 
+      const explanationText =
+        attachedImage && !res.visionUsed
+          ? '⚠️ Ảnh đã gửi từ giao diện, nhưng **server backend đang chạy bản cũ** chưa cập nhật tính năng đọc ảnh. Bạn hãy khởi động lại backend (`npm run dev` hoặc `npm start`) hoặc deploy bản mới rồi gửi lại ảnh nhé!'
+          : res.explanationVi;
+
       const botMsg: TutorChatMessage = {
         id: `a-${Date.now()}`,
         role: 'assistant',
-        text: res.explanationVi || res.replyEn,
-        primaryMode: res.primaryMode || 'vi_explain',
-        replyEn: res.replyEn,
-        explanationVi: res.explanationVi,
-        bonusVocab: res.bonusVocab,
+        text: explanationText || res.replyEn,
+        primaryMode: attachedImage && !res.visionUsed ? 'vi_explain' : res.primaryMode || 'vi_explain',
+        replyEn: attachedImage && !res.visionUsed ? '' : res.replyEn,
+        explanationVi: explanationText,
+        bonusVocab: attachedImage && !res.visionUsed ? null : res.bonusVocab,
       };
       setTutorMessages((prev) => [...prev, botMsg]);
       soundEngine.playPentatonicChime(4);
@@ -1246,45 +1315,48 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
     return all.sort(() => Math.random() - 0.5);
   }, [currentReviewWord?.id, reviewPos, words.length]);
 
-  const handleRateReview = async (rating: ReviewRating) => {
+  const handleRateReview = (rating: ReviewRating) => {
     if (!currentReviewWord || isSubmittingReview) return;
-    setIsSubmittingReview(true);
-    try {
-      const updated = await reviewVocab(currentReviewWord.id, rating);
-      setWords((prev) => prev.map((w) => (w.id === updated.id ? updated : w)));
+    const targetWord = currentReviewWord;
+    const optimistic = computeOptimisticReview(targetWord, rating);
 
-      if (rating === 'good' || rating === 'easy') {
-        soundEngine.playPentatonicChime(4);
-      } else {
-        soundEngine.playSoftClick();
-      }
+    // 0ms optimistic update of SRS progress & cache
+    setWords((prev) => prev.map((w) => (w.id === optimistic.id ? optimistic : w)));
 
-      const nextCount = sessionReviewedCount + 1;
-      setSessionReviewedCount(nextCount);
-
-      if (rating === 'again') {
-        // Re-queue current word at the end of this session so user practices it again
-        setReviewQueue((prev) => [...prev, updated]);
-      }
-
-      const nextPos = reviewPos + 1;
-      setReviewPos(nextPos);
-      setShowReviewAnswer(false);
-      setQuizSelectedIdx(null);
-
-      // Celebrate when finishing the queue
-      const finalLength = rating === 'again' ? reviewQueue.length + 1 : reviewQueue.length;
-      if (nextPos >= finalLength) {
-        soundEngine.playPentatonicChime(5);
-        try {
-          confetti({ particleCount: 50, spread: 70, origin: { y: 0.65 } });
-        } catch {}
-      }
-    } catch (err: any) {
-      notify.error(err.message || 'Không thể lưu tiến độ ôn tập');
-    } finally {
-      setIsSubmittingReview(false);
+    if (rating === 'good' || rating === 'easy') {
+      soundEngine.playPentatonicChime(4);
+    } else {
+      soundEngine.playSoftClick();
     }
+
+    const nextCount = sessionReviewedCount + 1;
+    setSessionReviewedCount(nextCount);
+
+    if (rating === 'again') {
+      setReviewQueue((prev) => [...prev, optimistic]);
+    }
+
+    const nextPos = reviewPos + 1;
+    setReviewPos(nextPos);
+    setShowReviewAnswer(false);
+    setQuizSelectedIdx(null);
+
+    const finalLength = rating === 'again' ? reviewQueue.length + 1 : reviewQueue.length;
+    if (nextPos >= finalLength) {
+      soundEngine.playPentatonicChime(5);
+      try {
+        confetti({ particleCount: 50, spread: 70, origin: { y: 0.65 } });
+      } catch {}
+    }
+
+    // Background sync with backend scoped by authUserId
+    reviewVocab(targetWord.id, rating, authUserId)
+      .then((synced) => {
+        setWords((prev) => prev.map((w) => (w.id === synced.id ? synced : w)));
+      })
+      .catch(() => {
+        // Already preserved in optimistic local cache
+      });
   };
 
   // Single Word Modal handlers
@@ -1401,7 +1473,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
     if (!confirmed) return;
 
     soundEngine.playSoftClick();
-    await clearAllVocab();
+    await clearAllVocab(authUserId);
     setWords([]);
     setSelectedTopic('all');
     setSearchQuery('');
@@ -1653,105 +1725,85 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
     : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A]';
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col space-y-4">
-      {/* Top Stats & Mode Switcher */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 shrink-0">
-        {/* Compact Stats Pills */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-2 ${surfaceCls}`}>
-            <BookOpen className="w-3.5 h-3.5 text-[#E11D48]" />
-            <span>{words.length} từ trong kho</span>
-          </div>
-          <div className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-2 ${
-            dueWords.length > 0
-              ? isDark
-                ? 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
-                : 'bg-[#FFE4E6] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#E11D48]'
-              : surfaceCls
-          }`}>
-            <Brain className="w-3.5 h-3.5 text-[#E11D48]" />
-            <span>{dueWords.length} từ cần Review</span>
-          </div>
-          <div className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-2 ${surfaceCls}`}>
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{masteredCount} đã nhớ vững</span>
-          </div>
-        </div>
-
-        {/* 2 Primary Modes + Quick Actions */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div
-            className={`inline-flex items-center p-1 rounded-2xl border-2 text-xs font-extrabold ${
-              isDark ? 'bg-[#12151E] border-white/[0.08]' : 'bg-[#FFF1F2] border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
+    <div className="flex-1 min-h-0 flex flex-col space-y-3">
+      {/* Row 1: Primary Mode Switcher (Left) & Actions Cluster (Right) on 1 balanced bar */}
+      <div className="flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div
+          className={`inline-flex items-center p-0.5 rounded-xl border text-xs font-bold ${
+            isDark
+              ? 'bg-[#12151E] border-white/[0.1]'
+              : 'bg-white border-[#0F172A]/20 shadow-xs'
+          }`}
+        >
+          <button
+            onClick={() => {
+              soundEngine.playSoftClick();
+              setMode('learn');
+            }}
+            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+              mode === 'learn'
+                ? isDark
+                  ? 'bg-[#1DB954] text-[#090A0F]'
+                  : 'bg-[#E11D48] text-white font-black'
+                : isDark
+                ? 'text-slate-400 hover:text-white'
+                : 'text-[#0F172A] hover:bg-[#FFF1F2]'
             }`}
           >
-            <button
-              onClick={() => {
-                soundEngine.playSoftClick();
-                setMode('learn');
-              }}
-              className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
-                mode === 'learn'
-                  ? isDark
-                    ? 'bg-[#1DB954] text-[#090A0F]'
-                    : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                  : isDark
-                  ? 'text-slate-400 hover:text-white'
-                  : 'text-[#0F172A] hover:bg-white/70'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Học & Kho Từ</span>
-            </button>
-            <button
-              onClick={() => {
-                soundEngine.playSoftClick();
-                setMode('saved');
-              }}
-              className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
-                mode === 'saved'
-                  ? isDark
-                    ? 'bg-amber-400 text-[#090A0F]'
-                    : 'bg-[#FEF08A] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                  : isDark
-                  ? 'text-slate-400 hover:text-white'
-                  : 'text-[#0F172A] hover:bg-white/70'
-              }`}
-              title="Xem riêng các từ đã đánh dấu sao hoặc lưu từ Từ Điển / Gia sư AI"
-            >
-              <Star className={`w-3.5 h-3.5 ${mode === 'saved' ? 'fill-current text-[#E11D48]' : 'text-amber-500'}`} />
-              <span>Đã Lưu ({savedCount})</span>
-            </button>
-            <button
-              onClick={() => {
-                soundEngine.playSoftClick();
-                setMode('review');
-              }}
-              className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
-                mode === 'review'
-                  ? isDark
-                    ? 'bg-[#1DB954] text-[#090A0F]'
-                    : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                  : isDark
-                  ? 'text-slate-400 hover:text-white'
-                  : 'text-[#0F172A] hover:bg-white/70'
-              }`}
-            >
-              <Brain className="w-3.5 h-3.5" />
-              <span>Review ({dueWords.length})</span>
-            </button>
-          </div>
+            <Layers className="w-3.5 h-3.5" />
+            <span>Học & Kho Từ</span>
+          </button>
+          <button
+            onClick={() => {
+              soundEngine.playSoftClick();
+              setMode('saved');
+            }}
+            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+              mode === 'saved'
+                ? isDark
+                  ? 'bg-amber-400 text-[#090A0F]'
+                  : 'bg-[#FEF08A] text-[#0F172A] font-black'
+                : isDark
+                ? 'text-slate-400 hover:text-white'
+                : 'text-[#0F172A] hover:bg-[#FEF9C3]'
+            }`}
+            title="Xem riêng các từ đã đánh dấu sao hoặc lưu từ Từ Điển / Gia sư AI"
+          >
+            <Star className={`w-3.5 h-3.5 ${mode === 'saved' ? 'fill-current text-[#E11D48]' : 'text-amber-500'}`} />
+            <span>Đã Lưu ({savedCount})</span>
+          </button>
+          <button
+            onClick={() => {
+              soundEngine.playSoftClick();
+              setMode('review');
+            }}
+            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+              mode === 'review'
+                ? isDark
+                  ? 'bg-[#1DB954] text-[#090A0F]'
+                  : 'bg-[#E11D48] text-white font-black'
+                : isDark
+                ? 'text-slate-400 hover:text-white'
+                : 'text-[#0F172A] hover:bg-[#FFF1F2]'
+            }`}
+          >
+            <Brain className="w-3.5 h-3.5" />
+            <span>Review ({dueWords.length})</span>
+          </button>
+        </div>
 
+        {/* Actions Cluster: clear visual hierarchy (primary CTA stands out, secondary buttons quiet) */}
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
             onClick={() => {
               soundEngine.playSoftClick();
               setIsDictOpen(true);
             }}
-            className={`px-3 py-1.5 rounded-xl border-2 text-xs font-black flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all ${
+            className={`px-3 py-1.5 rounded-xl border text-xs font-extrabold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all whitespace-nowrap ${
               isDark
                 ? 'bg-amber-500/15 border-amber-400/30 text-amber-300 hover:bg-amber-500/25'
-                : 'bg-[#FEF9C3] border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A] hover:bg-[#FDE047]'
+                : 'bg-[#FEF9C3] border-[#0F172A]/25 hover:border-[#0F172A] text-[#0F172A] hover:bg-[#FEF08A]'
             }`}
             title="Tra từ điển, Modal Verbs, Idioms (IDM) & Phrasal Verbs"
           >
@@ -1761,7 +1813,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
 
           <button
             onClick={openImportModal}
-            className="px-3.5 py-1.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs font-black border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+            className="px-3.5 py-1.5 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs font-black border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all whitespace-nowrap"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Import Tự Động</span>
@@ -1769,10 +1821,10 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
 
           <button
             onClick={openAddWordModal}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer active:scale-95 transition-all ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1 cursor-pointer active:scale-95 transition-all whitespace-nowrap ${
               isDark
                 ? surfaceCls
-                : 'bg-white hover:bg-[#FFF1F2] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                : 'bg-white hover:bg-[#FFF1F2] text-[#0F172A] border border-[#0F172A]/25 hover:border-[#0F172A]'
             }`}
           >
             <Plus className="w-3.5 h-3.5 text-[#E11D48]" />
@@ -1783,15 +1835,15 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
             <button
               type="button"
               onClick={handleClearAllWords}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer active:scale-95 transition-all ${
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer active:scale-95 transition-all whitespace-nowrap ${
                 isDark
                   ? 'bg-rose-500/10 border border-rose-500/25 text-rose-300 hover:bg-rose-500/20'
-                  : 'bg-[#FFE4E6] hover:bg-[#FECDD3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#E11D48]'
+                  : 'bg-white hover:bg-[#FFE4E6] border border-[#E11D48]/25 hover:border-[#E11D48] text-[#E11D48]'
               }`}
               title="Xóa toàn bộ dữ liệu từ vựng"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Xóa tất cả</span>
+              <span className="hidden xl:inline">Xóa tất cả</span>
             </button>
           )}
         </div>
@@ -1800,9 +1852,15 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
       {/* ===================================================================== */}
       {/* MODE 1: LEARN & VOCAB LIBRARY (Always visible behind blur modals)     */}
       {/* ===================================================================== */}
-      <div className="flex-1 min-h-0 flex flex-col space-y-3.5">
-          {/* Search & Filters: Topic-level on Learn mode, Word-level on Saved mode */}
-          <div className={`p-3 rounded-2xl flex flex-col gap-2.5 shrink-0 min-w-0 w-full relative z-20 ${surfaceCls}`}>
+      <div className="flex-1 min-h-0 flex flex-col space-y-3">
+          {/* Quiet Control Dock: calm wrapper border so inner Cartoon CTAs & deck cards stand out cleanly */}
+          <div
+            className={`p-2.5 sm:p-3 rounded-2xl flex flex-col gap-2 shrink-0 min-w-0 w-full relative z-20 ${
+              isDark
+                ? 'bg-[#12151E] border border-white/[0.08] text-slate-100'
+                : 'bg-white border border-[#0F172A]/20 shadow-xs text-[#0F172A]'
+            }`}
+          >
             {mode === 'learn' ? (
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
@@ -1816,7 +1874,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                       className={`w-full pl-8 pr-7 py-1.5 rounded-xl text-xs font-semibold outline-none transition-all ${
                         isDark
                           ? 'bg-[#181C28] border border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500'
-                          : 'bg-white border-2 border-[#0F172A] text-[#0F172A] placeholder:text-slate-400 focus:bg-[#FFF1F2] focus:outline-none'
+                          : 'bg-[#FFFDF7] border border-[#0F172A]/20 text-[#0F172A] placeholder:text-slate-400 focus:border-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                       }`}
                     />
                     {deckSearchQuery && (
@@ -1840,7 +1898,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                       className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
                         isDark
                           ? 'bg-[#181C28] border border-white/10 text-slate-200'
-                          : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                          : 'bg-[#FFFDF7] border border-[#0F172A]/20 text-[#0F172A] focus:border-[#0F172A] focus:outline-none'
                       }`}
                       title="Lọc chủ đề theo tiến độ"
                     >
@@ -1860,7 +1918,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                       className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
                         isDark
                           ? 'bg-[#181C28] border border-white/10 text-slate-200'
-                          : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                          : 'bg-[#FFFDF7] border border-[#0F172A]/20 text-[#0F172A] focus:border-[#0F172A] focus:outline-none'
                       }`}
                       title="Sắp xếp chủ đề"
                     >
@@ -1891,7 +1949,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                 <button
                   type="button"
                   disabled={words.length === 0}
-                  onClick={() => openStudyPopupAt(0)}
+                  onClick={() => openStudyPopupAt()}
                   className={`px-3 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1.5 shrink-0 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                     isDark
                       ? 'bg-[#1DB954]/15 border border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
@@ -1917,7 +1975,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                     className={`w-full pl-8 pr-7 py-1.5 rounded-xl text-xs font-semibold outline-none transition-all ${
                       isDark
                         ? 'bg-[#181C28] border border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500'
-                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] placeholder:text-slate-400 focus:bg-[#FFF1F2] focus:outline-none'
+                        : 'bg-[#FFFDF7] border border-[#0F172A]/20 text-[#0F172A] placeholder:text-slate-400 focus:border-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
                     }`}
                   />
                   {searchQuery && (
@@ -1941,7 +1999,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                     className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
                       isDark
                         ? 'bg-[#181C28] border border-white/10 text-slate-200'
-                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                        : 'bg-[#FFFDF7] border border-[#0F172A]/20 text-[#0F172A] focus:border-[#0F172A] focus:outline-none'
                     }`}
                     title="Lọc theo mức độ ghi nhớ"
                   >
@@ -1961,7 +2019,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                     className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
                       isDark
                         ? 'bg-[#181C28] border border-white/10 text-slate-200'
-                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                        : 'bg-[#FFFDF7] border border-[#0F172A]/20 text-[#0F172A] focus:border-[#0F172A] focus:outline-none'
                     }`}
                     title="Lọc theo từ loại"
                   >
@@ -1983,7 +2041,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                     className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold outline-none cursor-pointer ${
                       isDark
                         ? 'bg-[#181C28] border border-white/10 text-slate-200'
-                        : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                        : 'bg-[#FFFDF7] border border-[#0F172A]/20 text-[#0F172A] focus:border-[#0F172A] focus:outline-none'
                     }`}
                     title="Sắp xếp danh sách"
                   >
@@ -2030,82 +2088,85 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
             </div>
             )}
 
-            {/* Row 2: Smart Topic Pills + Searchable Overflow Topics Dropdown */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <button
-                onClick={() => {
-                  setSelectedTopic('all');
-                  setIsMoreTopicsOpen(false);
-                }}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all shrink-0 cursor-pointer flex items-center gap-1 ${
-                  selectedTopic === 'all'
-                    ? isDark
-                      ? 'bg-[#1DB954] text-[#090A0F]'
-                      : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                    : isDark
-                    ? 'bg-white/5 text-slate-400 hover:text-white'
-                    : 'bg-white border border-[#0F172A] text-[#0F172A] hover:bg-[#FFF1F2]'
-                }`}
-              >
-                <span>Tất cả</span>
-                <span className="opacity-80 text-[10px]">({words.length})</span>
-              </button>
-
-              {topTopics.map((tp) => (
+            {/* Row 2: Single-line Smart Topic Pills (scrollable horizontally with soft edge) + Overflow Popover */}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-0.5 pr-3">
                 <button
-                  key={tp}
-                  onClick={() => openTopicPopup(tp)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1 ${
-                    selectedTopic === tp
+                  onClick={() => {
+                    setSelectedTopic('all');
+                    setIsMoreTopicsOpen(false);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all shrink-0 cursor-pointer flex items-center gap-1 whitespace-nowrap ${
+                    selectedTopic === 'all'
                       ? isDark
-                        ? 'bg-[#1DB954] text-[#090A0F] border border-[#1DB954]'
-                        : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-black'
+                        ? 'bg-[#1DB954] text-[#090A0F]'
+                        : 'bg-[#E11D48] text-white border border-[#0F172A]'
                       : isDark
-                      ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
-                      : 'bg-white border border-[#0F172A] text-[#0F172A] hover:bg-[#FEF9C3]'
+                      ? 'bg-white/5 text-slate-400 hover:text-white'
+                      : 'bg-[#FFFDF7] border border-[#0F172A]/20 text-[#0F172A] hover:bg-[#FFF1F2]'
                   }`}
                 >
-                  <span>{tp}</span>
-                  <span className="opacity-75 text-[10px]">({topicCounts[tp] || 0})</span>
+                  <span>Tất cả</span>
+                  <span className="opacity-80 text-[10px]">({words.length})</span>
                 </button>
-              ))}
 
-              {/* If user picked a topic from extraTopics, show it visibly as an active chip */}
-              {selectedTopic !== 'all' && extraTopics.includes(selectedTopic) && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedTopic('all')}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black shrink-0 cursor-pointer flex items-center gap-1 ${
-                    isDark
-                      ? 'bg-[#1DB954] text-[#090A0F]'
-                      : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                  }`}
-                  title="Bấm để bỏ lọc chủ đề này"
-                >
-                  <span>{selectedTopic}</span>
-                  <span className="opacity-80 text-[10px]">({topicCounts[selectedTopic] || 0})</span>
-                  <X className="w-3 h-3 ml-0.5" />
-                </button>
-              )}
+                {topTopics.map((tp) => (
+                  <button
+                    key={tp}
+                    title={`${tp} (${topicCounts[tp] || 0})`}
+                    onClick={() => openTopicPopup(tp)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1 max-w-[185px] whitespace-nowrap ${
+                      selectedTopic === tp
+                        ? isDark
+                          ? 'bg-[#1DB954] text-[#090A0F] border border-[#1DB954]'
+                          : 'bg-[#E11D48] text-white border border-[#0F172A] font-black'
+                        : isDark
+                        ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
+                        : 'bg-[#FFFDF7] border border-[#0F172A]/20 text-[#0F172A] hover:bg-[#FEF9C3]'
+                    }`}
+                  >
+                    <span className="truncate">{tp}</span>
+                    <span className="opacity-75 text-[10px] shrink-0">({topicCounts[tp] || 0})</span>
+                  </button>
+                ))}
+
+                {/* If user picked a topic from extraTopics, show it visibly as an active chip */}
+                {selectedTopic !== 'all' && extraTopics.includes(selectedTopic) && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTopic('all')}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-black shrink-0 cursor-pointer flex items-center gap-1 max-w-[185px] whitespace-nowrap ${
+                      isDark
+                        ? 'bg-[#1DB954] text-[#090A0F]'
+                        : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                    }`}
+                    title="Bấm để bỏ lọc chủ đề này"
+                  >
+                    <span className="truncate">{selectedTopic}</span>
+                    <span className="opacity-80 text-[10px] shrink-0">({topicCounts[selectedTopic] || 0})</span>
+                    <X className="w-3 h-3 ml-0.5 shrink-0" />
+                  </button>
+                )}
+              </div>
 
               {extraTopics.length > 0 && (
-                <div className="relative">
+                <div className="relative shrink-0">
                   <button
                     type="button"
                     onClick={() => setIsMoreTopicsOpen((prev) => !prev)}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-colors shrink-0 cursor-pointer flex items-center gap-1 ${
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-colors shrink-0 cursor-pointer flex items-center gap-1 whitespace-nowrap ${
                       isDark
                         ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
                         : 'bg-[#FEF9C3] hover:bg-[#FDE047] border border-[#0F172A] text-[#0F172A]'
                     }`}
                   >
-                    <span>+{extraTopics.length} chủ đề khác</span>
+                    <span>+{extraTopics.length} chủ đề</span>
                     <ChevronDown className="w-3 h-3" />
                   </button>
 
                   {isMoreTopicsOpen && (
                     <div
-                      className={`absolute left-0 top-full mt-1.5 w-64 rounded-2xl p-2.5 space-y-2 z-40 ${
+                      className={`absolute right-0 top-full mt-1.5 w-64 rounded-2xl p-2.5 space-y-2 z-40 ${
                         isDark
                           ? 'bg-[#181C28] border border-white/15 shadow-xl text-white'
                           : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[6px_6px_0px_#0F172A] text-[#0F172A]'
@@ -2160,7 +2221,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                   disabled={isAutoTagging}
                   onClick={handleAutoTagAll}
                   title="Tự động phân loại các từ đang ở mục Chung / Tự động sang chủ đề chuẩn"
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-colors shrink-0 cursor-pointer flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-colors shrink-0 cursor-pointer flex items-center gap-1 whitespace-nowrap ${
                     isDark
                       ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 hover:bg-emerald-500/25'
                       : 'bg-[#DCFCE7] hover:bg-[#BBF7D0] text-[#15803D] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
@@ -2174,6 +2235,53 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                   <span>Tự chia Tag ({uncategorizedCount})</span>
                 </button>
               )}
+            </div>
+          </div>
+
+          {/* Sub-header Bar: Section context (Left) + Compact Progress Stats Pills (Right) */}
+          <div className="flex flex-wrap items-center justify-between gap-2 px-0.5">
+            <p className="text-xs font-bold text-slate-500">
+              {mode === 'learn' ? (
+                <>
+                  Chọn một <strong className={isDark ? 'text-white' : 'text-[#0F172A]'}>chủ đề</strong> để mở popup từ vựng ({filteredTopicDecks.length}/{topicDecks.length} chủ đề)
+                </>
+              ) : (
+                <>
+                  Từ đã đánh dấu sao ({filteredWords.length} từ)
+                </>
+              )}
+            </p>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <div
+                className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 border whitespace-nowrap ${
+                  isDark ? 'bg-[#12151E] border-white/[0.08] text-slate-200' : 'bg-white border-[#0F172A]/20 text-[#0F172A]'
+                }`}
+              >
+                <BookOpen className="w-3 h-3 text-[#E11D48]" />
+                <span>{words.length} từ trong kho</span>
+              </div>
+              <div
+                className={`px-2.5 py-0.5 rounded-lg border text-[11px] font-bold flex items-center gap-1.5 whitespace-nowrap ${
+                  dueWords.length > 0
+                    ? isDark
+                      ? 'bg-rose-500/15 border-rose-500/30 text-rose-300'
+                      : 'bg-[#FFE4E6] border-[#E11D48]/35 text-[#E11D48]'
+                    : isDark
+                    ? 'bg-[#12151E] border-white/[0.08] text-slate-200'
+                    : 'bg-white border-[#0F172A]/20 text-[#0F172A]'
+                }`}
+              >
+                <Brain className="w-3 h-3 text-[#E11D48]" />
+                <span>{dueWords.length} cần Review</span>
+              </div>
+              <div
+                className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 border whitespace-nowrap ${
+                  isDark ? 'bg-[#12151E] border-white/[0.08] text-slate-200' : 'bg-white border-[#0F172A]/20 text-[#0F172A]'
+                }`}
+              >
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                <span>{masteredCount} nhớ vững</span>
+              </div>
             </div>
           </div>
 
@@ -2261,11 +2369,6 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
           ) : mode === 'learn' && words.length > 0 ? (
             /* TOPIC DECKS GRID (Click any topic card to open its Vocabulary Popup) */
             <div className="space-y-3 pb-6">
-              <div className="flex items-center justify-between px-0.5">
-                <p className="text-xs font-bold text-slate-500">
-                  Chọn một <strong className={isDark ? 'text-white' : 'text-[#0F172A]'}>chủ đề</strong> để mở popup từ vựng ({filteredTopicDecks.length}/{topicDecks.length} chủ đề)
-                </p>
-              </div>
               {filteredTopicDecks.length === 0 ? (
                 <div className={`rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-3 ${surfaceCls}`}>
                   <p className="text-sm font-bold">Không tìm thấy chủ đề phù hợp</p>
@@ -2287,52 +2390,55 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                   <div
                     key={deck.topic}
                     onClick={() => openTopicPopup(deck.topic)}
-                    className={`rounded-2xl p-4 flex flex-col justify-between gap-3.5 cursor-pointer transition-all hover:-translate-y-0.5 group ${deckTheme.card}`}
+                    className={`rounded-2xl p-4 flex flex-col justify-between gap-3 cursor-pointer transition-all hover:-translate-y-0.5 group ${deckTheme.card}`}
                   >
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span
-                          className={`text-[10.5px] font-black px-2.5 py-0.5 rounded-lg border truncate ${getTopicBadgeCls(
-                            deck.topic
-                          )}`}
-                        >
-                          {deck.topic}
-                        </span>
-                        <span className={`text-[11px] font-mono font-bold shrink-0 ${
-                          isDark ? 'text-slate-300' : 'text-slate-600'
-                        }`}>
-                          {deck.total} từ
-                        </span>
+                    {/* Header: Folder Icon + Flush-Left Topic Title + Single Word Count Pill */}
+                    <div className="flex items-start gap-2.5 text-left">
+                      <div
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${deckTheme.icon}`}
+                      >
+                        <FolderOpen className="w-4 h-4" />
                       </div>
-
-                      <div className="flex items-center gap-2.5">
-                        <div
-                          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${deckTheme.icon}`}
-                        >
-                          <FolderOpen className="w-4 h-4" />
+                      <div className="min-w-0 flex-1 text-left">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3
+                            className="text-[13.5px] font-black leading-snug text-left break-words"
+                            title={deck.topic}
+                          >
+                            {deck.topic}
+                          </h3>
+                          <span
+                            className={`text-[10.5px] font-mono font-black px-2 py-0.5 rounded-lg shrink-0 ${
+                              isDark
+                                ? 'bg-white/10 text-slate-200'
+                                : 'bg-[#FFF8F1] border border-[#0F172A]/20 text-[#0F172A]'
+                            }`}
+                          >
+                            {deck.total} từ
+                          </span>
                         </div>
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-extrabold truncate">{deck.topic}</h3>
-                          <p className={`text-[11px] truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                            {deck.previewWords.join(', ')}
-                            {deck.total > deck.previewWords.length ? '...' : ''}
-                          </p>
-                        </div>
+                        <p className={`text-[11px] truncate mt-1 text-left ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                          {deck.previewWords.join(', ')}
+                          {deck.total > deck.previewWords.length ? '...' : ''}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      {/* Mastery progress bar */}
+                    <div className="space-y-2.5">
+                      {/* Single Clean Progress Row (eliminates duplicate top counter) */}
                       <div className="space-y-1">
-                        <div className={`flex items-center justify-between text-[10.5px] font-bold ${
+                        <div className={`flex items-center justify-between gap-2 text-[11px] font-bold ${
                           isDark ? 'text-slate-400' : 'text-slate-600'
                         }`}>
-                          <span>Thuộc {deck.mastered}/{deck.total}</span>
-                          {deck.due > 0 && (
-                            <span className="text-[#E11D48] font-black">{deck.due} cần ôn</span>
-                          )}
+                          <div className="flex items-center gap-1.5 min-w-0 truncate">
+                            <span>Thuộc {deck.mastered}/{deck.total}</span>
+                            {deck.due > 0 && (
+                              <span className="text-[#E11D48] font-black">• {deck.due} cần ôn</span>
+                            )}
+                          </div>
+                          <span className="font-mono font-black shrink-0">{deck.pct}%</span>
                         </div>
-                        <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-white/10' : 'bg-[#FFF1F2] border border-[#0F172A]'}`}>
+                        <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-white/10' : 'bg-[#FFF1F2] border border-[#0F172A]/30'}`}>
                           <div
                             className={`h-full rounded-full transition-all ${deckTheme.bar}`}
                             style={{ width: `${deck.pct}%` }}
@@ -2342,7 +2448,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
 
                       <div
                         className={`pt-2 border-t flex items-center justify-between text-[11px] font-black ${
-                          isDark ? 'border-white/[0.08]' : 'border-[#0F172A]/15'
+                          isDark ? 'border-white/[0.08]' : 'border-[#0F172A]/12'
                         }`}
                       >
                         <span className={`inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform ${deckTheme.link}`}>
@@ -2356,10 +2462,10 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                             setMode('review');
                             startReviewSession('all', deck.topic);
                           }}
-                          className={`px-2.5 py-0.5 rounded-lg text-[10.5px] font-black cursor-pointer ${
+                          className={`px-2.5 py-0.5 rounded-lg text-[10.5px] font-black cursor-pointer transition-colors ${
                             isDark
                               ? 'bg-white/10 hover:bg-white/15 text-slate-200'
-                              : 'bg-[#FEF9C3] hover:bg-[#FDE047] border border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
+                              : 'bg-[#FEF9C3] hover:bg-[#FEF08A] border border-[#0F172A]/30 hover:border-[#0F172A] text-[#0F172A]'
                           }`}
                         >
                           Ôn tập
@@ -4691,7 +4797,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                 <button
                   type="button"
                   disabled={filteredWords.length === 0}
-                  onClick={() => openStudyPopupAt(0)}
+                  onClick={() => openStudyPopupAt()}
                   className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer disabled:opacity-40 ${
                     isDark
                       ? 'bg-[#1DB954]/15 border border-[#1DB954]/35 text-[#1DB954] hover:bg-[#1DB954]/25'
@@ -5283,7 +5389,16 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                           }`}
                         >
                           {msg.role === 'user' ? (
-                            <p>{msg.text}</p>
+                            <div className="space-y-1.5">
+                              {msg.imageUrl && (
+                                <img
+                                  src={msg.imageUrl}
+                                  alt="Ảnh bạn đã gửi"
+                                  className="max-h-48 w-auto max-w-full rounded-xl border border-white/30 object-contain bg-black/10"
+                                />
+                              )}
+                              {msg.text && <p>{msg.text}</p>}
+                            </div>
                           ) : (
                             <>
                               {msg.primaryMode === 'en_chat' ? (
@@ -5413,32 +5528,40 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
 
               {tutorViewMode === 'chat' && (
                 <>
-                  {/* Quick Starter Chips */}
-                  <div className="px-3 pb-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
-                    {[
-                      ...(isStudyPopupOpen && filteredWords[deckIndex]
-                        ? [`Giải thích thêm từ "${filteredWords[deckIndex].word}" & cho ví dụ Band 8.0`]
-                        : []),
-                      'Phân biệt must & have to',
-                      'Luyện chat giao tiếp công sở',
-                      '3 Idioms hay cho IELTS Speaking',
-                    ].map((q) => (
+                  {/* Pending Pasted / Selected Image Preview */}
+                  {tutorPendingImage && (
+                    <div
+                      className={`px-3 py-2 flex items-center justify-between gap-2 shrink-0 ${
+                        isDark
+                          ? 'border-t border-white/10 bg-[#181C28]/80'
+                          : 'border-t border-[#0F172A]/15 bg-[#FFFDF7]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <img
+                          src={tutorPendingImage}
+                          alt="Preview ảnh đính kèm"
+                          className="h-12 w-16 rounded-xl object-cover border-2 border-[#0F172A] shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-black truncate">Ảnh đã đính kèm</p>
+                          <p className="text-[10px] text-slate-500 truncate">
+                            Nhập thêm câu hỏi hoặc bấm Gửi ngay để Gia sư giải thích
+                          </p>
+                        </div>
+                      </div>
                       <button
-                        key={q}
                         type="button"
-                        onClick={() => handleSendTutorMessage(q)}
-                        className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold shrink-0 cursor-pointer transition-colors ${
-                          isDark
-                            ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
-                            : 'bg-[#FEF9C3] hover:bg-[#FDE047] border border-[#0F172A] text-[#0F172A]'
-                        }`}
+                        onClick={() => setTutorPendingImage(null)}
+                        className="p-1.5 rounded-lg bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border border-[#0F172A]/25 shrink-0 cursor-pointer"
+                        title="Bỏ ảnh đính kèm"
                       >
-                        {q}
+                        <X className="w-3.5 h-3.5" />
                       </button>
-                    ))}
-                  </div>
+                    </div>
+                  )}
 
-                  {/* Input Bar */}
+                  {/* Input Bar with Ctrl+V Image Paste & Upload Button */}
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
@@ -5449,10 +5572,33 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                     }`}
                   >
                     <input
+                      ref={tutorImageInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) attachTutorImageFile(file);
+                        if (e.target) e.target.value = '';
+                      }}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => tutorImageInputRef.current?.click()}
+                      className={`p-2 rounded-xl cursor-pointer shrink-0 transition-colors ${
+                        isDark
+                          ? 'bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300'
+                          : 'bg-white hover:bg-[#FEF9C3] border-2 border-[#0F172A] text-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                      }`}
+                      title="Đính kèm ảnh (hoặc bấm Ctrl+V để dán trực tiếp)"
+                    >
+                      <ImageIcon className="w-4 h-4 text-[#E11D48]" />
+                    </button>
+                    <input
                       type="text"
                       value={tutorInput}
                       onChange={(e) => setTutorInput(e.target.value)}
-                      placeholder="Hỏi ngữ pháp, từ vựng hoặc chat tiếng Anh..."
+                      placeholder="Hỏi ngữ pháp, từ vựng hoặc Ctrl+V dán ảnh..."
                       className={`flex-1 px-3.5 py-2 rounded-xl text-xs font-semibold outline-none ${
                         isDark
                           ? 'bg-[#12151E] border border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
@@ -5461,7 +5607,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                     />
                     <button
                       type="submit"
-                      disabled={isTutorTyping || !tutorInput.trim()}
+                      disabled={isTutorTyping || (!tutorInput.trim() && !tutorPendingImage)}
                       className={`p-2 rounded-xl cursor-pointer disabled:opacity-45 shrink-0 ${
                         isDark
                           ? 'bg-[#1DB954] text-[#090A0F] hover:brightness-110'

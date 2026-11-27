@@ -146,18 +146,20 @@ vocabRouter.post('/dictionary', optionalAuth, async (req: AuthenticatedRequest, 
   }
 });
 
-// POST /api/vocab/tutor-chat - Friendly IELTS 8.0+ English Tutor Mini-Chatbot
+// POST /api/vocab/tutor-chat - Friendly IELTS 8.0+ English Tutor Mini-Chatbot (supports text + pasted images)
 vocabRouter.post('/tutor-chat', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { message, history, activeWord, customApiKey } = req.body || {};
-    if (!message?.trim()) {
+    const { message, imageBase64, mimeType, history, activeWord, customApiKey } = req.body || {};
+    if (!message?.trim() && !imageBase64) {
       return res.status(400).json({
         success: false,
-        error: 'Vui lòng nhập câu hỏi hoặc nội dung luyện tập.',
+        error: 'Vui lòng nhập câu hỏi, nội dung luyện tập hoặc dán hình ảnh cần hỏi.',
       });
     }
     const reply = await vocabService.englishTutorChat({
-      message,
+      message: message || '',
+      imageBase64,
+      mimeType,
       history,
       activeWord,
       customApiKey,

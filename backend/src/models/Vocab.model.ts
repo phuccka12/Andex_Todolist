@@ -48,7 +48,7 @@ const VocabSchema = new Schema<IVocabDocument>(
   }
 );
 
-VocabSchema.index({ userId: 1, nextReviewAt: 1 });
+VocabSchema.index({ userId: 1, nextReviewAt: 1, createdAt: -1 });
 VocabSchema.index({ userId: 1, word: 1 });
 
 export const VocabModel = mongoose.model<IVocabDocument>('Vocab', VocabSchema);

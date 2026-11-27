@@ -16,10 +16,10 @@ interface KanbanSectionProps {
 }
 
 const COLUMNS = [
-  { id: 'draft', label: 'Draft', color: 'text-[#E11D48]', bg: 'bg-[#FFE4E6]', colBg: 'bg-[#FFF1F2]/85' },
-  { id: 'in_progress', label: 'In Progress', color: 'text-[#1D4ED8]', bg: 'bg-[#DBEAFE]', colBg: 'bg-[#DBEAFE]/65' },
-  { id: 'editing', label: 'Editing', color: 'text-[#D97706]', bg: 'bg-[#FEF9C3]', colBg: 'bg-[#FEF9C3]/75' },
-  { id: 'done', label: 'Done', color: 'text-[#059669]', bg: 'bg-[#DCFCE7]', colBg: 'bg-[#DCFCE7]/75' },
+  { id: 'draft', label: 'Draft', color: 'text-[#E11D48]', bg: 'bg-[#FFE4E6]', colBg: 'bg-[#FFFDF7]' },
+  { id: 'in_progress', label: 'In Progress', color: 'text-[#1D4ED8]', bg: 'bg-[#DBEAFE]', colBg: 'bg-[#FFFDF7]' },
+  { id: 'editing', label: 'Editing', color: 'text-[#D97706]', bg: 'bg-[#FEF9C3]', colBg: 'bg-[#FFFDF7]' },
+  { id: 'done', label: 'Done', color: 'text-[#059669]', bg: 'bg-[#DCFCE7]', colBg: 'bg-[#FFFDF7]' },
 ] as const;
 
 export const KanbanSection: React.FC<KanbanSectionProps> = ({

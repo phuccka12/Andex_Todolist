@@ -187,50 +187,54 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
 
       {/* 2. UNIFIED 4-METRIC STRIP */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="bg-[#FFF1F2] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Tổng Số Dự Án
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-[#E11D48]" />
+            <span>Tổng Số Dự Án</span>
           </div>
           <div className="text-2xl font-black text-[#0F172A] tracking-tight">
             {projects.length} dự án
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             Đang hoạt động trong workspace
           </div>
         </div>
 
-        <div className="bg-[#DBEAFE] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Công Việc Phân Bổ
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-sky-500" />
+            <span>Công Việc Phân Bổ</span>
           </div>
           <div className="text-2xl font-black text-[#1D4ED8] tracking-tight">
             {totalAssignedTasks} việc
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             Thuộc các dự án chiến lược
           </div>
         </div>
 
-        <div className="bg-[#DCFCE7] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Đã Chốt Xong
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>Đã Chốt Xong</span>
           </div>
           <div className="text-2xl font-black text-emerald-700 tracking-tight">
             {totalCompletedProjectTasks} việc
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             Nhiệm vụ đã hoàn tất thành công
           </div>
         </div>
 
-        <div className="bg-[#FEF9C3] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Tiến Độ Bình Quân
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <span>Tiến Độ Bình Quân</span>
           </div>
           <div className="text-2xl font-black text-[#E11D48] tracking-tight">
             {overallProjectRate}%
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             Tỷ lệ hoàn thành tổng thể
           </div>
         </div>

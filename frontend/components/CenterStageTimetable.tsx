@@ -91,6 +91,7 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterThemeGroup, setFilterThemeGroup] = useState<string>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   // Filtered Tasks computation based on search, priority, and palette group
   const displayTasks = useMemo(() => {
@@ -390,169 +391,86 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">
-      {/* Top Header: Title, Controls & Switchers */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-2.5 pb-2.5 shrink-0">
-        <div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <h2 className={`text-sm font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>
-              Thời Khóa Biểu Trung Tâm
-            </h2>
-            <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border-2 ${
-              isDark
-                ? 'bg-indigo-500/15 text-indigo-300 border-indigo-400/30'
-                : 'bg-[#FEF08A] text-[#0F172A] border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-            }`}>
-              {viewMode === 'Week'
-                ? `Tuần: ${weekDays[0].shortDate} — ${weekDays[6].shortDate}`
-                : viewMode === 'Agenda'
-                ? `Lịch trình tuần: ${weekDays[0].shortDate} — ${weekDays[6].shortDate}`
-                : viewMode === 'Day'
-                ? `${weekDays[selectedDayIndex]?.name} (${weekDays[selectedDayIndex]?.displayDate})`
-                : `Tháng ${format(currentMonth, 'MM/yyyy')}`}
-            </span>
-            {viewMode === 'Week' && timeSpanMode === 'autofit' && (
-              <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#DCFCE7] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] flex items-center gap-1">
-                <Sparkle className="w-2.5 h-2.5 text-emerald-700" />
-                Tự co giãn ({activeTimeRows[0]} - {activeTimeRows[activeTimeRows.length - 1]})
-              </span>
-            )}
-          </div>
+      {/* Row 1: Title, Week Navigation & View Mode Switchers */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2 pb-2 shrink-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <h2 className={`text-sm font-black tracking-tight ${isDark ? 'text-white' : 'text-[#0F172A]'}`}>
+            Thời Khóa Biểu
+          </h2>
+          <span className={`text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+            isDark
+              ? 'bg-indigo-500/15 text-indigo-300 border-indigo-400/30'
+              : 'bg-[#FEF08A] text-[#0F172A] border-[#0F172A]/40'
+          }`}>
+            {viewMode === 'Week'
+              ? `${weekDays[0].shortDate} — ${weekDays[6].shortDate}`
+              : viewMode === 'Agenda'
+              ? `Tuần ${weekDays[0].shortDate} — ${weekDays[6].shortDate}`
+              : viewMode === 'Day'
+              ? `${weekDays[selectedDayIndex]?.name} (${weekDays[selectedDayIndex]?.displayDate})`
+              : `Tháng ${format(currentMonth, 'MM/yyyy')}`}
+          </span>
+
+          {(viewMode === 'Week' || viewMode === 'Agenda') && (
+            <div className="inline-flex items-center bg-white border border-[#0F172A]/20 rounded-xl p-0.5 text-[11px] font-bold text-[#0F172A]">
+              <button
+                onClick={handlePrevWeek}
+                className="p-1 rounded-lg hover:bg-[#FFF1F2] text-slate-600 hover:text-[#E11D48] transition-colors cursor-pointer"
+                title="Tuần trước"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={handleToday}
+                className="px-2 py-0.5 rounded-lg hover:bg-[#FFE4E6] text-[#E11D48] font-extrabold transition-colors cursor-pointer"
+                title="Quay về tuần hiện tại"
+              >
+                Hôm nay
+              </button>
+              <button
+                onClick={handleNextWeek}
+                className="p-1 rounded-lg hover:bg-[#FFF1F2] text-slate-600 hover:text-[#E11D48] transition-colors cursor-pointer"
+                title="Tuần sau"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Quick link to Completed Archive */}
-          <button
-            onClick={onOpenArchive}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#DCFCE7] text-[#0F172A] text-xs font-black hover:bg-[#BBF7D0] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] transition-all cursor-pointer"
-            title="Xem kho lưu trữ các task đã hoàn thành"
-          >
-            <Archive className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Kho Đã Xong</span>
-            <span className="sm:hidden">Xong</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-emerald-600 text-white text-[10px] ml-0.5 font-black">
-              {completedCount}
-            </span>
-          </button>
-
-          {/* Time range mode selector (Work / Auto-fit / Full) */}
-          {(viewMode === 'Week' || viewMode === 'Day') && (
-            <div className="flex items-center bg-[#FFF1F2] p-0.5 rounded-full text-xs font-extrabold text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]">
-              <button
-                onClick={() => handleSetTimeSpanMode('work')}
-                className={`px-2.5 py-1 rounded-full transition-all text-[11px] cursor-pointer ${
-                  timeSpanMode === 'work'
-                    ? 'bg-white text-[#E11D48] border border-[#0F172A] font-black'
-                    : 'hover:bg-white/60'
-                }`}
-                title="Khung giờ hành chính: 08:00 - 18:00 (Gọn gàng nhất)"
-              >
-                Hành chính
-              </button>
-              <button
-                onClick={() => handleSetTimeSpanMode('autofit')}
-                className={`px-2.5 py-1 rounded-full transition-all text-[11px] flex items-center gap-1 cursor-pointer ${
-                  timeSpanMode === 'autofit'
-                    ? 'bg-white text-emerald-600 border border-[#0F172A] font-black'
-                    : 'hover:bg-white/60'
-                }`}
-                title="Tự động thu hẹp giờ theo các công việc thực tế trong tuần"
-              >
-                <Sparkle className="w-2.5 h-2.5" />
-                Tự co giãn
-              </button>
-              <button
-                onClick={() => handleSetTimeSpanMode('full')}
-                className={`px-2.5 py-1 rounded-full transition-all text-[11px] cursor-pointer ${
-                  timeSpanMode === 'full'
-                    ? 'bg-white text-[#E11D48] border border-[#0F172A] font-black'
-                    : 'hover:bg-white/60'
-                }`}
-                title="Toàn ngày: 06:00 - 22:00"
-              >
-                Toàn ngày
-              </button>
-            </div>
-          )}
-
-          {/* Row Density Selector (Compact / Normal / Detailed) */}
-          {viewMode === 'Week' && (
-            <div className="flex items-center bg-[#FEF9C3] p-0.5 rounded-full border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]" title="Độ cao dòng hiển thị">
-              <button
-                onClick={() => handleSetDensity('compact')}
-                className={`px-2.5 py-1 rounded-full text-[10px] font-black transition-all cursor-pointer ${
-                  density === 'compact'
-                    ? 'bg-white text-[#E11D48] border border-[#0F172A]'
-                    : 'text-[#0F172A]/70 hover:text-[#0F172A]'
-                }`}
-                title="Gọn gàng (56px) - Vừa vặn màn hình"
-              >
-                Gọn
-              </button>
-              <button
-                onClick={() => handleSetDensity('normal')}
-                className={`px-2.5 py-1 rounded-full text-[10px] font-black transition-all cursor-pointer ${
-                  density === 'normal'
-                    ? 'bg-white text-[#E11D48] border border-[#0F172A]'
-                    : 'text-[#0F172A]/70 hover:text-[#0F172A]'
-                }`}
-                title="Tiêu chuẩn (68px)"
-              >
-                Vừa
-              </button>
-              <button
-                onClick={() => handleSetDensity('detailed')}
-                className={`px-2.5 py-1 rounded-full text-[10px] font-black transition-all cursor-pointer ${
-                  density === 'detailed'
-                    ? 'bg-white text-[#E11D48] border border-[#0F172A]'
-                    : 'text-[#0F172A]/70 hover:text-[#0F172A]'
-                }`}
-                title="Chi tiết rộng (84px)"
-              >
-                Rộng
-              </button>
-            </div>
-          )}
-
+        <div className="flex items-center gap-1.5 flex-wrap">
           {/* Main View Switcher Pills */}
-          <div className="flex items-center bg-[#FFF1F2] p-0.5 rounded-full text-xs font-black text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]">
+          <div className="flex items-center bg-white p-0.5 rounded-xl text-[11px] font-bold text-[#0F172A] border border-[#0F172A]/20">
             <button
               onClick={() => handleSetViewMode('Week')}
-              className={`px-3 py-1 rounded-full transition-all text-xs font-black flex items-center gap-1 cursor-pointer ${
-                viewMode === 'Week'
-                  ? 'bg-[#E11D48] text-white border border-[#0F172A]'
-                  : 'hover:bg-white/70'
+              className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                viewMode === 'Week' ? 'bg-[#E11D48] text-white font-extrabold' : 'hover:bg-[#FFF1F2]'
               }`}
             >
               <LayoutGrid className="w-3 h-3" />
-              <span>Lưới Tuần</span>
+              <span>Tuần</span>
             </button>
             <button
               onClick={() => handleSetViewMode('Agenda')}
-              className={`px-3 py-1 rounded-full transition-all text-xs font-black flex items-center gap-1 cursor-pointer ${
-                viewMode === 'Agenda'
-                  ? 'bg-[#E11D48] text-white border border-[#0F172A]'
-                  : 'hover:bg-white/70'
+              className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                viewMode === 'Agenda' ? 'bg-[#E11D48] text-white font-extrabold' : 'hover:bg-[#FFF1F2]'
               }`}
             >
               <List className="w-3 h-3" />
-              <span>Lịch Trình</span>
+              <span>Lịch trình</span>
             </button>
             <button
               onClick={() => handleSetViewMode('Day')}
-              className={`px-2.5 py-1 rounded-full transition-all text-xs font-black cursor-pointer ${
-                viewMode === 'Day'
-                  ? 'bg-[#E11D48] text-white border border-[#0F172A]'
-                  : 'hover:bg-white/70'
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                viewMode === 'Day' ? 'bg-[#E11D48] text-white font-extrabold' : 'hover:bg-[#FFF1F2]'
               }`}
             >
               Ngày
             </button>
             <button
               onClick={() => handleSetViewMode('Month')}
-              className={`px-2.5 py-1 rounded-full transition-all text-xs font-black flex items-center gap-1 cursor-pointer ${
-                viewMode === 'Month'
-                  ? 'bg-[#E11D48] text-white border border-[#0F172A]'
-                  : 'hover:bg-white/70'
+              className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                viewMode === 'Month' ? 'bg-[#E11D48] text-white font-extrabold' : 'hover:bg-[#FFF1F2]'
               }`}
             >
               <CalendarDays className="w-3 h-3" />
@@ -560,50 +478,173 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
             </button>
           </div>
 
-          {/* Quick Schedule Reminder & Calendar Button */}
+          {/* Completed Archive */}
+          <button
+            onClick={onOpenArchive}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#DCFCE7]/85 hover:bg-[#DCFCE7] text-[#15803D] text-[11px] font-extrabold border border-emerald-300 transition-colors cursor-pointer"
+            title="Xem kho lưu trữ các task đã hoàn thành"
+          >
+            <Archive className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Đã xong</span>
+            <span className="px-1.5 rounded-full bg-emerald-600 text-white text-[10px] font-black">
+              {completedCount}
+            </span>
+          </button>
+
+          {/* Schedule Reminder */}
           {onOpenScheduleReminder && (
             <button
               onClick={() => {
                 soundEngine.playSoftClick();
                 onOpenScheduleReminder();
               }}
-              className="flex items-center gap-1.5 px-3 py-1 bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] rounded-full text-xs font-black transition-all group cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1 bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] border border-[#0F172A]/30 rounded-xl text-[11px] font-extrabold transition-colors cursor-pointer"
               title="Nhắc việc tự động qua email & Đồng bộ Google Calendar"
             >
-              <Bell className="w-3.5 h-3.5 text-[#E11D48] group-hover:scale-110 transition-transform" />
-              <span>Nhắc Lịch & Calendar</span>
+              <Bell className="w-3.5 h-3.5 text-[#E11D48]" />
+              <span className="hidden sm:inline">Nhắc lịch</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Quick Filter & Search Bar */}
-      <div className="bg-white border-2 border-[#0F172A] p-2.5 rounded-2xl mb-2.5 shrink-0 shadow-[3px_3px_0px_#0F172A] space-y-2">
-        <div className="flex items-center gap-2 justify-between flex-wrap">
-          {/* Search Box */}
-          <div className="relative flex-1 min-w-[200px] max-w-md">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#E11D48]" />
-            <input
-              type="text"
-              placeholder="Tìm kiếm công việc, ghi chú..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-7 py-1.5 bg-[#FFFDF7] border-2 border-[#0F172A] rounded-xl text-xs font-bold text-[#0F172A] placeholder-slate-400 focus:outline-none focus:bg-[#FFF1F2] transition-all"
-            />
-            {searchQuery && (
+      {/* Row 2: Calm Unified Search, Date Jump, Display Controls & Collapsible Filter Trigger */}
+      <div className="bg-white/95 border border-[#0F172A]/20 px-2.5 py-1.5 rounded-2xl mb-2.5 shrink-0 space-y-2">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+            <div className="relative flex-1 max-w-xs">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Tìm công việc, ghi chú..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-7 py-1 bg-[#FFFDF7] border border-slate-200 rounded-xl text-xs font-medium text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-[#E11D48] focus:bg-white transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-[#E11D48] rounded-full cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                soundEngine.playSoftClick();
+                setShowFilters((prev) => !prev);
+              }}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-bold border transition-colors cursor-pointer shrink-0 ${
+                showFilters || filterPriority !== 'all' || filterThemeGroup !== 'all'
+                  ? 'bg-[#FFE4E6] text-[#E11D48] border-[#E11D48]/40'
+                  : 'bg-[#FFFDF7] text-slate-700 border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <Filter className="w-3 h-3" />
+              <span>Bộ lọc</span>
+              {(filterPriority !== 'all' || filterThemeGroup !== 'all') && (
+                <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48]" />
+              )}
+            </button>
+
+            {hasActiveFilters && (
               <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-slate-500 hover:text-[#E11D48] rounded-full cursor-pointer"
+                onClick={clearAllFilters}
+                className="px-2 py-1 text-[11px] font-bold text-[#E11D48] hover:bg-[#FFE4E6] rounded-lg transition-colors flex items-center gap-1 cursor-pointer shrink-0"
               >
                 <X className="w-3 h-3" />
+                <span>Xóa ({displayTasks.length})</span>
               </button>
             )}
           </div>
 
-          {/* Quick Filter Badges */}
+          {/* Compact Display Controls (Time Span, Density, Date Jump) */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Priority Quick Filter */}
-            <div className="flex items-center bg-[#FFF1F2] p-0.5 rounded-xl border-2 border-[#0F172A] text-[11px] font-black">
+            {(viewMode === 'Week' || viewMode === 'Day') && (
+              <div className="flex items-center bg-slate-100/80 p-0.5 rounded-xl text-[11px] font-semibold text-slate-600 border border-slate-200/80">
+                <button
+                  onClick={() => handleSetTimeSpanMode('work')}
+                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                    timeSpanMode === 'work' ? 'bg-white text-[#E11D48] font-bold shadow-2xs' : 'hover:text-slate-900'
+                  }`}
+                  title="08:00 - 18:00"
+                >
+                  Hành chính
+                </button>
+                <button
+                  onClick={() => handleSetTimeSpanMode('autofit')}
+                  className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                    timeSpanMode === 'autofit' ? 'bg-white text-emerald-600 font-bold shadow-2xs' : 'hover:text-slate-900'
+                  }`}
+                  title="Tự động co giãn theo việc"
+                >
+                  <Sparkle className="w-2.5 h-2.5" />
+                  Tự co
+                </button>
+                <button
+                  onClick={() => handleSetTimeSpanMode('full')}
+                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                    timeSpanMode === 'full' ? 'bg-white text-[#E11D48] font-bold shadow-2xs' : 'hover:text-slate-900'
+                  }`}
+                  title="06:00 - 22:00"
+                >
+                  Toàn ngày
+                </button>
+              </div>
+            )}
+
+            {viewMode === 'Week' && (
+              <div className="hidden sm:flex items-center bg-slate-100/80 p-0.5 rounded-xl text-[10.5px] font-semibold text-slate-600 border border-slate-200/80" title="Độ cao dòng">
+                <button
+                  onClick={() => handleSetDensity('compact')}
+                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                    density === 'compact' ? 'bg-white text-[#E11D48] font-bold shadow-2xs' : 'hover:text-slate-900'
+                  }`}
+                >
+                  Gọn
+                </button>
+                <button
+                  onClick={() => handleSetDensity('normal')}
+                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                    density === 'normal' ? 'bg-white text-[#E11D48] font-bold shadow-2xs' : 'hover:text-slate-900'
+                  }`}
+                >
+                  Vừa
+                </button>
+                <button
+                  onClick={() => handleSetDensity('detailed')}
+                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                    density === 'detailed' ? 'bg-white text-[#E11D48] font-bold shadow-2xs' : 'hover:text-slate-900'
+                  }`}
+                >
+                  Rộng
+                </button>
+              </div>
+            )}
+
+            <input
+              type="date"
+              value={format(selectedDate, 'yyyy-MM-dd')}
+              onChange={(e) => {
+                if (e.target.value) {
+                  const parts = e.target.value.split('-');
+                  const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                  setSelectedDate(d);
+                }
+              }}
+              title="Nhảy đến ngày"
+              className="px-2 py-0.5 text-[11px] font-bold rounded-xl border border-slate-200 bg-[#FFFDF7] text-[#0F172A] focus:border-[#E11D48] outline-none cursor-pointer transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Collapsible Priority & Color Palette Filters */}
+        {showFilters && (
+          <div className="flex items-center gap-2 flex-wrap pt-1.5 border-t border-slate-100 animate-in fade-in duration-150">
+            <div className="flex items-center bg-slate-100/80 p-0.5 rounded-xl text-[11px] font-semibold">
               {[
                 { id: 'all', label: 'Tất cả mức' },
                 { id: 'P1', label: 'P1 Cốt lõi' },
@@ -616,10 +657,10 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
                     soundEngine.playSoftClick();
                     setFilterPriority(p.id);
                   }}
-                  className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                  className={`px-2.5 py-0.5 rounded-lg transition-all cursor-pointer ${
                     filterPriority === p.id
-                      ? 'bg-[#E11D48] text-white border border-[#0F172A]'
-                      : 'text-[#0F172A]/75 hover:text-[#0F172A]'
+                      ? 'bg-[#E11D48] text-white font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   {p.label}
@@ -627,8 +668,7 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
               ))}
             </div>
 
-            {/* Color Palette Quick Filter */}
-            <div className="flex items-center bg-[#FEF9C3] p-0.5 rounded-xl border-2 border-[#0F172A] text-[11px] font-black">
+            <div className="flex items-center bg-slate-100/80 p-0.5 rounded-xl text-[11px] font-semibold">
               {[
                 { id: 'all', label: 'Mọi bảng màu' },
                 { id: 'twilight', label: 'Twilight', hex: '#AE445A' },
@@ -641,10 +681,10 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
                     soundEngine.playSoftClick();
                     setFilterThemeGroup(c.id);
                   }}
-                  className={`px-2 py-0.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-2.5 py-0.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                     filterThemeGroup === c.id
-                      ? 'bg-white text-[#0F172A] border border-[#0F172A]'
-                      : 'text-[#0F172A]/75 hover:text-[#0F172A]'
+                      ? 'bg-white text-[#0F172A] font-bold shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   {c.hex && <span style={{ backgroundColor: c.hex }} className="w-1.5 h-1.5 rounded-full inline-block" />}
@@ -652,67 +692,9 @@ export const CenterStageTimetable: React.FC<CenterStageTimetableProps> = ({
                 </button>
               ))}
             </div>
-
-            {/* Clear Filter button */}
-            {hasActiveFilters && (
-              <button
-                onClick={clearAllFilters}
-                className="px-2.5 py-1 text-[11px] font-black text-white bg-[#E11D48] hover:bg-[#BE123C] rounded-xl transition-colors flex items-center gap-1 border-2 border-[#0F172A] cursor-pointer"
-              >
-                <X className="w-3 h-3" />
-                <span>Xóa lọc ({displayTasks.length}/{tasks.length})</span>
-              </button>
-            )}
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Week Navigator Bar */}
-      {(viewMode === 'Week' || viewMode === 'Agenda') && (
-        <div className="flex items-center justify-between bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] p-2 rounded-2xl mb-2.5 shrink-0">
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={handlePrevWeek}
-              className="px-2.5 py-1 text-xs font-black rounded-xl border-2 border-[#0F172A] bg-white hover:bg-[#FEF9C3] text-[#0F172A] flex items-center gap-1 transition-colors shadow-[2px_2px_0px_#0F172A] cursor-pointer"
-              title="Xem tuần trước"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-              <span>Tuần trước</span>
-            </button>
-            <button
-              onClick={handleToday}
-              className="px-2.5 py-1 text-xs font-black rounded-xl border-2 border-[#0F172A] bg-[#FFE4E6] hover:bg-[#E11D48] hover:text-white text-[#E11D48] transition-colors shadow-[2px_2px_0px_#0F172A] cursor-pointer"
-            >
-              Hiện tại
-            </button>
-            <button
-              onClick={handleNextWeek}
-              className="px-2.5 py-1 text-xs font-black rounded-xl border-2 border-[#0F172A] bg-white hover:bg-[#FEF9C3] text-[#0F172A] flex items-center gap-1 transition-colors shadow-[2px_2px_0px_#0F172A] cursor-pointer"
-              title="Lên lịch tuần tới"
-            >
-              <span>Tuần sau</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Jump to specific future date */}
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-[#0F172A] font-black hidden sm:inline">Nhảy đến ngày:</span>
-            <input
-              type="date"
-              value={format(selectedDate, 'yyyy-MM-dd')}
-              onChange={(e) => {
-                if (e.target.value) {
-                  const parts = e.target.value.split('-');
-                  const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-                  setSelectedDate(d);
-                }
-              }}
-              className="px-2.5 py-1 text-xs font-black rounded-xl border-2 border-[#0F172A] bg-white text-[#0F172A] focus:bg-[#FFF1F2] outline-none shadow-[2px_2px_0px_#0F172A] cursor-pointer transition-colors"
-            />
-          </div>
-        </div>
-      )}
 
       {/* ========================================================================= */}
       {/* VIEW 1: WEEK GRID VIEW (TỐI ƯU 1-TIẾNG, GỌN GÀNG, KÉO THẢ DRAG & DROP)     */}

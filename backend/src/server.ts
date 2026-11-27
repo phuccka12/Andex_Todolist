@@ -12,6 +12,7 @@ import { uploadRouter } from './routes/upload.routes';
 import { telegramRouter } from './routes/telegram.routes';
 import { aiRouter } from './routes/ai.routes';
 import { vocabRouter } from './routes/vocab.routes';
+import { writingRouter } from './routes/writing.routes';
 import { emailService } from './services/email.service';
 
 const app = express();
@@ -32,6 +33,7 @@ app.use('/api/journals', journalRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/vocab', vocabRouter);
+app.use('/api/writing', writingRouter);
 
 app.get('/api/health', (req, res) => {
   res.json({

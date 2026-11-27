@@ -13,6 +13,7 @@ import {
   Menu,
   Settings,
   Languages,
+  PenTool,
 } from 'lucide-react';
 import { soundEngine } from '../lib/audio';
 import { UserProfileData } from '../lib/types';
@@ -273,6 +274,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <Languages className={`w-4 h-4 shrink-0 ${activeTab === 'vocab' ? themeStyles.iconActive : themeStyles.iconDefault}`} />
               {!isCollapsed && <span>Từ Vựng</span>}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('writing')}
+              style={activeTab === 'writing' ? themeStyles.btnActiveStyle : undefined}
+              className={`w-full flex items-center ${
+                isCollapsed ? 'justify-center p-2.5 rounded-xl' : 'justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-left'
+              } transition-all cursor-pointer ${
+                activeTab === 'writing' ? themeStyles.btnActive : themeStyles.btnDefault
+              }`}
+              title="Luyện & Chấm Điểm IELTS Writing AI"
+            >
+              <div className="flex items-center gap-2.5">
+                <PenTool className={`w-4 h-4 shrink-0 ${activeTab === 'writing' ? themeStyles.iconActive : themeStyles.iconDefault}`} />
+                {!isCollapsed && <span>Writing AI</span>}
+              </div>
+              {!isCollapsed && (
+                <span
+                  className={`text-[9px] font-black px-1.5 py-0.5 rounded-md border ${
+                    activeTab === 'writing'
+                      ? 'bg-[#FEF08A] text-[#0F172A] border-[#0F172A]'
+                      : themeStyles.badgeNew
+                  }`}
+                >
+                  IELTS
+                </span>
+              )}
             </button>
 
             <button

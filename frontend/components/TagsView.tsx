@@ -191,50 +191,54 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
 
       {/* 2. UNIFIED 4-METRIC STRIP */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="bg-[#FFF1F2] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Tổng Số Nhãn
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-[#E11D48]" />
+            <span>Tổng Số Nhãn</span>
           </div>
           <div className="text-2xl font-black text-[#0F172A] tracking-tight">
             {tags.length} nhãn
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             Đang hoạt động trong hệ thống
           </div>
         </div>
 
-        <div className="bg-[#DCFCE7] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Đã Phân Loại
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>Đã Phân Loại</span>
           </div>
           <div className="text-2xl font-black text-emerald-700 tracking-tight">
             {totalTagged} / {tasks.length}
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             Nhiệm vụ có nhãn nhận diện
           </div>
         </div>
 
-        <div className="bg-[#FEF9C3] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Nhiệm Vụ Cốt Lõi
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <span>Nhiệm Vụ Cốt Lõi</span>
           </div>
           <div className="text-2xl font-black text-[#E11D48] tracking-tight">
             {p1Count} việc
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             Mức ưu tiên P1 tối cao
           </div>
         </div>
 
-        <div className="bg-[#DBEAFE] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Phiên Deep Work
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-sky-500" />
+            <span>Phiên Deep Work</span>
           </div>
           <div className="text-2xl font-black text-[#1D4ED8] tracking-tight">
             {deepWorkCount} việc
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             Tập trung sâu chuyên môn
           </div>
         </div>

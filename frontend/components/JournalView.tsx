@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Plus,
   Calendar,
@@ -22,18 +21,107 @@ import {
   Tag,
   Heart,
   Compass,
+  Loader2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEngine } from '../lib/audio';
 import {
   JournalEntry,
-  fetchJournals,
+  getCachedJournalSummary,
+  fetchJournalSummaryPage,
+  fetchJournalById,
+  fetchJournalCoverUrl,
   createJournal,
   updateJournal,
   deleteJournal,
 } from '../lib/journalApi';
+import { compressImageDataUrl } from '../lib/imageUtils';
+import { uploadImageToCloud } from '../lib/uploadService';
 import { AuthUser } from '../lib/authService';
 import { notify } from '../lib/notificationService';
+
+const INITIAL_PAGE_SIZE = 18;
+const LOAD_MORE_PAGE_SIZE = 24;
+
+interface DeferredCoverImageProps {
+  entryId: string;
+  version?: string;
+  initialSrc?: string;
+  alt: string;
+  className?: string;
+  onResolved?: (entryId: string, url: string) => void;
+}
+
+const DeferredCoverImage: React.FC<DeferredCoverImageProps> = ({
+  entryId,
+  version,
+  initialSrc,
+  alt,
+  className = '',
+  onResolved,
+}) => {
+  const [src, setSrc] = useState<string | null>(initialSrc || null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const requestedRef = useRef(false);
+
+  useEffect(() => {
+    if (initialSrc) {
+      setSrc(initialSrc);
+    }
+  }, [initialSrc]);
+
+  useEffect(() => {
+    if (src || requestedRef.current || !entryId) return;
+    const node = containerRef.current;
+    if (!node) return;
+
+    const triggerLoad = async () => {
+      if (requestedRef.current) return;
+      requestedRef.current = true;
+      const url = await fetchJournalCoverUrl(entryId, version || '');
+      if (url) {
+        setSrc(url);
+        onResolved?.(entryId, url);
+      }
+    };
+
+    if (typeof IntersectionObserver === 'undefined') {
+      triggerLoad();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          observer.disconnect();
+          triggerLoad();
+        }
+      },
+      { rootMargin: '250px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [entryId, version, src, onResolved]);
+
+  return (
+    <div ref={containerRef} className="w-full h-full relative">
+      {src ? (
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          className={className}
+        />
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-[#FFF1F2] via-[#FFF8F1] to-[#FEF9C3] animate-pulse flex items-center justify-center">
+          <Camera className="w-5 h-5 text-[#E11D48]/40" />
+        </div>
+      )}
+    </div>
+  );
+};
 
 
 interface JournalViewProps {
@@ -42,13 +130,23 @@ interface JournalViewProps {
 }
 
 export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }) => {
-  const [journals, setJournals] = useState<JournalEntry[]>([]);
+  const userCacheKey = authUser?.id || (authUser ? 'authed_default' : 'guest');
+  const initialCache = getCachedJournalSummary(userCacheKey);
+
+  const [journals, setJournals] = useState<JournalEntry[]>(initialCache?.items || []);
+  const [totalCount, setTotalCount] = useState<number>(initialCache?.totalCount || 0);
+  const [hasMore, setHasMore] = useState<boolean>(initialCache?.hasMore || false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [deferredCovers, setDeferredCovers] = useState<Record<string, string>>({});
+
   const [activeView, setActiveView] = useState<'board' | 'editor'>('board');
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'with_photo'>('all');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialCache || initialCache.items.length === 0);
+  const [isHydratingPhotos, setIsHydratingPhotos] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
 
   // Snapshot / Scrapbook Selection Mode States
@@ -64,48 +162,149 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
   const [photos, setPhotos] = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const activeEditEntryIdRef = useRef<string | null>(null);
+  const pendingUploadsRef = useRef<Map<string, Promise<string>>>(new Map());
 
-  // Load Journals
-  const loadJournals = async () => {
-    try {
+  const handleCoverResolved = useCallback((entryId: string, url: string) => {
+    setDeferredCovers((prev) => (prev[entryId] === url ? prev : { ...prev, [entryId]: url }));
+  }, []);
+
+  // Load paginated light summary journals (instant cache hydration + background refresh)
+  const loadJournals = useCallback(async () => {
+    const cached = getCachedJournalSummary(userCacheKey);
+    if (cached && cached.items.length > 0) {
+      setJournals(cached.items);
+      setTotalCount(cached.totalCount);
+      setHasMore(cached.hasMore);
+      setIsLoading(false);
+    } else {
       setIsLoading(true);
-      const data = await fetchJournals();
-      setJournals(data);
+    }
+
+    try {
+      const page = await fetchJournalSummaryPage({
+        limit: INITIAL_PAGE_SIZE,
+        skip: 0,
+        userKey: userCacheKey,
+      });
+      setJournals(page.items);
+      setTotalCount(page.totalCount);
+      setHasMore(page.hasMore);
     } catch (err) {
       console.error(err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userCacheKey]);
+
+  const handleLoadMore = useCallback(async () => {
+    if (isLoadingMore || !hasMore) return;
+    try {
+      setIsLoadingMore(true);
+      const page = await fetchJournalSummaryPage({
+        limit: LOAD_MORE_PAGE_SIZE,
+        skip: journals.length,
+        userKey: userCacheKey,
+      });
+      setJournals((prev) => {
+        const seen = new Set(prev.map((p) => p.id));
+        const next = [...prev];
+        page.items.forEach((item) => {
+          if (!item.id || !seen.has(item.id)) next.push(item);
+        });
+        return next;
+      });
+      setTotalCount(page.totalCount);
+      setHasMore(page.hasMore);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoadingMore, hasMore, journals.length, userCacheKey]);
 
   useEffect(() => {
     loadJournals();
-  }, [authUser]);
+  }, [loadJournals]);
+
+  // If user searches or filters by photo while older entries haven't loaded yet, fetch the next batch
+  useEffect(() => {
+    if ((searchQuery.trim() || filterType === 'with_photo') && hasMore && !isLoadingMore) {
+      handleLoadMore();
+    }
+  }, [searchQuery, filterType, hasMore, isLoadingMore, handleLoadMore]);
 
   // Open editor for a new entry
   const handleOpenNewPaper = (prefillDate?: string) => {
+    activeEditEntryIdRef.current = null;
     setSelectedEntry(null);
     setDate(prefillDate || new Date().toISOString().split('T')[0]);
     setTitle('');
     setContent('');
     setPhotos([]);
+    setIsHydratingPhotos(false);
     setActiveView('editor');
     soundEngine.playPentatonicChime(3);
   };
 
-  // Open editor for an existing entry
-  const handleOpenExistingPaper = (entry: JournalEntry) => {
+  // Open editor for an existing entry (instant open + background full-photo hydration if needed)
+  const handleOpenExistingPaper = async (entry: JournalEntry) => {
     if (isSelectMode) {
       toggleSelectEntry(entry.id);
       return;
     }
+
+    const entryId = entry.id || null;
+    activeEditEntryIdRef.current = entryId;
     setSelectedEntry(entry);
     setDate(entry.date);
     setTitle(entry.title);
     setContent(entry.content);
-    setPhotos(entry.photos || []);
+
+    const initialPhotos =
+      entry.photos && entry.photos.length > 0
+        ? entry.photos
+        : entryId && deferredCovers[entryId]
+          ? [deferredCovers[entryId]]
+          : [];
+    setPhotos(initialPhotos);
     setActiveView('editor');
     soundEngine.playPentatonicChime(1);
+
+    const expectedPhotoCount = entry.photoCount ?? entry.photos?.length ?? 0;
+    const needsFullFetch =
+      Boolean(entryId) &&
+      !entryId!.startsWith('local-journal-') &&
+      (Boolean(entry.hasDeferredCover) || expectedPhotoCount > (entry.photos?.length ?? 0));
+
+    if (needsFullFetch && entryId) {
+      try {
+        setIsHydratingPhotos(true);
+        const fullEntry = await fetchJournalById(entryId);
+        if (fullEntry && activeEditEntryIdRef.current === entryId) {
+          setSelectedEntry(fullEntry);
+          setPhotos(fullEntry.photos || []);
+          setJournals((prev) =>
+            prev.map((j) =>
+              j.id === entryId
+                ? {
+                    ...j,
+                    ...fullEntry,
+                    photoCount: fullEntry.photos?.length || 0,
+                    hasDeferredCover: false,
+                  }
+                : j
+            )
+          );
+        }
+      } finally {
+        if (activeEditEntryIdRef.current === entryId) {
+          setIsHydratingPhotos(false);
+        }
+      }
+    } else {
+      setIsHydratingPhotos(false);
+    }
   };
 
   // Toggle selection for an entry
@@ -117,29 +316,41 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
     soundEngine.playPentatonicChime(4);
   };
 
-  // Select all or deselect all
-  const handleSelectAll = () => {
-    if (selectedIds.length === filteredJournals.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(filteredJournals.map((j) => j.id).filter(Boolean) as string[]);
-    }
-    soundEngine.playPentatonicChime(2);
-  };
-
-  // Photo Upload Handler
+  // Photo Upload Handler (compresses client-side + uploads to Cloudinary in background)
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     Array.from(files).forEach((file) => {
       const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        if (base64) {
-          setPhotos((prev) => [...prev, base64]);
-          soundEngine.playPentatonicChime(5);
-        }
+      reader.onload = async (event) => {
+        const rawBase64 = event.target?.result as string;
+        if (!rawBase64) return;
+
+        // Compress immediately (~5MB camera photo -> ~90KB crisp JPEG)
+        const compressed = await compressImageDataUrl(rawBase64, 1280, 1280, 0.82);
+        setPhotos((prev) => [...prev, compressed]);
+        soundEngine.playPentatonicChime(5);
+
+        // Background upload to Cloudinary (falls back cleanly to compressed JPEG if offline/unconfigured)
+        setIsUploadingPhotos(true);
+        const uploadPromise = uploadImageToCloud(compressed, 'genncore_journals')
+          .then((res) => {
+            const finalUrl = res.url || compressed;
+            if (finalUrl !== compressed) {
+              setPhotos((prev) => prev.map((p) => (p === compressed ? finalUrl : p)));
+            }
+            return finalUrl;
+          })
+          .catch(() => compressed)
+          .finally(() => {
+            pendingUploadsRef.current.delete(compressed);
+            if (pendingUploadsRef.current.size === 0) {
+              setIsUploadingPhotos(false);
+            }
+          });
+
+        pendingUploadsRef.current.set(compressed, uploadPromise);
       };
       reader.readAsDataURL(file);
     });
@@ -148,6 +359,8 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
   };
 
   const handleRemovePhoto = (index: number) => {
+    const target = photos[index];
+    if (target) pendingUploadsRef.current.delete(target);
     setPhotos(photos.filter((_, i) => i !== index));
   };
 
@@ -155,11 +368,24 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
   const handleSaveJournal = async () => {
     try {
       setIsSaving(true);
+
+      // Resolve any in-flight Cloudinary uploads before saving so DB never stores raw base64 unnecessarily
+      let resolvedPhotos = [...photos];
+      if (pendingUploadsRef.current.size > 0) {
+        const entries = Array.from(pendingUploadsRef.current.entries());
+        const results = await Promise.all(
+          entries.map(async ([tempKey, promise]) => [tempKey, await promise] as const)
+        );
+        const replacements = new Map(results);
+        resolvedPhotos = resolvedPhotos.map((p) => replacements.get(p) || p);
+        setPhotos(resolvedPhotos);
+      }
+
       const payload: Partial<JournalEntry> = {
         date,
         title: title.trim() || `Ký ức ngày ${new Date(date).toLocaleDateString('vi-VN')}`,
         content,
-        photos,
+        photos: resolvedPhotos,
         mood: 'peaceful',
       };
 
@@ -169,6 +395,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
       } else {
         const created = await createJournal(payload);
         setJournals((prev) => [created, ...prev]);
+        setTotalCount((c) => c + 1);
       }
 
       try {
@@ -202,6 +429,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
     try {
       await deleteJournal(selectedEntry.id);
       setJournals((prev) => prev.filter((j) => j.id !== selectedEntry.id));
+      setTotalCount((c) => Math.max(0, c - 1));
       setActiveView('board');
       soundEngine.playPentatonicChime(2);
       await notify.success('Đã gỡ trang nhật ký thành công.');
@@ -211,55 +439,75 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
     }
   };
 
-  // Filter journals
-  const filteredJournals = journals.filter((entry) => {
-    if (filterType === 'with_photo' && (!entry.photos || entry.photos.length === 0)) {
-      return false;
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchTitle = entry.title?.toLowerCase().includes(q);
-      const matchContent = entry.content?.toLowerCase().includes(q);
-      const matchDate = entry.date?.includes(q);
-      return matchTitle || matchContent || matchDate;
-    }
-    return true;
-  });
+  // Memoized filtering & monthly grouping
+  const filteredJournals = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return journals.filter((entry) => {
+      const photoCount = entry.photoCount ?? entry.photos?.length ?? 0;
+      if (filterType === 'with_photo' && photoCount === 0) {
+        return false;
+      }
+      if (q) {
+        const matchTitle = entry.title?.toLowerCase().includes(q);
+        const matchContent = entry.content?.toLowerCase().includes(q);
+        const matchDate = entry.date?.includes(q);
+        return matchTitle || matchContent || matchDate;
+      }
+      return true;
+    });
+  }, [journals, filterType, searchQuery]);
 
-  // Group filtered journals by month & year
-  const groupedMonths = filteredJournals.reduce((acc, entry) => {
-    const d = new Date(entry.date);
-    const month = d.getMonth() + 1;
-    const year = d.getFullYear();
-    const key = `Tháng ${String(month).padStart(2, '0')}, ${year}`;
-    if (!acc[key]) {
-      acc[key] = {
-        key,
-        month,
-        year,
-        entries: [],
-      };
+  // Select all or deselect all
+  const handleSelectAll = () => {
+    if (selectedIds.length === filteredJournals.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredJournals.map((j) => j.id).filter(Boolean) as string[]);
     }
-    acc[key].entries.push(entry);
-    return acc;
-  }, {} as Record<string, { key: string; month: number; year: number; entries: JournalEntry[] }>);
+    soundEngine.playPentatonicChime(2);
+  };
 
-  // Sort month groups descending
-  const monthGroupsList = Object.values(groupedMonths).sort((a, b) => {
-    if (a.year !== b.year) return b.year - a.year;
-    return b.month - a.month;
-  });
+  const monthGroupsList = useMemo(() => {
+    const grouped = filteredJournals.reduce((acc, entry) => {
+      const d = new Date(entry.date);
+      const month = d.getMonth() + 1;
+      const year = d.getFullYear();
+      const key = `Tháng ${String(month).padStart(2, '0')}, ${year}`;
+      if (!acc[key]) {
+        acc[key] = { key, month, year, entries: [] };
+      }
+      acc[key].entries.push(entry);
+      return acc;
+    }, {} as Record<string, { key: string; month: number; year: number; entries: JournalEntry[] }>);
 
-  // Sort entries descending by date
-  monthGroupsList.forEach((group) => {
-    group.entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  });
+    const list = Object.values(grouped).sort((a, b) => {
+      if (a.year !== b.year) return b.year - a.year;
+      return b.month - a.month;
+    });
+
+    list.forEach((group) => {
+      group.entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
+
+    return list;
+  }, [filteredJournals]);
 
   const now = new Date();
   const currentMonthKey = `Tháng ${String(now.getMonth() + 1).padStart(2, '0')}, ${now.getFullYear()}`;
 
-  // Selected entries for the scrapbook modal
-  const selectedEntries = journals.filter((j) => j.id && selectedIds.includes(j.id));
+  // Selected entries for the scrapbook modal (resolved with any cached lazy cover URLs)
+  const selectedEntries = useMemo(
+    () =>
+      journals
+        .filter((j) => j.id && selectedIds.includes(j.id))
+        .map((j) => {
+          if ((!j.photos || j.photos.length === 0) && j.id && deferredCovers[j.id]) {
+            return { ...j, photos: [deferredCovers[j.id]] };
+          }
+          return j;
+        }),
+    [journals, selectedIds, deferredCovers]
+  );
 
   // =========================================================================
   // HIGH-RESOLUTION CANVAS RENDERER: EXPORT DEEP VINTAGE SCRAPBOOK PAPER COLLAGE
@@ -429,9 +677,14 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
         const dateObj = new Date(entry.date);
         const dayStr = dateObj.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-        if (entry.photos && entry.photos.length > 0) {
+        let coverSrc = entry.photos && entry.photos.length > 0 ? entry.photos[0] : undefined;
+        if (!coverSrc && entry.hasDeferredCover && entry.id) {
+          coverSrc = (await fetchJournalCoverUrl(entry.id, entry.updatedAt || '')) || undefined;
+        }
+
+        if (coverSrc) {
           try {
-            const img = await loadImage(entry.photos[0]);
+            const img = await loadImage(coverSrc);
             const imgAreaX = x + 12;
             const imgAreaY = y + 16;
             const imgAreaW = cardWidth - 24;
@@ -563,41 +816,33 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
 
   return (
     <div className="min-h-full flex flex-col p-4 sm:p-6 lg:p-7 select-none bg-[#FFF8F1] text-[#0F172A] rounded-3xl">
-      <AnimatePresence mode="wait">
-        {/* ========================================================================= */}
-        {/* VIEW 1: MONTHLY MEMORY BOARDS (BẢNG KÝ ỨC TỪNG THÁNG XẾP HÀNG NGANG)      */}
-        {/* ========================================================================= */}
-        {activeView === 'board' && (
-          <motion.div
-            key="board-view"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.99 }}
-            transition={{ duration: 0.22 }}
-            className="flex-1 flex flex-col space-y-7"
-          >
-            {/* Top Bar with Genncore Cartoon + Warm Cream Paper Aesthetic */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b-2 border-[#0F172A]">
-              <div className="flex items-center gap-3.5">
-                {/* Genncore Crimson Red Cartoon Icon Box */}
-                <div className="w-11 h-11 rounded-2xl bg-[#E11D48] text-white flex items-center justify-center border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] relative shrink-0">
-                  <Feather className="w-5 h-5 text-white" />
-                  <span className="absolute -bottom-1.5 -right-1.5 text-[8px] font-black bg-[#FEF08A] text-[#0F172A] px-1.5 py-0.2 rounded-full border-2 border-[#0F172A]">
-                    CBP
-                  </span>
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-[#0F172A] tracking-tight flex items-center gap-2.5 flex-wrap">
-                    Bảng Ký Ức Theo Tháng
-                    <span className="text-[11px] font-sans font-black px-2.5 py-0.5 rounded-full bg-[#FFE4E6] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]">
-                      {journals.length} trang kỷ niệm
-                    </span>
-                  </h2>
-                  <p className="text-xs text-slate-600 mt-0.5 font-medium">
-                    Mỗi tháng là một bảng kỷ niệm — nơi thời gian dừng lại cùng những khoảnh khắc và tấm ảnh thân thương.
-                  </p>
-                </div>
+      {/* ========================================================================= */}
+      {/* VIEW 1: MONTHLY MEMORY BOARDS (BẢNG KÝ ỨC TỪNG THÁNG XẾP HÀNG NGANG)      */}
+      {/* ========================================================================= */}
+      {activeView === 'board' && (
+        <div className="flex-1 flex flex-col space-y-7">
+          {/* Top Bar with Genncore Cartoon + Warm Cream Paper Aesthetic */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b-2 border-[#0F172A]">
+            <div className="flex items-center gap-3.5">
+              {/* Genncore Crimson Red Cartoon Icon Box */}
+              <div className="w-11 h-11 rounded-2xl bg-[#E11D48] text-white flex items-center justify-center border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] relative shrink-0">
+                <Feather className="w-5 h-5 text-white" />
+                <span className="absolute -bottom-1.5 -right-1.5 text-[8px] font-black bg-[#FEF08A] text-[#0F172A] px-1.5 py-0.2 rounded-full border-2 border-[#0F172A]">
+                  CBP
+                </span>
               </div>
+              <div>
+                <h2 className="text-xl font-black text-[#0F172A] tracking-tight flex items-center gap-2.5 flex-wrap">
+                  Bảng Ký Ức Theo Tháng
+                  <span className="text-[11px] font-sans font-black px-2.5 py-0.5 rounded-full bg-[#FFE4E6] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]">
+                    {totalCount || journals.length} trang kỷ niệm
+                  </span>
+                </h2>
+                <p className="text-xs text-slate-600 mt-0.5 font-medium">
+                  Mỗi tháng là một bảng kỷ niệm — nơi thời gian dừng lại cùng những khoảnh khắc và tấm ảnh thân thương.
+                </p>
+              </div>
+            </div>
 
               {/* Controls Toolbar */}
               <div className="flex flex-wrap items-center gap-2.5">
@@ -674,11 +919,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
 
             {/* SELECTION MODE ACTION BANNER */}
             {isSelectMode && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-[#FFF1F2] border-2 border-[#0F172A] rounded-2xl p-3.5 px-5 flex flex-wrap items-center justify-between gap-3 shadow-[3px_3px_0px_#0F172A]"
-              >
+              <div className="bg-[#FFF1F2] border-2 border-[#0F172A] rounded-2xl p-3.5 px-5 flex flex-wrap items-center justify-between gap-3 shadow-[3px_3px_0px_#0F172A]">
                 <div className="flex items-center gap-3">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#E11D48] border border-[#0F172A] animate-pulse" />
                   <span className="text-xs font-black text-[#0F172A]">
@@ -713,15 +954,29 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                     <span>Xuất Ảnh Scrapbook ({selectedIds.length})</span>
                   </button>
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {/* MAIN CONTENT: SCROLLABLE MONTHLY BOARDS */}
             <div className="space-y-9 pb-12">
               {isLoading ? (
-                <div className="py-24 text-center text-xs text-[#0F172A] font-bold flex items-center justify-center gap-2">
-                  <Feather className="w-4 h-4 animate-spin text-[#E11D48]" />
-                  <span>Đang lật mở các trang ký ức...</span>
+                <div className="bg-[#FFFDF7] border-2 border-[#0F172A] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-[4px_4px_0px_#0F172A] space-y-5">
+                  <div className="flex items-center justify-between pb-3.5 border-b-2 border-[#0F172A]/10">
+                    <div className="h-8 w-48 rounded-xl bg-[#FFF1F2] border border-[#0F172A]/15 animate-pulse" />
+                    <div className="h-8 w-36 rounded-xl bg-[#FEF9C3] border border-[#0F172A]/15 animate-pulse" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {[0, 1, 2, 3].map((idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white rounded-2xl p-3 pb-4 border-2 border-[#0F172A]/20 shadow-[3px_3px_0px_rgba(15,23,42,0.12)] space-y-3"
+                      >
+                        <div className="w-full h-38 sm:h-40 rounded-xl bg-[#FFF8F1] animate-pulse" />
+                        <div className="h-3.5 w-3/4 mx-auto rounded-full bg-slate-200 animate-pulse" />
+                        <div className="h-2.5 w-1/2 mx-auto rounded-full bg-slate-100 animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : monthGroupsList.length === 0 ? (
                 /* EMPTY STATE: DISPLAY A WARM PLACEHOLDER BOARD FOR CURRENT MONTH */
@@ -745,7 +1000,10 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                 </div>
               ) : (
                 monthGroupsList.map((group) => {
-                  const photoCount = group.entries.reduce((acc, e) => acc + (e.photos?.length || 0), 0);
+                  const photoCount = group.entries.reduce(
+                    (acc, e) => acc + (e.photoCount ?? e.photos?.length ?? 0),
+                    0
+                  );
 
                   return (
                     <div
@@ -805,7 +1063,9 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                           const day = dateObj.toLocaleDateString('vi-VN', { day: '2-digit' });
                           const monthStr = dateObj.toLocaleDateString('vi-VN', { month: '2-digit' });
                           const yearStr = dateObj.getFullYear();
-                          const hasPhoto = entry.photos && entry.photos.length > 0;
+                          const entryPhotoCount = entry.photoCount ?? entry.photos?.length ?? 0;
+                          const hasPhoto = entryPhotoCount > 0;
+                          const inlineCover = entry.photos?.[0] || (entry.id ? deferredCovers[entry.id] : undefined);
                           const isSelected = entry.id ? selectedIds.includes(entry.id) : false;
 
                           // Subtle natural tilt for cartoon polaroid charm
@@ -813,17 +1073,11 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                           const tilt = isSelected ? 0 : tilts[idx % tilts.length];
 
                           return (
-                            <motion.div
+                            <div
                               key={entry.id || idx}
-                              whileHover={{
-                                y: -4,
-                                rotate: 0,
-                                scale: 1.02,
-                                transition: { duration: 0.2 },
-                              }}
-                              style={{ rotate: `${tilt}deg` }}
+                              style={{ transform: `rotate(${tilt}deg)` }}
                               onClick={() => handleOpenExistingPaper(entry)}
-                              className={`relative bg-white rounded-2xl p-3 pb-3.5 border-2 border-[#0F172A] transition-all cursor-pointer group flex flex-col justify-between ${
+                              className={`relative bg-white rounded-2xl p-3 pb-3.5 border-2 border-[#0F172A] transition-all duration-150 hover:-translate-y-1 hover:scale-[1.02] hover:!rotate-0 cursor-pointer group flex flex-col justify-between ${
                                 isSelected
                                   ? 'bg-[#FFF1F2] ring-2 ring-[#E11D48] shadow-[4px_4px_0px_#E11D48]'
                                   : 'shadow-[4px_4px_0px_#0F172A] hover:shadow-[5px_5px_0px_#0F172A]'
@@ -858,13 +1112,25 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                                 {/* Photo or Note area */}
                                 {hasPhoto ? (
                                   <div className="w-full h-38 sm:h-40 rounded-xl overflow-hidden bg-[#FFF8F1] border-2 border-[#0F172A] mb-2.5 relative">
-                                    <img
-                                      src={entry.photos[0]}
-                                      alt="Memory photo"
-                                      className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-300"
-                                    />
+                                    {inlineCover ? (
+                                      <img
+                                        src={inlineCover}
+                                        alt="Memory photo"
+                                        loading="lazy"
+                                        decoding="async"
+                                        className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-300"
+                                      />
+                                    ) : entry.id ? (
+                                      <DeferredCoverImage
+                                        entryId={entry.id}
+                                        version={entry.updatedAt}
+                                        alt="Memory photo"
+                                        className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-300"
+                                        onResolved={handleCoverResolved}
+                                      />
+                                    ) : null}
                                     <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-md bg-[#0F172A] text-white text-[9px] font-mono font-black">
-                                      {entry.photos.length} ảnh
+                                      {entryPhotoCount} ảnh
                                     </div>
                                   </div>
                                 ) : (
@@ -910,7 +1176,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                                 </span>
                                 <Sparkles className="w-3 h-3 text-[#E11D48]" />
                               </div>
-                            </motion.div>
+                            </div>
                           );
                         })}
                       </div>
@@ -918,22 +1184,39 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                   );
                 })
               )}
-            </div>
-          </motion.div>
-        )}
 
-        {/* ========================================================================= */}
-        {/* VIEW 2: THE SPACIOUS CARTOON CREAM WRITING DESK (TRANG GIẤY VIẾT NHẬT KÝ) */}
-        {/* ========================================================================= */}
-        {activeView === 'editor' && (
-          <motion.div
-            key="editor-view"
-            initial={{ opacity: 0, scale: 0.98, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.22 }}
-            className="flex-1 flex flex-col h-full max-w-3xl mx-auto w-full"
-          >
+              {!isLoading && hasMore && !searchQuery.trim() && (
+                <div className="flex justify-center pt-2">
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={isLoadingMore}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-xs font-black text-[#0F172A] transition-all cursor-pointer disabled:opacity-60"
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-[#E11D48]" />
+                        <span>Đang tải thêm ký ức cũ...</span>
+                      </>
+                    ) : (
+                      <>
+                        <BookOpen className="w-4 h-4 text-[#E11D48]" />
+                        <span>
+                          Tải thêm ký ức cũ ({Math.max(1, totalCount - journals.length)} trang nữa)
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* VIEW 2: THE SPACIOUS CARTOON CREAM WRITING DESK (TRANG GIẤY VIẾT NHẬT KÝ) */}
+      {/* ========================================================================= */}
+      {activeView === 'editor' && (
+        <div className="flex-1 flex flex-col h-full max-w-3xl mx-auto w-full">
             {/* Action Top Bar */}
             <div className="flex items-center justify-between pb-4 shrink-0">
               <button
@@ -1015,8 +1298,8 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
               </div>
 
               {/* Attached Photos Strip (Polaroid Preview) */}
-              {photos.length > 0 && (
-                <div className="flex flex-wrap gap-3 py-3 shrink-0">
+              {(photos.length > 0 || isHydratingPhotos || isUploadingPhotos) && (
+                <div className="flex flex-wrap items-center gap-3 py-3 shrink-0">
                   {photos.map((photo, idx) => (
                     <div
                       key={idx}
@@ -1026,6 +1309,8 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                         <img
                           src={photo}
                           alt="Attached memory"
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover cursor-pointer"
                           onClick={() => setPreviewPhoto(photo)}
                         />
@@ -1039,6 +1324,12 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                       </button>
                     </div>
                   ))}
+                  {(isHydratingPhotos || isUploadingPhotos) && (
+                    <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#FFF1F2] border border-[#E11D48]/30 text-[11px] font-bold text-[#E11D48]">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>{isHydratingPhotos ? 'Đang tải thêm ảnh...' : 'Đang nén & tối ưu ảnh...'}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1061,9 +1352,8 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                 />
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* CARTOON CREAM PAPER SCRAPBOOK PHOTO COLLAGE MODAL                         */}
@@ -1142,7 +1432,9 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                     const day = dateObj.toLocaleDateString('vi-VN', { day: '2-digit' });
                     const monthStr = dateObj.toLocaleDateString('vi-VN', { month: '2-digit' });
                     const yearStr = dateObj.getFullYear();
-                    const hasPhoto = entry.photos && entry.photos.length > 0;
+                    const entryPhotoCount = entry.photoCount ?? entry.photos?.length ?? 0;
+                    const hasPhoto = entryPhotoCount > 0;
+                    const scrapbookCover = entry.photos?.[0] || (entry.id ? deferredCovers[entry.id] : undefined);
 
                     const tilts = [-1.5, 1.2, -1, 1.6, -1.8, 1];
                     const tilt = tilts[idx % tilts.length];
@@ -1167,11 +1459,23 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
 
                         {hasPhoto ? (
                           <div className="w-full h-48 rounded-xl overflow-hidden bg-[#FFF8F1] border-2 border-[#0F172A] mb-3">
-                            <img
-                              src={entry.photos[0]}
-                              alt="Scrapbook Memory"
-                              className="w-full h-full object-cover"
-                            />
+                            {scrapbookCover ? (
+                              <img
+                                src={scrapbookCover}
+                                alt="Scrapbook Memory"
+                                loading="lazy"
+                                decoding="async"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : entry.id ? (
+                              <DeferredCoverImage
+                                entryId={entry.id}
+                                version={entry.updatedAt}
+                                alt="Scrapbook Memory"
+                                className="w-full h-full object-cover"
+                                onResolved={handleCoverResolved}
+                              />
+                            ) : null}
                           </div>
                         ) : (
                           <div

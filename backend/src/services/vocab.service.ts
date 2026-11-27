@@ -1450,14 +1450,38 @@ Return ONLY a valid JSON array of objects with exact keys:
    * Friendly IELTS 8.0+ English Tutor Mini-Chatbot supporting Q&A, grammar, idioms, and roleplay.
    */
   public async englishTutorChat(input: {
-    message: string;
+    message?: string;
+    imageBase64?: string;
+    mimeType?: string;
     history?: Array<{ role: 'user' | 'assistant'; text: string }>;
     activeWord?: { word: string; meaning?: string; partOfSpeech?: string } | null;
     customApiKey?: string;
   }) {
-    const message = input.message.trim();
-    if (!message) {
-      throw new Error('Hãy nhập câu hỏi hoặc câu tiếng Anh bạn muốn luyện tập.');
+    const rawMessage = (input.message || '').trim();
+    const hasImage = Boolean(input.imageBase64 && input.imageBase64.trim());
+    if (!rawMessage && !hasImage) {
+      throw new Error('Hãy nhập câu hỏi, câu tiếng Anh hoặc dán hình ảnh bạn muốn hỏi.');
+    }
+
+    const message =
+      rawMessage ||
+      'Hãy đọc nội dung tiếng Anh trong hình ảnh này, giải thích đáp án/ngữ pháp/từ vựng chi tiết giúp mình.';
+
+    let resolvedImagePart: { inlineData: { mimeType: string; data: string } } | null = null;
+    if (hasImage && input.imageBase64) {
+      const trimmedImg = input.imageBase64.trim();
+      const match = trimmedImg.match(/^data:([^;]+);base64,([\s\S]+)$/);
+      const resolvedMime = match ? match[1].trim() : input.mimeType || 'image/jpeg';
+      const rawBase64 = (match ? match[2] : trimmedImg).replace(/\s+/g, '');
+      if (!rawBase64 || rawBase64.length < 16) {
+        throw new Error('Dữ liệu hình ảnh không hợp lệ.');
+      }
+      resolvedImagePart = {
+        inlineData: {
+          mimeType: resolvedMime,
+          data: rawBase64,
+        },
+      };
     }
 
     const recentHistory = Array.isArray(input.history) ? input.history.slice(-6) : [];
@@ -1477,6 +1501,9 @@ Return ONLY a valid JSON array of objects with exact keys:
       `- KHÔNG lặp lại câu chào sáo rỗng ("Chào cậu nha!"...) ở mọi lượt. Hãy trả lời thẳng vào trọng tâm câu hỏi một cách tự nhiên, linh hoạt như người thật đang kèm 1-1.`,
       `- Nếu học viên hỏi bằng TIẾNG VIỆT (hỏi ngữ pháp, bí quyết học, phân biệt từ, Idioms, Phrasal Verbs): đặt "primaryMode": "vi_explain", giải thích mạch lạc bằng tiếng Việt trong "explanationVi", chỉ điền "replyEn" khi thực sự có 1 câu ví dụ tiếng Anh cụ thể cần luyện nghe (nếu không cần thì để "replyEn": "").`,
       `- Nếu học viên nhắn bằng TIẾNG ANH để luyện chat / roleplay: đặt "primaryMode": "en_chat", trả lời tự nhiên bằng tiếng Anh Band 8.0 ở "replyEn", và góp ý/nâng cấp câu ngắn gọn bằng tiếng Việt ở "explanationVi" (hoặc để ngắn gọn khích lệ).`,
+      resolvedImagePart
+        ? `- Học viên CÓ ĐÍNH KÈM HÌNH ẢNH (bài tập trắc nghiệm, đoạn văn, ảnh sách, câu hỏi tiếng Anh...). Hãy đọc chính xác nội dung trong ảnh, phân tích/chữa bài hoặc giải thích từ vựng/ngữ pháp chi tiết từng bước bằng tiếng Việt, chỉ ra đáp án đúng & vì sao các phương án khác sai (nếu là bài tập).`
+        : '',
       `- Dùng **...** để làm nổi bật các từ khóa/công thức quan trọng, và đánh số 1. 2. 3. gọn gàng khi liệt kê nhiều ý.`,
       activeContext,
       historyBlock ? `Lịch sử trò chuyện gần đây:\n${historyBlock}` : '',
@@ -1493,16 +1520,22 @@ Return ONLY a valid JSON array of objects with exact keys:
       .filter(Boolean)
       .join('\n');
 
+    const parts: any[] = [{ text: prompt }];
+    if (resolvedImagePart) {
+      parts.push(resolvedImagePart);
+    }
+
     const data = await this.callGemini(
       {
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        contents: [{ role: 'user', parts }],
         generationConfig: {
-          temperature: 0.65,
-          maxOutputTokens: 900,
+          temperature: resolvedImagePart ? 0.45 : 0.65,
+          maxOutputTokens: resolvedImagePart ? 1200 : 900,
           responseMimeType: 'application/json',
         },
       },
-      input.customApiKey
+      input.customApiKey,
+      resolvedImagePart ? 20000 : 14000
     );
 
     const rawText = this.extractTextFromGemini(data);
@@ -1520,6 +1553,7 @@ Return ONLY a valid JSON array of objects with exact keys:
         replyEn: '',
         explanationVi: rawText.trim() || 'Mình đây! Bạn muốn hỏi ngữ pháp, từ vựng hay luyện nói tiếng Anh cùng mình nào?',
         bonusVocab: null,
+        visionUsed: Boolean(resolvedImagePart),
       };
     }
 
@@ -1532,6 +1566,7 @@ Return ONLY a valid JSON array of objects with exact keys:
         replyEn: '',
         explanationVi: cleaned.replace(/[{}"]/g, '').trim() || 'Mình đây! Bạn muốn hỏi gì về tiếng Anh nào?',
         bonusVocab: null,
+        visionUsed: Boolean(resolvedImagePart),
       };
     }
 
@@ -1539,6 +1574,7 @@ Return ONLY a valid JSON array of objects with exact keys:
       primaryMode: parsed.primaryMode === 'en_chat' ? ('en_chat' as const) : ('vi_explain' as const),
       replyEn: String(parsed.replyEn || '').trim(),
       explanationVi: String(parsed.explanationVi || '').trim(),
+      visionUsed: Boolean(resolvedImagePart),
       bonusVocab:
         parsed.bonusVocab && parsed.bonusVocab.word && parsed.bonusVocab.meaning
           ? {

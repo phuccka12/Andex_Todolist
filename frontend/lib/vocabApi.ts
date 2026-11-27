@@ -63,6 +63,7 @@ export interface TutorChatMessage {
   id: string;
   role: 'user' | 'assistant';
   text: string;
+  imageUrl?: string;
   primaryMode?: 'en_chat' | 'vi_explain';
   replyEn?: string;
   explanationVi?: string;
@@ -78,6 +79,7 @@ export interface TutorChatResponse {
   primaryMode?: 'en_chat' | 'vi_explain';
   replyEn: string;
   explanationVi: string;
+  visionUsed?: boolean;
   bonusVocab: {
     word: string;
     phonetic?: string;
@@ -86,7 +88,13 @@ export interface TutorChatResponse {
   } | null;
 }
 
-const VOCAB_CACHE_KEY = 'gencoore_cached_vocab_v1';
+const LEGACY_VOCAB_CACHE_KEY = 'gencoore_cached_vocab_v1';
+const VOCAB_CACHE_PREFIX = 'gencoore_cached_vocab_v2_';
+const VOCAB_DECK_POS_PREFIX = 'gencoore_vocab_deck_pos_v1_';
+
+const vocabMemoryCache = new Map<string, VocabItem[]>();
+const vocabInFlightFetch = new Map<string, Promise<VocabItem[]>>();
+const deckPosMemoryCache = new Map<string, Record<string, number>>();
 
 const TOPIC_KEYWORD_RULES: Array<{ topic: string; keywords: string[] }> = [
   {
@@ -190,44 +198,149 @@ export function classifyTopicByKeywords(
   return bestTopic;
 }
 
-function readCachedVocab(): VocabItem[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(VOCAB_CACHE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+function resolveVocabUserKey(explicitUserId?: string): string {
+  if (explicitUserId) return explicitUserId;
+  if (typeof window === 'undefined') return 'guest';
+  const token = authService.getToken();
+  if (!token) return 'guest';
+  const cachedUser = authService.getCachedUser();
+  return cachedUser?.id || 'authed_default';
 }
 
-function writeCachedVocab(list: VocabItem[]) {
+function readCachedVocab(userId?: string): VocabItem[] {
+  const userKey = resolveVocabUserKey(userId);
+  const mem = vocabMemoryCache.get(userKey);
+  if (mem) return mem;
+
+  if (typeof window === 'undefined') return [];
+  try {
+    const scopedRaw = localStorage.getItem(`${VOCAB_CACHE_PREFIX}${userKey}`);
+    if (scopedRaw) {
+      const parsed = JSON.parse(scopedRaw);
+      if (Array.isArray(parsed)) {
+        vocabMemoryCache.set(userKey, parsed);
+        return parsed;
+      }
+    }
+    // Migrate legacy cache only for guest mode so signed-in user IDs never cross-contaminate
+    if (userKey === 'guest') {
+      const legacyRaw = localStorage.getItem(LEGACY_VOCAB_CACHE_KEY);
+      const parsed = legacyRaw ? JSON.parse(legacyRaw) : [];
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        vocabMemoryCache.set(userKey, parsed);
+        return parsed;
+      }
+    }
+  } catch {}
+  return [];
+}
+
+function writeCachedVocab(list: VocabItem[], userId?: string) {
+  const userKey = resolveVocabUserKey(userId);
+  vocabMemoryCache.set(userKey, list);
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(VOCAB_CACHE_KEY, JSON.stringify(list));
+    localStorage.setItem(`${VOCAB_CACHE_PREFIX}${userKey}`, JSON.stringify(list));
   } catch {}
 }
 
-export async function fetchVocab(): Promise<VocabItem[]> {
-  if (!authService.getToken()) {
-    return readCachedVocab();
+export function getCachedVocab(userId?: string): VocabItem[] {
+  return readCachedVocab(userId);
+}
+
+export function getVocabDeckPosition(topic: string, userId?: string): number {
+  const userKey = resolveVocabUserKey(userId);
+  let map = deckPosMemoryCache.get(userKey);
+  if (!map && typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(`${VOCAB_DECK_POS_PREFIX}${userKey}`);
+      const parsed = raw ? JSON.parse(raw) : {};
+      if (parsed && typeof parsed === 'object') {
+        map = parsed;
+        deckPosMemoryCache.set(userKey, parsed);
+      }
+    } catch {}
+  }
+  const val = map?.[topic];
+  return typeof val === 'number' && val >= 0 ? val : 0;
+}
+
+export function saveVocabDeckPosition(topic: string, index: number, userId?: string): void {
+  if (!topic) return;
+  const userKey = resolveVocabUserKey(userId);
+  const current = deckPosMemoryCache.get(userKey) || {};
+  const next = { ...current, [topic]: Math.max(0, Math.floor(index)) };
+  deckPosMemoryCache.set(userKey, next);
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(`${VOCAB_DECK_POS_PREFIX}${userKey}`, JSON.stringify(next));
+  } catch {}
+}
+
+export function computeOptimisticReview(target: VocabItem, rating: ReviewRating): VocabItem {
+  const now = new Date();
+  const intervals = [1, 3, 7, 14, 30, 60];
+  let nextLevel = target.srsLevel || 0;
+  const nextDate = new Date(now);
+
+  if (rating === 'again') {
+    nextLevel = 0;
+    nextDate.setMinutes(nextDate.getMinutes() + 5);
+  } else if (rating === 'hard') {
+    nextLevel = Math.max(1, nextLevel);
+    nextDate.setDate(nextDate.getDate() + 1);
+  } else if (rating === 'good') {
+    nextLevel = Math.min(5, nextLevel + 1);
+    nextDate.setDate(nextDate.getDate() + (intervals[Math.max(0, nextLevel - 1)] || 1));
+  } else {
+    nextLevel = Math.min(5, nextLevel + 2);
+    nextDate.setDate(nextDate.getDate() + (intervals[Math.max(0, nextLevel - 1)] || 3));
   }
 
-  try {
-    const res = await fetch(`${API_BASE}/vocab`, {
-      cache: 'no-store',
-      headers: { ...authService.getAuthHeaders() },
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (Array.isArray(data)) {
-      writeCachedVocab(data);
-      return data;
-    }
-    return [];
-  } catch {
-    return readCachedVocab();
+  return {
+    ...target,
+    srsLevel: nextLevel,
+    nextReviewAt: nextDate.toISOString(),
+    lastReviewedAt: now.toISOString(),
+    reviewCount: (target.reviewCount || 0) + 1,
+    correctCount:
+      rating === 'good' || rating === 'easy'
+        ? (target.correctCount || 0) + 1
+        : target.correctCount || 0,
+  };
+}
+
+export async function fetchVocab(userId?: string): Promise<VocabItem[]> {
+  const userKey = resolveVocabUserKey(userId);
+  if (!authService.getToken()) {
+    return readCachedVocab(userKey);
   }
+
+  const existing = vocabInFlightFetch.get(userKey);
+  if (existing) return existing;
+
+  const request = (async () => {
+    try {
+      const res = await fetch(`${API_BASE}/vocab`, {
+        cache: 'no-store',
+        headers: { ...authService.getAuthHeaders() },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        writeCachedVocab(data, userKey);
+        return data;
+      }
+      return readCachedVocab(userKey);
+    } catch {
+      return readCachedVocab(userKey);
+    } finally {
+      vocabInFlightFetch.delete(userKey);
+    }
+  })();
+
+  vocabInFlightFetch.set(userKey, request);
+  return request;
 }
 
 export async function createVocab(payload: Partial<VocabItem>): Promise<VocabItem> {
@@ -487,18 +600,24 @@ export async function lookupDictionary(payload: {
 }
 
 export async function sendEnglishTutorMessage(payload: {
-  message: string;
+  message?: string;
+  imageBase64?: string;
+  mimeType?: string;
   history?: Array<{ role: 'user' | 'assistant'; text: string }>;
   activeWord?: { word: string; meaning?: string; partOfSpeech?: string } | null;
 }): Promise<TutorChatResponse> {
-  const res = await fetchWithTimeout(`${API_BASE}/vocab/tutor-chat`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...authService.getAuthHeaders(),
+  const res = await fetchWithTimeout(
+    `${API_BASE}/vocab/tutor-chat`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...authService.getAuthHeaders(),
+      },
+      body: JSON.stringify(payload),
     },
-    body: JSON.stringify(payload),
-  }, 28000);
+    payload.imageBase64 ? 36000 : 28000
+  );
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.success) {
     if (res.status === 404) {
@@ -510,44 +629,26 @@ export async function sendEnglishTutorMessage(payload: {
     primaryMode: data.primaryMode === 'en_chat' ? 'en_chat' : 'vi_explain',
     replyEn: data.replyEn || '',
     explanationVi: data.explanationVi || '',
+    visionUsed: Boolean(data.visionUsed),
     bonusVocab: data.bonusVocab || null,
   };
 }
 
-export async function reviewVocab(id: string, rating: ReviewRating): Promise<VocabItem> {
+export async function reviewVocab(
+  id: string,
+  rating: ReviewRating,
+  userId?: string
+): Promise<VocabItem> {
   const reviewLocally = (): VocabItem => {
-    const cached = readCachedVocab();
+    const cached = readCachedVocab(userId);
     const target = cached.find((w) => w.id === id);
     if (!target) throw new Error('Word not found');
 
-    const now = new Date();
-    const intervals = [1, 3, 7, 14, 30, 60];
-    let nextLevel = target.srsLevel || 0;
-    const nextDate = new Date(now);
-
-    if (rating === 'again') {
-      nextLevel = 0;
-      nextDate.setMinutes(nextDate.getMinutes() + 5);
-    } else if (rating === 'hard') {
-      nextLevel = Math.max(1, nextLevel);
-      nextDate.setDate(nextDate.getDate() + 1);
-    } else if (rating === 'good') {
-      nextLevel = Math.min(5, nextLevel + 1);
-      nextDate.setDate(nextDate.getDate() + (intervals[Math.max(0, nextLevel - 1)] || 1));
-    } else {
-      nextLevel = Math.min(5, nextLevel + 2);
-      nextDate.setDate(nextDate.getDate() + (intervals[Math.max(0, nextLevel - 1)] || 3));
-    }
-
-    const updated: VocabItem = {
-      ...target,
-      srsLevel: nextLevel,
-      nextReviewAt: nextDate.toISOString(),
-      lastReviewedAt: now.toISOString(),
-      reviewCount: (target.reviewCount || 0) + 1,
-      correctCount: rating === 'good' || rating === 'easy' ? (target.correctCount || 0) + 1 : target.correctCount || 0,
-    };
-    writeCachedVocab(cached.map((w) => (w.id === id ? updated : w)));
+    const updated = computeOptimisticReview(target, rating);
+    writeCachedVocab(
+      cached.map((w) => (w.id === id ? updated : w)),
+      userId
+    );
     return updated;
   };
 
@@ -566,8 +667,11 @@ export async function reviewVocab(id: string, rating: ReviewRating): Promise<Voc
     });
     if (!res.ok) throw new Error('Review failed');
     const updated = await res.json();
-    const cached = readCachedVocab();
-    writeCachedVocab(cached.map((w) => (w.id === updated.id ? updated : w)));
+    const cached = readCachedVocab(userId);
+    writeCachedVocab(
+      cached.map((w) => (w.id === updated.id ? updated : w)),
+      userId
+    );
     return updated;
   } catch {
     return reviewLocally();
@@ -632,8 +736,15 @@ export async function deleteVocab(id: string): Promise<boolean> {
   }
 }
 
-export async function clearAllVocab(): Promise<boolean> {
-  writeCachedVocab([]);
+export async function clearAllVocab(userId?: string): Promise<boolean> {
+  const userKey = resolveVocabUserKey(userId);
+  writeCachedVocab([], userKey);
+  deckPosMemoryCache.delete(userKey);
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(`${VOCAB_DECK_POS_PREFIX}${userKey}`);
+    } catch {}
+  }
   if (!authService.getToken()) {
     return true;
   }

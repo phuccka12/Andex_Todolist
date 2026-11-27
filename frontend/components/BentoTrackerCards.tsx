@@ -79,10 +79,10 @@ export const BentoTrackerCards: React.FC<BentoTrackerCardsProps> = ({
         return (
           <div
             key={card.id}
-            className={`rounded-2xl px-3.5 py-2.5 border-2 flex items-center justify-between gap-3 transition-all select-none ${
+            className={`rounded-2xl px-3.5 py-2 border-2 flex items-center justify-between gap-3 transition-all select-none ${
               isDark
                 ? 'bg-[#12151E] border-white/[0.08] hover:border-white/[0.16] text-slate-100'
-                : `${card.cardBg} border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#0F172A] text-[#0F172A]`
+                : 'bg-white border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#0F172A] text-[#0F172A]'
             }`}
           >
             <div className="min-w-0 flex-1">

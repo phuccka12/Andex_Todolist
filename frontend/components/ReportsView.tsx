@@ -79,50 +79,54 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ tasks, onBackToTracker
 
       {/* 2. UNIFIED 4-METRIC STRIP */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="bg-[#FFF1F2] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Tổng Giờ Lập Lịch
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-[#E11D48]" />
+            <span>Tổng Giờ Lập Lịch</span>
           </div>
           <div className="text-2xl font-black text-[#0F172A] tracking-tight">
             {(totalMinutes / 60).toFixed(1)}h
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             Tương đương {totalTasks} ca làm việc
           </div>
         </div>
 
-        <div className="bg-[#DCFCE7] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Đã Hoàn Tất
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>Đã Hoàn Tất</span>
           </div>
           <div className="text-2xl font-black text-emerald-700 tracking-tight">
             {(doneMinutes / 60).toFixed(1)}h
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             {doneTasks.length} nhiệm vụ chốt xong
           </div>
         </div>
 
-        <div className="bg-[#DBEAFE] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Hiệu Suất Mục Tiêu
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-sky-500" />
+            <span>Hiệu Suất Mục Tiêu</span>
           </div>
           <div className="text-2xl font-black text-[#E11D48] tracking-tight">
             {completionRate}%
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             Tỷ lệ hoàn thành nhiệm vụ
           </div>
         </div>
 
-        <div className="bg-[#FEF9C3] border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-2">
-          <div className="text-[11px] font-black text-[#0F172A]/70 uppercase tracking-wider">
-            Đang Xử Lý
+        <div className="bg-white border-2 border-[#0F172A] p-4 rounded-2xl shadow-[3px_3px_0px_#0F172A] space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <span>Đang Xử Lý</span>
           </div>
           <div className="text-2xl font-black text-amber-700 tracking-tight">
             {inProgressTasks.length + editingTasks.length} việc
           </div>
-          <div className="text-[11px] text-slate-600 font-bold">
+          <div className="text-[11px] text-slate-500 font-semibold">
             {inProgressTasks.length} đang làm · {editingTasks.length} đang duyệt
           </div>
         </div>
