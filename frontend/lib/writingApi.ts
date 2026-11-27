@@ -38,6 +38,15 @@ export interface WritingRecommendedVocab {
   topic: string;
 }
 
+export interface WritingUpgradeHighlight {
+  id: string;
+  upgradedPhrase: string;
+  originalPhrase?: string;
+  category: 'grammar' | 'lexical' | 'cohesion' | 'logic';
+  importanceVi: string;
+  bandBoost?: string;
+}
+
 export interface LocalWritingDiagnostics {
   wordCount: number;
   effectiveWordCount: number;
@@ -88,8 +97,10 @@ export interface WritingAttempt {
   upgradedVersions?: {
     preserveVoiceEssay?: string;
     preserveVoiceNotesVi?: string;
+    preserveVoiceHighlights?: WritingUpgradeHighlight[];
     band85Essay?: string;
     band85NotesVi?: string;
+    band85Highlights?: WritingUpgradeHighlight[];
   };
   createdAt?: string;
   updatedAt?: string;
@@ -376,20 +387,27 @@ export async function gradeWritingEssay(
 export async function generateWritingUpgrade(
   attemptId: string,
   mode: UpgradeMode,
-  userId?: string
-): Promise<{ essay: string; notesVi: string; cached?: boolean }> {
+  userId?: string,
+  force = false
+): Promise<{
+  essay: string;
+  notesVi: string;
+  highlights: WritingUpgradeHighlight[];
+  cached?: boolean;
+}> {
   const res = await fetch(`${API_BASE}/writing/${attemptId}/upgrade`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...authService.getAuthHeaders(),
     },
-    body: JSON.stringify({ mode }),
+    body: JSON.stringify({ mode, force }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.success) {
     throw new Error(data.error || 'Không thể tạo bài nâng cấp lúc này.');
   }
+  const highlights: WritingUpgradeHighlight[] = Array.isArray(data.highlights) ? data.highlights : [];
   // Sync local history cache
   const cached = getCachedWritingHistory(userId);
   writeCachedHistory(
@@ -399,15 +417,17 @@ export async function generateWritingUpgrade(
       if (mode === 'preserve_voice') {
         upgradedVersions.preserveVoiceEssay = data.essay;
         upgradedVersions.preserveVoiceNotesVi = data.notesVi;
+        upgradedVersions.preserveVoiceHighlights = highlights;
       } else {
         upgradedVersions.band85Essay = data.essay;
         upgradedVersions.band85NotesVi = data.notesVi;
+        upgradedVersions.band85Highlights = highlights;
       }
       return { ...a, upgradedVersions };
     }),
     userId
   );
-  return { essay: data.essay, notesVi: data.notesVi, cached: Boolean(data.cached) };
+  return { essay: data.essay, notesVi: data.notesVi, highlights, cached: Boolean(data.cached) };
 }
 
 export async function evaluateWritingRewrites(

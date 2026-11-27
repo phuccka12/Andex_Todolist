@@ -57,11 +57,13 @@ writingRouter.post('/grade', optionalAuth, async (req: AuthenticatedRequest, res
 writingRouter.post('/:id/upgrade', optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const mode: UpgradeMode = req.body?.mode === 'band_85' ? 'band_85' : 'preserve_voice';
+    const force = Boolean(req.body?.force);
     const result = await writingService.generateBandUpgrade(
       req.params.id,
       mode,
       req.user?.id,
-      req.body?.customApiKey
+      req.body?.customApiKey,
+      force
     );
     res.json({ success: true, ...result });
   } catch (err: any) {

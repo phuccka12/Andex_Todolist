@@ -38,6 +38,7 @@ import { createVocab, speakEnglishWord } from '../lib/vocabApi';
 import {
   WritingAttempt,
   WritingAnnotation,
+  WritingUpgradeHighlight,
   WritingTaskType,
   PersonalVocabHint,
   WeaknessRadarSummary,
@@ -152,6 +153,9 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
   // Lazy Upgrade & Rewrite Lab State
   const [upgradeMode, setUpgradeMode] = useState<'preserve_voice' | 'band_85'>('preserve_voice');
   const [isGeneratingUpgrade, setIsGeneratingUpgrade] = useState(false);
+  const [selectedUpgradeHighlightId, setSelectedUpgradeHighlightId] = useState<string | null>(null);
+  const [showOriginalInUpgrade, setShowOriginalInUpgrade] = useState(false);
+  const [upgradeStaleBackendWarn, setUpgradeStaleBackendWarn] = useState(false);
   const [rewriteDrafts, setRewriteDrafts] = useState<Record<string, string>>({});
   const [isCheckingRewrites, setIsCheckingRewrites] = useState(false);
 
@@ -343,31 +347,50 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
     }
   };
 
-  const handleTriggerUpgrade = async (mode: 'preserve_voice' | 'band_85') => {
+  const handleTriggerUpgrade = async (mode: 'preserve_voice' | 'band_85', force = false) => {
     if (!activeAttempt || isGeneratingUpgrade) return;
     setUpgradeMode(mode);
+    setUpgradeStaleBackendWarn(false);
     const existing =
       mode === 'preserve_voice'
         ? activeAttempt.upgradedVersions?.preserveVoiceEssay
         : activeAttempt.upgradedVersions?.band85Essay;
-    if (existing) return;
+    const existingHighlights =
+      mode === 'preserve_voice'
+        ? activeAttempt.upgradedVersions?.preserveVoiceHighlights
+        : activeAttempt.upgradedVersions?.band85Highlights;
+    if (!force && existing && existingHighlights && existingHighlights.length > 0) {
+      setSelectedUpgradeHighlightId(existingHighlights[0]?.id || null);
+      return;
+    }
 
     setIsGeneratingUpgrade(true);
     soundEngine.playSoftClick();
     try {
-      const res = await generateWritingUpgrade(activeAttempt.id, mode, authUserId);
+      const res = await generateWritingUpgrade(
+        activeAttempt.id,
+        mode,
+        authUserId,
+        force || Boolean(existing && (!existingHighlights || existingHighlights.length === 0))
+      );
       setActiveAttempt((prev) => {
         if (!prev) return prev;
         const upgradedVersions = { ...(prev.upgradedVersions || {}) };
         if (mode === 'preserve_voice') {
           upgradedVersions.preserveVoiceEssay = res.essay;
           upgradedVersions.preserveVoiceNotesVi = res.notesVi;
+          upgradedVersions.preserveVoiceHighlights = res.highlights;
         } else {
           upgradedVersions.band85Essay = res.essay;
           upgradedVersions.band85NotesVi = res.notesVi;
+          upgradedVersions.band85Highlights = res.highlights;
         }
         return { ...prev, upgradedVersions };
       });
+      if (!res.highlights || res.highlights.length === 0) {
+        setUpgradeStaleBackendWarn(true);
+      }
+      setSelectedUpgradeHighlightId(res.highlights?.[0]?.id || null);
       soundEngine.playPentatonicChime(4);
     } catch (err: any) {
       notify.error(err.message || 'Không thể tạo bài nâng cấp.');
@@ -1535,10 +1558,10 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
             </div>
           )}
 
-          {/* RESULT TAB 4: LAZY-GENERATED UPGRADE COMPARISON */}
+          {/* RESULT TAB 4: LAZY-GENERATED UPGRADE WITH INTERACTIVE HIGHLIGHTS */}
           {resultTab === 'upgrade' && (
-            <div className={`rounded-2xl p-4 sm:p-5 space-y-4 ${cardBaseCls}`}>
-              <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="space-y-4">
+              <div className={`rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-2 ${cardBaseCls}`}>
                 <div className="inline-flex items-center p-0.5 rounded-xl border border-[#0F172A]/20 bg-[#FFF8F1] text-xs font-bold">
                   <button
                     type="button"
@@ -1559,12 +1582,36 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
                     Bài Mẫu Band 8.5+
                   </button>
                 </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    disabled={isGeneratingUpgrade}
+                    onClick={() => handleTriggerUpgrade(upgradeMode, true)}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold border border-[#E11D48]/35 bg-[#FFF1F2] hover:bg-[#FFE4E6] text-[#E11D48] flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                    title="Tạo lại bản nâng cấp kèm highlight & giải thích chi tiết"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Tạo & Tô sáng lại</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowOriginalInUpgrade((v) => !v)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition-colors ${
+                      showOriginalInUpgrade
+                        ? 'bg-[#FEF08A] border-[#0F172A] text-[#0F172A] font-black'
+                        : 'bg-white border-[#0F172A]/20 text-slate-600 hover:border-[#0F172A]'
+                    }`}
+                  >
+                    {showOriginalInUpgrade ? 'Ẩn bài gốc' : 'So sánh bài gốc'}
+                  </button>
+                </div>
               </div>
 
               {isGeneratingUpgrade ? (
-                <div className="py-12 flex items-center justify-center gap-2 text-xs font-bold text-[#E11D48]">
+                <div className={`rounded-2xl p-12 flex items-center justify-center gap-2 text-xs font-bold text-[#E11D48] ${cardBaseCls}`}>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Đang viết bản nâng cấp dựa trên ý tưởng của bạn...</span>
+                  <span>Đang viết bản nâng cấp & phân tích từng điểm ăn điểm...</span>
                 </div>
               ) : (
                 (() => {
@@ -1576,29 +1623,227 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
                     upgradeMode === 'preserve_voice'
                       ? activeAttempt.upgradedVersions?.preserveVoiceNotesVi
                       : activeAttempt.upgradedVersions?.band85NotesVi;
+                  const highlights: WritingUpgradeHighlight[] =
+                    (upgradeMode === 'preserve_voice'
+                      ? activeAttempt.upgradedVersions?.preserveVoiceHighlights
+                      : activeAttempt.upgradedVersions?.band85Highlights) || [];
 
                   if (!text) return null;
+
+                  const activeHighlight =
+                    highlights.find((h) => h.id === selectedUpgradeHighlightId) || highlights[0] || null;
+
+                  const renderHighlightedUpgradePara = (paraText: string, pIdx: number) => {
+                    if (!highlights.length) {
+                      return (
+                        <p key={pIdx} className="leading-relaxed">
+                          {paraText}
+                        </p>
+                      );
+                    }
+                    type Seg = { text: string; hl?: WritingUpgradeHighlight };
+                    let segments: Seg[] = [{ text: paraText }];
+                    highlights.forEach((hl) => {
+                      const phrase = hl.upgradedPhrase.trim();
+                      if (phrase.length < 3) return;
+                      const rx = new RegExp(
+                        phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+'),
+                        'i'
+                      );
+                      const nextSegs: Seg[] = [];
+                      for (const seg of segments) {
+                        if (seg.hl) {
+                          nextSegs.push(seg);
+                          continue;
+                        }
+                        let idx = seg.text.toLowerCase().indexOf(phrase.toLowerCase());
+                        let len = phrase.length;
+                        if (idx === -1) {
+                          const m = rx.exec(seg.text);
+                          if (m) {
+                            idx = m.index;
+                            len = m[0].length;
+                          }
+                        }
+                        if (idx === -1) {
+                          nextSegs.push(seg);
+                        } else {
+                          if (idx > 0) nextSegs.push({ text: seg.text.slice(0, idx) });
+                          nextSegs.push({ text: seg.text.slice(idx, idx + len), hl });
+                          if (idx + len < seg.text.length) {
+                            nextSegs.push({ text: seg.text.slice(idx + len) });
+                          }
+                        }
+                      }
+                      segments = nextSegs;
+                    });
+
+                    return (
+                      <p key={pIdx} className="leading-relaxed">
+                        {segments.map((seg, i) => {
+                          if (!seg.hl) return <React.Fragment key={i}>{seg.text}</React.Fragment>;
+                          const st = ANNOTATION_STYLE[seg.hl.category] || ANNOTATION_STYLE.lexical;
+                          const isSelected = activeHighlight?.id === seg.hl.id;
+                          return (
+                            <mark
+                              key={i}
+                              onClick={() => {
+                                soundEngine.playSoftClick();
+                                setSelectedUpgradeHighlightId(seg.hl!.id);
+                              }}
+                              className={`px-1 py-0.5 rounded-md cursor-pointer transition-all font-medium ${
+                                isDark ? st.darkMark : st.lightMark
+                              } ${isSelected ? 'ring-2 ring-[#E11D48] font-bold shadow-xs' : 'hover:opacity-90'}`}
+                            >
+                              {seg.text}
+                            </mark>
+                          );
+                        })}
+                      </p>
+                    );
+                  };
+
                   return (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <div className="p-4 rounded-2xl bg-[#FFFDF7] border border-[#0F172A]/15 space-y-2">
-                        <span className="text-[10.5px] font-black uppercase text-slate-500">Bài gốc của bạn</span>
-                        <div className="text-xs sm:text-sm font-serif leading-relaxed whitespace-pre-line text-[#0F172A]">
-                          {activeAttempt.essay}
-                        </div>
-                      </div>
-                      <div className="p-4 rounded-2xl bg-[#DCFCE7]/35 border border-[#15803D]/30 space-y-2.5">
-                        <span className="text-[10.5px] font-black uppercase text-[#15803D]">
-                          {upgradeMode === 'preserve_voice' ? 'Bản sửa giữ ý (+1.0 Band)' : 'Bản tham khảo Band 8.5+'}
-                        </span>
-                        <div className="text-xs sm:text-sm font-serif leading-relaxed whitespace-pre-line text-[#0F172A]">
-                          {text}
-                        </div>
-                        {notes && (
-                          <div className="pt-2 border-t border-[#15803D]/20 text-xs text-[#14532D] leading-relaxed">
-                            <strong>Điểm nâng cấp chính:</strong> {notes}
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                        {/* Left: Highlighted Upgraded Essay */}
+                        <div className={`lg:col-span-7 rounded-2xl p-4 sm:p-5 space-y-3 ${cardBaseCls}`}>
+                          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[#0F172A]/10">
+                            <span className="text-xs font-black text-[#15803D]">
+                              {upgradeMode === 'preserve_voice'
+                                ? 'Bản sửa giữ ý (+1.0 Band) — Bấm cụm tô màu để hiểu vì sao ăn điểm:'
+                                : 'Bản tham khảo Band 8.5+ — Bấm cụm tô màu để xem giải thích:'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard?.writeText(text);
+                                notify.success('Đã sao chép bài nâng cấp!');
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-[#FFF8F1] hover:bg-[#FEF08A] border border-[#0F172A]/20 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                            >
+                              <Copy className="w-3 h-3" />
+                              <span>Sao chép</span>
+                            </button>
                           </div>
-                        )}
+
+                          <div className="space-y-3 text-sm font-serif select-text">
+                            {text
+                              .split(/\r?\n\s*\r?\n|\r?\n/)
+                              .filter((p) => p.trim())
+                              .map((para, idx) => renderHighlightedUpgradePara(para, idx))}
+                          </div>
+
+                          {notes && (
+                            <div className="pt-3 border-t border-[#0F172A]/10 text-xs text-slate-600 leading-relaxed">
+                              <strong className="text-[#0F172A]">Tổng quan nâng cấp:</strong> {notes}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Right: Interactive Inspector ("Tại sao phần này quan trọng & giúp lên band?") */}
+                        <div className="lg:col-span-5 space-y-3">
+                          {activeHighlight ? (
+                            <div className={`rounded-2xl p-4 space-y-2.5 ${cardBaseCls}`}>
+                              <div className="flex items-center justify-between gap-2">
+                                <span
+                                  className={`text-[10.5px] font-black px-2 py-0.5 rounded-md border ${
+                                    isDark
+                                      ? ANNOTATION_STYLE[activeHighlight.category].badgeDark
+                                      : ANNOTATION_STYLE[activeHighlight.category].badgeLight
+                                  }`}
+                                >
+                                  {ANNOTATION_STYLE[activeHighlight.category].label}
+                                </span>
+                                {activeHighlight.bandBoost && (
+                                  <span className="text-[10.5px] font-mono font-black text-[#15803D]">
+                                    {activeHighlight.bandBoost}
+                                  </span>
+                                )}
+                              </div>
+
+                              {activeHighlight.originalPhrase && (
+                                <div className="p-2.5 rounded-xl bg-[#FFF1F2] border border-[#E11D48]/20 text-xs text-[#9F1239]">
+                                  <span className="text-[10px] font-black uppercase block mb-0.5">Cách viết cũ:</span>
+                                  <span className="line-through">{activeHighlight.originalPhrase}</span>
+                                </div>
+                              )}
+
+                              <div className="p-2.5 rounded-xl bg-[#DCFCE7] border border-[#15803D]/30 text-xs font-bold text-[#14532D]">
+                                <span className="text-[10px] font-black uppercase block mb-0.5 text-[#15803D]">
+                                  Nâng cấp thành:
+                                </span>
+                                <span>{activeHighlight.upgradedPhrase}</span>
+                              </div>
+
+                              <div className="p-2.5 rounded-xl bg-[#FFFDF7] border border-[#0F172A]/12 space-y-1">
+                                <span className="text-[10px] font-black uppercase text-[#E11D48] block">
+                                  Vì sao phần này quan trọng & giúp tăng band:
+                                </span>
+                                <p className="text-xs text-[#0F172A] leading-relaxed">
+                                  {activeHighlight.importanceVi}
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className={`rounded-2xl p-4 text-xs space-y-2 ${cardBaseCls}`}>
+                              <p className="text-slate-600 leading-relaxed">
+                                {upgradeStaleBackendWarn
+                                  ? '⚠️ Server backend đang chạy bản cũ chưa trả về dữ liệu highlight. Hãy khởi động lại terminal backend (npm run dev / npm start) rồi bấm "Tạo & Tô sáng lại"!'
+                                  : 'Chưa có dữ liệu highlight cho bản nâng cấp cũ này. Bấm nút bên dưới để tạo highlight & giải thích chi tiết ngay:'}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => handleTriggerUpgrade(upgradeMode, true)}
+                                className="px-3.5 py-2 rounded-xl bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs font-black border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>Tạo & Tô Sáng Ngay</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {highlights.length > 0 && (
+                            <div className={`rounded-2xl p-3 space-y-1.5 max-h-72 overflow-y-auto ${cardBaseCls}`}>
+                              {highlights.map((hl) => {
+                                const st = ANNOTATION_STYLE[hl.category] || ANNOTATION_STYLE.lexical;
+                                const active = activeHighlight?.id === hl.id;
+                                return (
+                                  <button
+                                    key={hl.id}
+                                    type="button"
+                                    onClick={() => setSelectedUpgradeHighlightId(hl.id)}
+                                    className={`w-full text-left p-2 rounded-xl border text-xs transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                                      active
+                                        ? 'bg-[#FFF1F2] border-[#E11D48] font-bold'
+                                        : 'bg-[#FFFDF7] border-[#0F172A]/10 hover:border-[#0F172A]/30'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <span className={`w-2 h-2 rounded-full shrink-0 ${st.dot}`} />
+                                      <span className="truncate">{hl.upgradedPhrase}</span>
+                                    </div>
+                                    <span className="text-[10px] font-mono font-black text-[#15803D] shrink-0">
+                                      {hl.bandBoost}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
                       </div>
+
+                      {showOriginalInUpgrade && (
+                        <div className={`rounded-2xl p-4 space-y-2 ${cardBaseCls}`}>
+                          <span className="text-[10.5px] font-black uppercase text-slate-500">
+                            Bài gốc của bạn (đối chiếu)
+                          </span>
+                          <div className="text-xs sm:text-sm font-serif leading-relaxed whitespace-pre-line text-slate-700">
+                            {activeAttempt.essay}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })()

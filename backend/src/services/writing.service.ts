@@ -5,6 +5,7 @@ import {
   IWritingBandCeiling,
   IWritingWeakSentence,
   IWritingRecommendedVocab,
+  IWritingUpgradeHighlight,
 } from '../models/WritingAttempt.model';
 import { VocabModel } from '../models/Vocab.model';
 
@@ -855,7 +856,8 @@ Trả về DUY NHẤT JSON thuần túy (KHÔNG bọc markdown \`\`\`), đặt "
     attemptId: string,
     mode: UpgradeMode,
     userId?: string,
-    customApiKey?: string
+    customApiKey?: string,
+    force = false
   ) {
     if (!mongoose.Types.ObjectId.isValid(attemptId)) {
       throw new Error('ID bài viết không hợp lệ.');
@@ -870,20 +872,34 @@ Trả về DUY NHẤT JSON thuần túy (KHÔNG bọc markdown \`\`\`), đặt "
       throw new Error('Không tìm thấy bài viết.');
     }
 
-    // Return cached version immediately at 0 token cost
-    if (mode === 'preserve_voice' && attempt.upgradedVersions?.preserveVoiceEssay) {
+    // Return cached version immediately ONLY when both essay and highlights exist (and not forced)
+    if (
+      !force &&
+      mode === 'preserve_voice' &&
+      attempt.upgradedVersions?.preserveVoiceEssay &&
+      Array.isArray(attempt.upgradedVersions.preserveVoiceHighlights) &&
+      attempt.upgradedVersions.preserveVoiceHighlights.length > 0
+    ) {
       return {
         mode,
         essay: attempt.upgradedVersions.preserveVoiceEssay,
         notesVi: attempt.upgradedVersions.preserveVoiceNotesVi || '',
+        highlights: attempt.upgradedVersions.preserveVoiceHighlights,
         cached: true,
       };
     }
-    if (mode === 'band_85' && attempt.upgradedVersions?.band85Essay) {
+    if (
+      !force &&
+      mode === 'band_85' &&
+      attempt.upgradedVersions?.band85Essay &&
+      Array.isArray(attempt.upgradedVersions.band85Highlights) &&
+      attempt.upgradedVersions.band85Highlights.length > 0
+    ) {
       return {
         mode,
         essay: attempt.upgradedVersions.band85Essay,
         notesVi: attempt.upgradedVersions.band85NotesVi || '',
+        highlights: attempt.upgradedVersions.band85Highlights,
         cached: true,
       };
     }
@@ -909,10 +925,24 @@ Bài gốc của thí sinh:
 ${attempt.essay}
 """
 
+QUAN TRỌNG:
+- Trong trường "highlights", hãy chọn 5 đến 7 cụm từ / cấu trúc ĐẮT GIÁ NHẤT bạn vừa nâng cấp trong "essay" mới.
+- Trường "upgradedPhrase" BẮT BUỘC copy **NGUYÊN VĂN 100% từng ký tự** từ bài "essay" bạn vừa viết ra để frontend highlight đúng chỗ trên văn bản.
+- Trường "importanceVi" phải giải thích rõ: **Tại sao điểm sửa này lại quan trọng đối với giám khảo IELTS và giúp tăng band tiêu chí nào** (1-2 câu sắc bén).
+
 Trả về DUY NHẤT JSON:
 {
   "essay": "Bài viết tiếng Anh đã nâng cấp, chia đoạn chuẩn bằng \\n\\n",
-  "notesVi": "Tóm tắt 3-4 điểm nâng cấp đắt giá nhất bằng tiếng Việt để người học rút kinh nghiệm."
+  "notesVi": "Tóm tắt 2-3 câu tổng quan sự khác biệt giữa bản nâng cấp và bài gốc.",
+  "highlights": [
+    {
+      "upgradedPhrase": "Copy nguyên văn cụm/câu đã nâng cấp trong bài mới",
+      "originalPhrase": "Cụm cũ trong bài gốc (nếu thay thế trực tiếp, hoặc để rỗng nếu là ý bổ sung mới)",
+      "category": "lexical" | "grammar" | "cohesion" | "logic",
+      "importanceVi": "Giải thích rõ vì sao phần này quan trọng & giúp nâng điểm band (vd: tránh lặp từ, tạo collocation tự nhiên, hoặc bổ sung mệnh đề nhượng bộ tăng điểm GRA...)",
+      "bandBoost": "LR +1 / GRA +0.5"
+    }
+  ]
 }
 `.trim();
 
@@ -920,18 +950,31 @@ Trả về DUY NHẤT JSON:
       {
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 1600,
+          temperature: 0.35,
+          maxOutputTokens: 2400,
           responseMimeType: 'application/json',
         },
       },
-      { customApiKey, preferAccuracy: true, timeoutMs: 25000 }
+      { customApiKey, preferAccuracy: true, timeoutMs: 28000 }
     );
 
     const rawText = data.candidates?.[0]?.content?.parts?.map((p: any) => p.text || '').join('') || '';
     const parsed = this.parseJsonObject(rawText);
     const upgradedEssay = String(parsed.essay || '').trim();
     const notesVi = String(parsed.notesVi || '').trim();
+    const highlights: IWritingUpgradeHighlight[] = Array.isArray(parsed?.highlights)
+      ? parsed.highlights
+          .filter((h: any) => h?.upgradedPhrase && String(h.upgradedPhrase).trim().length >= 3)
+          .slice(0, 8)
+          .map((h: any, i: number) => ({
+            id: `uh-${Date.now()}-${i}`,
+            upgradedPhrase: String(h.upgradedPhrase).trim(),
+            originalPhrase: String(h.originalPhrase || '').trim(),
+            category: ['grammar', 'lexical', 'cohesion', 'logic'].includes(h.category) ? h.category : 'lexical',
+            importanceVi: String(h.importanceVi || '').trim(),
+            bandBoost: String(h.bandBoost || '').trim(),
+          }))
+      : [];
 
     if (!attempt.upgradedVersions) {
       attempt.upgradedVersions = {};
@@ -939,13 +982,15 @@ Trả về DUY NHẤT JSON:
     if (mode === 'preserve_voice') {
       attempt.upgradedVersions.preserveVoiceEssay = upgradedEssay;
       attempt.upgradedVersions.preserveVoiceNotesVi = notesVi;
+      attempt.upgradedVersions.preserveVoiceHighlights = highlights;
     } else {
       attempt.upgradedVersions.band85Essay = upgradedEssay;
       attempt.upgradedVersions.band85NotesVi = notesVi;
+      attempt.upgradedVersions.band85Highlights = highlights;
     }
     await attempt.save();
 
-    return { mode, essay: upgradedEssay, notesVi, cached: false };
+    return { mode, essay: upgradedEssay, notesVi, highlights, cached: false };
   }
 
   /**

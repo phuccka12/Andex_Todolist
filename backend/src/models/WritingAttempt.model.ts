@@ -34,6 +34,15 @@ export interface IWritingRecommendedVocab {
   topic: string;
 }
 
+export interface IWritingUpgradeHighlight {
+  id: string;
+  upgradedPhrase: string;
+  originalPhrase?: string;
+  category: 'grammar' | 'lexical' | 'cohesion' | 'logic';
+  importanceVi: string;
+  bandBoost?: string;
+}
+
 export interface IWritingAttemptDocument extends Document {
   userId?: mongoose.Types.ObjectId;
   taskType: 'task1' | 'task2';
@@ -75,8 +84,10 @@ export interface IWritingAttemptDocument extends Document {
   upgradedVersions: {
     preserveVoiceEssay?: string;
     preserveVoiceNotesVi?: string;
+    preserveVoiceHighlights?: IWritingUpgradeHighlight[];
     band85Essay?: string;
     band85NotesVi?: string;
+    band85Highlights?: IWritingUpgradeHighlight[];
   };
   createdAt: Date;
   updatedAt: Date;
@@ -191,8 +202,30 @@ const WritingAttemptSchema = new Schema<IWritingAttemptDocument>(
     upgradedVersions: {
       preserveVoiceEssay: String,
       preserveVoiceNotesVi: String,
+      preserveVoiceHighlights: [
+        {
+          id: String,
+          upgradedPhrase: String,
+          originalPhrase: String,
+          category: { type: String, enum: ['grammar', 'lexical', 'cohesion', 'logic'] },
+          importanceVi: String,
+          bandBoost: String,
+          _id: false,
+        },
+      ],
       band85Essay: String,
       band85NotesVi: String,
+      band85Highlights: [
+        {
+          id: String,
+          upgradedPhrase: String,
+          originalPhrase: String,
+          category: { type: String, enum: ['grammar', 'lexical', 'cohesion', 'logic'] },
+          importanceVi: String,
+          bandBoost: String,
+          _id: false,
+        },
+      ],
     },
   },
   {
