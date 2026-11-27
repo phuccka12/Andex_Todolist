@@ -9,6 +9,15 @@ export const authRouter = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'cbp_atelier_jwt_secret_super_secure_key_2026';
 
+const serializeUser = (doc: any) => {
+  if (!doc) return null;
+  const { _id, __v, password, ...rest } = doc;
+  return {
+    id: _id ? _id.toString() : doc.id,
+    ...rest,
+  };
+};
+
 // 1. Register new user
 authRouter.post('/register', async (req, res) => {
   try {
@@ -29,7 +38,7 @@ authRouter.post('/register', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const existingUser = await UserModel.findOne({ email: cleanEmail });
+    const existingUser = await UserModel.findOne({ email: cleanEmail }).select('_id').maxTimeMS(5000).lean();
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -37,7 +46,7 @@ authRouter.post('/register', async (req, res) => {
       });
     }
 
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(8);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = await UserModel.create({
@@ -84,7 +93,7 @@ authRouter.post('/login', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const user = await UserModel.findOne({ email: cleanEmail });
+    const user = await UserModel.findOne({ email: cleanEmail }).maxTimeMS(5000).lean();
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -110,7 +119,7 @@ authRouter.post('/login', async (req, res) => {
       success: true,
       message: `Chào mừng trở lại, ${user.name}!`,
       token,
-      user: user.toJSON(),
+      user: serializeUser(user),
     });
   } catch (error: any) {
     console.error('Login error:', error);
@@ -124,7 +133,7 @@ authRouter.post('/login', async (req, res) => {
 // 3. Get current user profile (Me)
 authRouter.get('/me', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const user = await UserModel.findById(req.user?.id);
+    const user = await UserModel.findById(req.user?.id).select('-password').maxTimeMS(5000).lean();
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -134,7 +143,7 @@ authRouter.get('/me', requireAuth, async (req: AuthenticatedRequest, res: Respon
 
     return res.json({
       success: true,
-      user: user.toJSON(),
+      user: serializeUser(user),
     });
   } catch (error: any) {
     return res.status(500).json({

@@ -39,6 +39,25 @@ function clearUserScopedCaches() {
   });
 }
 
+async function authFetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number = 15000
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err: any) {
+    if (err?.name === 'AbortError') {
+      throw new Error('Máy chủ phản hồi quá lâu. Nếu đang dùng server miễn phí, server có thể vừa khởi động lại — bạn bấm thử lại nhé!');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export const authService = {
   // Get stored token from localStorage
   getToken(): string | null {
@@ -89,11 +108,15 @@ export const authService = {
   // Register API
   async register(name: string, email: string, password: string): Promise<AuthResponse> {
     try {
-      const res = await fetch(`${API_BASE}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-      });
+      const res = await authFetchWithTimeout(
+        `${API_BASE}/auth/register`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password }),
+        },
+        15000
+      );
       const data = await res.json();
       if (res.ok && data.token && data.user) {
         clearUserScopedCaches();
@@ -109,11 +132,15 @@ export const authService = {
   // Login API
   async login(email: string, password: string): Promise<AuthResponse> {
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await authFetchWithTimeout(
+        `${API_BASE}/auth/login`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        },
+        15000
+      );
       const data = await res.json();
       if (res.ok && data.token && data.user) {
         clearUserScopedCaches();
@@ -132,11 +159,15 @@ export const authService = {
     if (!token) return null;
 
     try {
-      const res = await fetch(`${API_BASE}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const res = await authFetchWithTimeout(
+        `${API_BASE}/auth/me`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+        8000
+      );
       if (!res.ok) {
         if (res.status === 401) {
           this.logout();

@@ -26,6 +26,9 @@ import {
   RefreshCw,
   Wand2,
   Maximize2,
+  Minimize2,
+  Bookmark,
+  Highlighter,
   Download,
   Copy,
   PenLine,
@@ -127,8 +130,78 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
   const [isSavingDictWord, setIsSavingDictWord] = useState(false);
   const dictRequestSeqRef = useRef(0);
 
+type TutorHighlightColor = 'yellow' | 'pink' | 'blue' | 'green' | 'purple';
+
+interface TutorPhraseHighlight {
+  id: string;
+  phrase: string;
+  color: TutorHighlightColor;
+}
+
+interface SavedTutorNote {
+  id: string;
+  sourceMsgId?: string;
+  title: string;
+  replyEn?: string;
+  explanationVi: string;
+  highlights: TutorPhraseHighlight[];
+  createdAt: string;
+}
+
+const TUTOR_NOTES_STORAGE_KEY = 'genncore_tutor_saved_notes_v1';
+
+const TUTOR_HIGHLIGHT_PALETTE: Array<{
+  id: TutorHighlightColor;
+  label: string;
+  swatch: string;
+  lightCls: string;
+  darkCls: string;
+}> = [
+  {
+    id: 'yellow',
+    label: 'Vàng',
+    swatch: 'bg-[#FEF08A]',
+    lightCls: 'bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]',
+    darkCls: 'bg-amber-400/25 text-amber-200 border border-amber-400/40',
+  },
+  {
+    id: 'pink',
+    label: 'Hồng',
+    swatch: 'bg-[#FFE4E6]',
+    lightCls: 'bg-[#FFE4E6] text-[#E11D48] border border-[#0F172A]',
+    darkCls: 'bg-rose-400/25 text-rose-200 border border-rose-400/40',
+  },
+  {
+    id: 'blue',
+    label: 'Xanh dương',
+    swatch: 'bg-[#DBEAFE]',
+    lightCls: 'bg-[#DBEAFE] text-[#1D4ED8] border border-[#0F172A]',
+    darkCls: 'bg-sky-400/25 text-sky-200 border border-sky-400/40',
+  },
+  {
+    id: 'green',
+    label: 'Xanh lá',
+    swatch: 'bg-[#DCFCE7]',
+    lightCls: 'bg-[#DCFCE7] text-[#15803D] border border-[#0F172A]',
+    darkCls: 'bg-emerald-400/25 text-emerald-200 border border-emerald-400/40',
+  },
+  {
+    id: 'purple',
+    label: 'Tím',
+    swatch: 'bg-[#F3E8FF]',
+    lightCls: 'bg-[#F3E8FF] text-[#7E22CE] border border-[#0F172A]',
+    darkCls: 'bg-purple-400/25 text-purple-200 border border-purple-400/40',
+  },
+];
+
   // Floating Cute IELTS 8.0+ English Tutor Chatbot state
   const [isTutorOpen, setIsTutorOpen] = useState(false);
+  const [isTutorExpanded, setIsTutorExpanded] = useState(false);
+  const [tutorViewMode, setTutorViewMode] = useState<'chat' | 'saved'>('chat');
+  const [savedTutorNotes, setSavedTutorNotes] = useState<SavedTutorNote[]>([]);
+  const [activeHighlighterColor, setActiveHighlighterColor] = useState<TutorHighlightColor>('yellow');
+  const [noteHighlightDrafts, setNoteHighlightDrafts] = useState<Record<string, string>>({});
+  const [selectedPhraseByNote, setSelectedPhraseByNote] = useState<Record<string, string>>({});
   const [tutorInput, setTutorInput] = useState('');
   const [isTutorTyping, setIsTutorTyping] = useState(false);
   const [tutorMessages, setTutorMessages] = useState<TutorChatMessage[]>([
@@ -806,21 +879,163 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     }
   };
 
-  const renderHighlightedTutorText = (content: string) => {
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(TUTOR_NOTES_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setSavedTutorNotes(parsed);
+      }
+    } catch {}
+  }, []);
+
+  const persistSavedTutorNotes = (updater: (prev: SavedTutorNote[]) => SavedTutorNote[]) => {
+    setSavedTutorNotes((prev) => {
+      const next = updater(prev);
+      try {
+        localStorage.setItem(TUTOR_NOTES_STORAGE_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const handleSaveTutorExplanation = (msg: TutorChatMessage, msgIdx: number) => {
+    const explanation = (msg.explanationVi || msg.text || '').trim();
+    if (!explanation) return;
+    const alreadySaved = savedTutorNotes.some((n) => n.sourceMsgId === msg.id);
+    if (alreadySaved) {
+      setTutorViewMode('saved');
+      return;
+    }
+
+    // Infer clean title from preceding user message or first line
+    const prevUserMsg = [...tutorMessages.slice(0, msgIdx)].reverse().find((m) => m.role === 'user');
+    const rawTitle = prevUserMsg?.text?.trim() || explanation.split(/\r?\n/)[0].replace(/[*#`]/g, '').trim();
+    const title = rawTitle.length > 64 ? rawTitle.slice(0, 61) + '...' : rawTitle || 'Lời giải thích IELTS';
+
+    const newNote: SavedTutorNote = {
+      id: `tnote-${Date.now()}`,
+      sourceMsgId: msg.id,
+      title,
+      replyEn: msg.replyEn,
+      explanationVi: explanation,
+      highlights: [],
+      createdAt: new Date().toISOString(),
+    };
+    persistSavedTutorNotes((prev) => [newNote, ...prev]);
+    soundEngine.playPentatonicChime(5);
+    notify.success('Đã lưu lời giải thích vào sổ tay Gia sư AI!');
+  };
+
+  const handleAddHighlightToNote = (noteId: string, phraseRaw: string, color: TutorHighlightColor) => {
+    const phrase = phraseRaw.trim().replace(/\*+/g, '');
+    if (phrase.length < 2) return;
+    soundEngine.playSoftClick();
+    persistSavedTutorNotes((prev) =>
+      prev.map((note) => {
+        if (note.id !== noteId) return note;
+        const filtered = note.highlights.filter((h) => h.phrase.toLowerCase() !== phrase.toLowerCase());
+        return {
+          ...note,
+          highlights: [...filtered, { id: `hl-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, phrase, color }],
+        };
+      })
+    );
+    setNoteHighlightDrafts((prev) => ({ ...prev, [noteId]: '' }));
+    setSelectedPhraseByNote((prev) => ({ ...prev, [noteId]: '' }));
+  };
+
+  const handleRemoveHighlightFromNote = (noteId: string, highlightId: string) => {
+    soundEngine.playSoftClick();
+    persistSavedTutorNotes((prev) =>
+      prev.map((note) =>
+        note.id === noteId
+          ? { ...note, highlights: note.highlights.filter((h) => h.id !== highlightId) }
+          : note
+      )
+    );
+  };
+
+  const handleDeleteSavedTutorNote = (noteId: string) => {
+    soundEngine.playSoftClick();
+    persistSavedTutorNotes((prev) => prev.filter((n) => n.id !== noteId));
+  };
+
+  const renderHighlightedTutorText = (
+    content: string,
+    customHighlights: TutorPhraseHighlight[] = []
+  ) => {
+    const renderPlainWithCustomHighlights = (plainText: string, keyPrefix: string) => {
+      const cleanPlain = plainText.replace(/\*+/g, '');
+      if (!customHighlights.length || !cleanPlain) {
+        return <React.Fragment key={keyPrefix}>{cleanPlain}</React.Fragment>;
+      }
+
+      const escaped = customHighlights
+        .map((h) => h.phrase.trim())
+        .filter((p) => p.length >= 2)
+        .sort((a, b) => b.length - a.length)
+        .map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+
+      if (escaped.length === 0) {
+        return <React.Fragment key={keyPrefix}>{cleanPlain}</React.Fragment>;
+      }
+
+      const regex = new RegExp(`(${escaped.join('|')})`, 'gi');
+      const segs = cleanPlain.split(regex);
+      return segs.map((seg, sIdx) => {
+        const matched = customHighlights.find((h) => h.phrase.toLowerCase() === seg.toLowerCase());
+        if (!matched) return <React.Fragment key={`${keyPrefix}-${sIdx}`}>{seg}</React.Fragment>;
+        const colorSpec = TUTOR_HIGHLIGHT_PALETTE.find((c) => c.id === matched.color) || TUTOR_HIGHLIGHT_PALETTE[0];
+        return (
+          <mark
+            key={`${keyPrefix}-${sIdx}`}
+            className={`px-1.5 py-0.5 rounded-md font-bold mx-0.5 ${
+              isDark ? colorSpec.darkCls : colorSpec.lightCls
+            }`}
+          >
+            {seg}
+          </mark>
+        );
+      });
+    };
+
+    let autoColorCursor = 0;
+
     const renderInline = (line: string) => {
-      const tokens = line.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+      const tokens = line.split(/(\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`)/g);
       return tokens.map((part, idx) => {
         if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+          const inner = part.slice(2, -2).trim();
+          const matchedCustom = customHighlights.find((h) => h.phrase.toLowerCase() === inner.toLowerCase());
+          const paletteItem = matchedCustom
+            ? TUTOR_HIGHLIGHT_PALETTE.find((c) => c.id === matchedCustom.color) || TUTOR_HIGHLIGHT_PALETTE[0]
+            : TUTOR_HIGHLIGHT_PALETTE[autoColorCursor++ % TUTOR_HIGHLIGHT_PALETTE.length];
           return (
             <mark
               key={idx}
               className={`px-1.5 py-0.5 rounded-md font-extrabold mx-0.5 ${
-                isDark
-                  ? 'bg-amber-400/20 text-amber-300'
-                  : 'bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]'
+                isDark ? paletteItem.darkCls : paletteItem.lightCls
               }`}
             >
-              {part.slice(2, -2)}
+              {inner}
+            </mark>
+          );
+        }
+        if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**') && part.length > 2) {
+          const inner = part.slice(1, -1).trim();
+          const matchedCustom = customHighlights.find((h) => h.phrase.toLowerCase() === inner.toLowerCase());
+          const paletteItem = matchedCustom
+            ? TUTOR_HIGHLIGHT_PALETTE.find((c) => c.id === matchedCustom.color) || TUTOR_HIGHLIGHT_PALETTE[2]
+            : TUTOR_HIGHLIGHT_PALETTE[(autoColorCursor++ + 2) % TUTOR_HIGHLIGHT_PALETTE.length];
+          return (
+            <mark
+              key={idx}
+              className={`px-1.5 py-0.5 rounded-md font-bold mx-0.5 ${
+                isDark ? paletteItem.darkCls : paletteItem.lightCls
+              }`}
+            >
+              {inner}
             </mark>
           );
         }
@@ -838,7 +1053,7 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             </code>
           );
         }
-        return <React.Fragment key={idx}>{part}</React.Fragment>;
+        return renderPlainWithCustomHighlights(part, `p-${idx}`);
       });
     };
 
@@ -850,6 +1065,15 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
     return (
       <div className="space-y-2">
         {lines.map((line, i) => {
+          const headingMatch = line.match(/^#{1,4}\s+(.+)$/);
+          if (headingMatch) {
+            return (
+              <p key={i} className="font-black text-[12.5px] text-[#E11D48] pt-1">
+                {renderInline(headingMatch[1])}
+              </p>
+            );
+          }
+
           const numbered = line.match(/^(\d+)\.\s+(.+)$/);
           if (numbered) {
             return (
@@ -4724,10 +4948,14 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
             </button>
           )}
 
-          {/* Mini Friendly Chat Popup on Right Side */}
+          {/* Mini Friendly Chat Popup on Right Side (Expandable to Fullscreen) */}
           {isTutorOpen && (
             <div
-              className={`fixed bottom-20 md:bottom-5 right-3 sm:right-6 z-[165] w-[calc(100vw-1.5rem)] sm:w-[390px] h-[510px] max-h-[76dvh] rounded-3xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200 ${
+              className={`fixed z-[165] rounded-3xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200 transition-all ${
+                isTutorExpanded
+                  ? 'inset-3 sm:inset-6 w-auto h-auto max-w-5xl mx-auto'
+                  : 'bottom-20 md:bottom-5 right-3 sm:right-6 w-[calc(100vw-1.5rem)] sm:w-[410px] h-[540px] max-h-[78dvh]'
+              } ${
                 isDark
                   ? 'bg-[#12151E] border border-white/15 shadow-2xl text-white'
                   : 'bg-[#FFFDF7] border-2 border-[#0F172A] shadow-[6px_6px_0px_#0F172A] text-[#0F172A]'
@@ -4741,23 +4969,38 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                     : 'bg-[#FFF1F2] border-b-2 border-[#0F172A]'
                 }`}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <div className="relative w-9 h-9 rounded-2xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] p-1.5 shrink-0">
                     <img src="/images/logo-mark.png" alt="Genncore Tutor" className="w-full h-full object-contain" />
                     <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0F172A]" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="text-xs font-black">Genncore English Tutor</h4>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h4 className="text-xs font-black truncate">Genncore English Tutor</h4>
                       <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]">
                         IELTS 8.0+
                       </span>
                     </div>
-                    <p className="text-[10px] text-slate-500 font-semibold">Hỏi ngữ pháp, từ vựng & luyện chat 1-1</p>
+                    <p className="text-[10px] text-slate-500 font-semibold truncate">Hỏi ngữ pháp, từ vựng & luyện chat 1-1</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundEngine.playSoftClick();
+                      setIsTutorExpanded((prev) => !prev);
+                    }}
+                    className={`p-1.5 cursor-pointer ${
+                      isDark
+                        ? 'rounded-xl hover:bg-white/10 text-slate-300'
+                        : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#DBEAFE] text-[#0F172A] rounded-xl'
+                    }`}
+                    title={isTutorExpanded ? 'Thu gọn về góc phải' : 'Phóng to toàn màn hình'}
+                  >
+                    {isTutorExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -4775,208 +5018,462 @@ export const VocabView: React.FC<VocabViewProps> = ({ theme = 'slate', authUserI
                   </button>
                   <button
                     type="button"
-                    onClick={() => setIsTutorOpen(false)}
+                    onClick={() => {
+                      setIsTutorOpen(false);
+                      setIsTutorExpanded(false);
+                    }}
                     className={`p-1.5 cursor-pointer ${
                       isDark
                         ? 'rounded-xl hover:bg-white/10 text-slate-300'
                         : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:bg-[#FFE4E6] text-[#0F172A] rounded-xl'
                     }`}
-                    title="Thu nhỏ"
+                    title="Đóng"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Messages Feed */}
-              <div ref={tutorScrollRef} className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3">
-                {tutorMessages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start items-start gap-2'}`}
+              {/* Mode Switcher: Chat vs Saved Explanations with Multi-Color Highlighter */}
+              <div
+                className={`px-3.5 py-2 flex items-center justify-between gap-2 shrink-0 ${
+                  isDark ? 'bg-[#12151E] border-b border-white/[0.08]' : 'bg-[#FFF8F1] border-b-2 border-[#0F172A]/15'
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundEngine.playSoftClick();
+                      setTutorViewMode('chat');
+                    }}
+                    className={`px-2.5 py-1 rounded-xl text-[11px] font-black cursor-pointer transition-all ${
+                      tutorViewMode === 'chat'
+                        ? isDark
+                          ? 'bg-[#1DB954] text-[#090A0F]'
+                          : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                        : isDark
+                        ? 'bg-white/5 text-slate-300 hover:bg-white/10'
+                        : 'bg-white text-[#0F172A] border border-[#0F172A] hover:bg-[#FEF9C3]'
+                    }`}
                   >
-                    {msg.role === 'assistant' && (
-                      <div className="w-6 h-6 rounded-xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] p-1 shrink-0 mt-0.5">
-                        <img src="/images/logo-mark.png" alt="" className="w-full h-full object-contain" />
-                      </div>
-                    )}
+                    Trò chuyện
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundEngine.playSoftClick();
+                      setTutorViewMode('saved');
+                    }}
+                    className={`px-2.5 py-1 rounded-xl text-[11px] font-black flex items-center gap-1 cursor-pointer transition-all ${
+                      tutorViewMode === 'saved'
+                        ? isDark
+                          ? 'bg-amber-400 text-[#090A0F]'
+                          : 'bg-[#FEF08A] text-[#0F172A] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                        : isDark
+                        ? 'bg-white/5 text-slate-300 hover:bg-white/10'
+                        : 'bg-white text-[#0F172A] border border-[#0F172A] hover:bg-[#FEF9C3]'
+                    }`}
+                  >
+                    <Bookmark className="w-3 h-3 text-[#E11D48]" />
+                    <span>Đã lưu ({savedTutorNotes.length})</span>
+                  </button>
+                </div>
 
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed space-y-2 ${
-                        msg.role === 'user'
-                          ? isDark
-                            ? 'bg-[#1DB954] text-[#090A0F] font-semibold rounded-tr-sm'
-                            : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-bold rounded-tr-sm'
-                          : isDark
-                          ? 'bg-[#181C28] border border-white/10 text-slate-200 rounded-tl-sm'
-                          : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A] rounded-tl-sm'
-                      }`}
-                    >
-                      {msg.role === 'user' ? (
-                        <p>{msg.text}</p>
-                      ) : (
-                        <>
-                          {msg.primaryMode === 'en_chat' ? (
-                            <>
-                              {msg.replyEn && (
-                                <div
-                                  className={`p-2.5 rounded-xl flex items-start justify-between gap-2 ${
-                                    isDark
-                                      ? 'bg-[#12151E] border border-emerald-400/25 text-emerald-300'
-                                      : 'bg-[#FFFDF7] border-2 border-[#0F172A] text-[#0F172A]'
-                                  }`}
-                                >
-                                  <p className="font-bold leading-relaxed">{msg.replyEn}</p>
-                                  <button
-                                    type="button"
-                                    onClick={() => speakEnglishWord(msg.replyEn || '', false)}
-                                    className="p-1 rounded-lg bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border border-[#0F172A] shrink-0 cursor-pointer"
-                                    title="Nghe phát âm"
-                                  >
-                                    <Volume2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              )}
-                              {msg.explanationVi && renderHighlightedTutorText(msg.explanationVi)}
-                            </>
-                          ) : (
-                            <>
-                              {msg.explanationVi && renderHighlightedTutorText(msg.explanationVi)}
-                              {msg.replyEn && (
-                                <div
-                                  className={`p-2.5 rounded-xl flex items-start justify-between gap-2 ${
-                                    isDark
-                                      ? 'bg-[#12151E] border border-white/10 text-emerald-300'
-                                      : 'bg-[#FFFDF7] border-2 border-[#0F172A] text-[#0F172A]'
-                                  }`}
-                                >
-                                  <div className="space-y-0.5">
-                                    <span className="text-[9.5px] font-black uppercase tracking-wider text-[#E11D48] block">
-                                      Ví dụ minh họa
-                                    </span>
-                                    <p className="font-bold italic leading-relaxed">&ldquo;{msg.replyEn}&rdquo;</p>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => speakEnglishWord(msg.replyEn || '', false)}
-                                    className="p-1 rounded-lg bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border border-[#0F172A] shrink-0 cursor-pointer mt-1"
-                                    title="Nghe phát âm"
-                                  >
-                                    <Volume2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              )}
-                            </>
-                          )}
-
-                          {msg.bonusVocab && (
-                            <div
-                              className={`p-2 rounded-xl flex items-center justify-between gap-2 ${
-                                isDark
-                                  ? 'bg-emerald-500/10 border border-emerald-500/25'
-                                  : 'bg-[#FEF9C3] border-2 border-[#0F172A] text-[#0F172A]'
-                              }`}
-                            >
-                              <div className="min-w-0">
-                                <p className="font-black text-[11px] truncate">
-                                  ✨ {msg.bonusVocab.word}{' '}
-                                  {msg.bonusVocab.phonetic && (
-                                    <span className="font-mono font-normal opacity-75">{msg.bonusVocab.phonetic}</span>
-                                  )}
-                                </p>
-                                <p className="text-[10.5px] font-semibold opacity-90 truncate">{msg.bonusVocab.meaning}</p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleSaveBonusVocabFromTutor(msg.bonusVocab!)}
-                                className="px-2.5 py-1 rounded-lg bg-[#E11D48] hover:bg-[#BE123C] text-white border border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[10px] font-black shrink-0 cursor-pointer"
-                              >
-                                + Lưu
-                              </button>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                {isTutorTyping && (
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <div className="w-6 h-6 rounded-xl bg-white border-2 border-[#0F172A] p-1">
-                      <img src="/images/logo-mark.png" alt="" className="w-full h-full object-contain" />
-                    </div>
-                    <div className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 ${
-                      isDark
-                        ? 'bg-[#181C28] border border-white/10'
-                        : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                    }`}>
-                      <Loader2 className="w-3 h-3 animate-spin text-[#E11D48]" />
-                      <span className="text-[11px] font-semibold">Gia sư đang soạn câu trả lời...</span>
-                    </div>
+                {tutorViewMode === 'saved' && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-slate-500 hidden sm:inline mr-0.5">Bút nhớ:</span>
+                    {TUTOR_HIGHLIGHT_PALETTE.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setActiveHighlighterColor(c.id)}
+                        title={`Màu highlight: ${c.label}`}
+                        className={`w-4 h-4 rounded-full border-2 border-[#0F172A] cursor-pointer transition-transform ${
+                          c.swatch
+                        } ${activeHighlighterColor === c.id ? 'scale-125 ring-2 ring-[#E11D48]' : 'opacity-80 hover:opacity-100'}`}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
 
-              {/* Quick Starter Chips */}
-              <div className="px-3 pb-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
-                {[
-                  ...(isStudyPopupOpen && filteredWords[deckIndex]
-                    ? [`Giải thích thêm từ "${filteredWords[deckIndex].word}" & cho ví dụ Band 8.0`]
-                    : []),
-                  'Phân biệt must & have to',
-                  'Luyện chat giao tiếp công sở',
-                  '3 Idioms hay cho IELTS Speaking',
-                ].map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => handleSendTutorMessage(q)}
-                    className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold shrink-0 cursor-pointer transition-colors ${
-                      isDark
-                        ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
-                        : 'bg-[#FEF9C3] hover:bg-[#FDE047] border border-[#0F172A] text-[#0F172A]'
+              {/* Messages Feed OR Saved Explanations Notebook */}
+              {tutorViewMode === 'saved' ? (
+                <div className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3.5">
+                  {savedTutorNotes.length === 0 ? (
+                    <div className="py-12 px-4 text-center space-y-2 rounded-2xl bg-white border-2 border-dashed border-[#0F172A]/40">
+                      <Highlighter className="w-7 h-7 text-[#E11D48] mx-auto" />
+                      <p className="text-xs font-black">Chưa có lời giải thích nào được lưu</p>
+                      <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
+                        Trong tab Trò chuyện, bấm <strong>Lưu giải thích</strong> dưới câu trả lời của Gia sư AI rồi quay lại đây để bôi màu highlight nhiều cụm từ quan trọng!
+                      </p>
+                    </div>
+                  ) : (
+                    savedTutorNotes.map((note) => {
+                      const selectedText = selectedPhraseByNote[note.id] || '';
+                      const draftPhrase = noteHighlightDrafts[note.id] || '';
+                      return (
+                        <div
+                          key={note.id}
+                          className={`rounded-2xl p-3.5 space-y-2.5 ${
+                            isDark
+                              ? 'bg-[#181C28] border border-white/10'
+                              : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A]'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2 pb-2 border-b border-[#0F172A]/10">
+                            <div className="min-w-0">
+                              <h5 className="text-xs font-black text-[#E11D48] leading-snug">{note.title}</h5>
+                              <p className="text-[10px] text-slate-400 font-semibold">
+                                {new Date(note.createdAt).toLocaleDateString('vi-VN')} • Bôi đen cụm từ bên dưới để tô màu
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSavedTutorNote(note.id)}
+                              className="p-1 rounded-lg text-slate-400 hover:text-[#E11D48] hover:bg-[#FFE4E6] cursor-pointer shrink-0"
+                              title="Xóa ghi chú này"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          {/* Selectable Explanation Content */}
+                          <div
+                            onMouseUp={() => {
+                              const sel = window.getSelection()?.toString().trim() || '';
+                              if (sel.length >= 2 && sel.length <= 80) {
+                                setSelectedPhraseByNote((prev) => ({ ...prev, [note.id]: sel }));
+                              }
+                            }}
+                            className={`space-y-2 leading-relaxed select-text ${
+                              isTutorExpanded ? 'text-[13px]' : 'text-xs'
+                            }`}
+                          >
+                            {note.replyEn && (
+                              <div className="p-2 rounded-xl bg-[#FFFDF7] border border-[#0F172A]/25 flex items-start justify-between gap-2">
+                                <p className="font-bold italic">&ldquo;{note.replyEn}&rdquo;</p>
+                                <button
+                                  type="button"
+                                  onClick={() => speakEnglishWord(note.replyEn || '', false)}
+                                  className="p-1 rounded-lg bg-[#FFE4E6] text-[#E11D48] border border-[#0F172A] shrink-0 cursor-pointer"
+                                >
+                                  <Volume2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )}
+                            {renderHighlightedTutorText(note.explanationVi, note.highlights)}
+                          </div>
+
+                          {/* Instant Selection Color Picker when user highlights text with mouse */}
+                          {selectedText && (
+                            <div className="p-2 rounded-xl bg-[#FEF9C3] border-2 border-[#0F172A] flex items-center justify-between gap-2 flex-wrap animate-in fade-in duration-100">
+                              <span className="text-[11px] font-black text-[#0F172A] truncate max-w-[180px]">
+                                Tô màu: &ldquo;{selectedText}&rdquo;
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                {TUTOR_HIGHLIGHT_PALETTE.map((c) => (
+                                  <button
+                                    key={c.id}
+                                    type="button"
+                                    onClick={() => handleAddHighlightToNote(note.id, selectedText, c.id)}
+                                    className={`px-2 py-0.5 rounded-lg border border-[#0F172A] text-[10px] font-black text-[#0F172A] cursor-pointer ${c.swatch} hover:scale-105 transition-transform`}
+                                  >
+                                    {c.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Quick Phrase Highlighter Input + Active Highlights List */}
+                          <div className="pt-2 border-t border-[#0F172A]/10 space-y-2">
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="text"
+                                value={draftPhrase}
+                                onChange={(e) =>
+                                  setNoteHighlightDrafts((prev) => ({ ...prev, [note.id]: e.target.value }))
+                                }
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && draftPhrase.trim()) {
+                                    e.preventDefault();
+                                    handleAddHighlightToNote(note.id, draftPhrase, activeHighlighterColor);
+                                  }
+                                }}
+                                placeholder="Gõ cụm từ cần highlight..."
+                                className={`flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold outline-none ${
+                                  isDark
+                                    ? 'bg-[#12151E] border border-white/10 text-white'
+                                    : 'bg-[#FFFDF7] border border-[#0F172A] text-[#0F172A]'
+                                }`}
+                              />
+                              <div className="flex items-center gap-1">
+                                {TUTOR_HIGHLIGHT_PALETTE.map((c) => (
+                                  <button
+                                    key={c.id}
+                                    type="button"
+                                    disabled={!draftPhrase.trim()}
+                                    onClick={() => handleAddHighlightToNote(note.id, draftPhrase, c.id)}
+                                    title={`Highlight cụm từ màu ${c.label}`}
+                                    className={`w-5 h-5 rounded-md border border-[#0F172A] cursor-pointer disabled:opacity-40 ${c.swatch}`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+
+                            {note.highlights.length > 0 && (
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {note.highlights.map((hl) => {
+                                  const colorSpec =
+                                    TUTOR_HIGHLIGHT_PALETTE.find((c) => c.id === hl.color) || TUTOR_HIGHLIGHT_PALETTE[0];
+                                  return (
+                                    <span
+                                      key={hl.id}
+                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black ${
+                                        isDark ? colorSpec.darkCls : colorSpec.lightCls
+                                      }`}
+                                    >
+                                      <span>{hl.phrase}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveHighlightFromNote(note.id, hl.id)}
+                                        className="hover:opacity-70 cursor-pointer"
+                                      >
+                                        <X className="w-2.5 h-2.5" />
+                                      </button>
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              ) : (
+                <div ref={tutorScrollRef} className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3">
+                  {tutorMessages.map((msg, msgIdx) => {
+                    const isSavedMsg = savedTutorNotes.some((n) => n.sourceMsgId === msg.id);
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start items-start gap-2'}`}
+                      >
+                        {msg.role === 'assistant' && (
+                          <div className="w-6 h-6 rounded-xl bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] p-1 shrink-0 mt-0.5">
+                            <img src="/images/logo-mark.png" alt="" className="w-full h-full object-contain" />
+                          </div>
+                        )}
+
+                        <div
+                          className={`${
+                            isTutorExpanded ? 'max-w-[82%] text-[13px]' : 'max-w-[86%] text-xs'
+                          } rounded-2xl px-3.5 py-2.5 leading-relaxed space-y-2 ${
+                            msg.role === 'user'
+                              ? isDark
+                                ? 'bg-[#1DB954] text-[#090A0F] font-semibold rounded-tr-sm'
+                                : 'bg-[#E11D48] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] font-bold rounded-tr-sm'
+                              : isDark
+                              ? 'bg-[#181C28] border border-white/10 text-slate-200 rounded-tl-sm'
+                              : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A] rounded-tl-sm'
+                          }`}
+                        >
+                          {msg.role === 'user' ? (
+                            <p>{msg.text}</p>
+                          ) : (
+                            <>
+                              {msg.primaryMode === 'en_chat' ? (
+                                <>
+                                  {msg.replyEn && (
+                                    <div
+                                      className={`p-2.5 rounded-xl flex items-start justify-between gap-2 ${
+                                        isDark
+                                          ? 'bg-[#12151E] border border-emerald-400/25 text-emerald-300'
+                                          : 'bg-[#FFFDF7] border-2 border-[#0F172A] text-[#0F172A]'
+                                      }`}
+                                    >
+                                      <p className="font-bold leading-relaxed">{msg.replyEn}</p>
+                                      <button
+                                        type="button"
+                                        onClick={() => speakEnglishWord(msg.replyEn || '', false)}
+                                        className="p-1 rounded-lg bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border border-[#0F172A] shrink-0 cursor-pointer"
+                                        title="Nghe phát âm"
+                                      >
+                                        <Volume2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  )}
+                                  {msg.explanationVi && renderHighlightedTutorText(msg.explanationVi)}
+                                </>
+                              ) : (
+                                <>
+                                  {msg.explanationVi && renderHighlightedTutorText(msg.explanationVi)}
+                                  {msg.replyEn && (
+                                    <div
+                                      className={`p-2.5 rounded-xl flex items-start justify-between gap-2 ${
+                                        isDark
+                                          ? 'bg-[#12151E] border border-white/10 text-emerald-300'
+                                          : 'bg-[#FFFDF7] border-2 border-[#0F172A] text-[#0F172A]'
+                                      }`}
+                                    >
+                                      <div className="space-y-0.5">
+                                        <span className="text-[9.5px] font-black uppercase tracking-wider text-[#E11D48] block">
+                                          Ví dụ minh họa
+                                        </span>
+                                        <p className="font-bold italic leading-relaxed">&ldquo;{msg.replyEn}&rdquo;</p>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => speakEnglishWord(msg.replyEn || '', false)}
+                                        className="p-1 rounded-lg bg-[#FFE4E6] hover:bg-[#FECDD3] text-[#E11D48] border border-[#0F172A] shrink-0 cursor-pointer mt-1"
+                                        title="Nghe phát âm"
+                                      >
+                                        <Volume2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+
+                              {msg.bonusVocab && (
+                                <div
+                                  className={`p-2 rounded-xl flex items-center justify-between gap-2 ${
+                                    isDark
+                                      ? 'bg-emerald-500/10 border border-emerald-500/25'
+                                      : 'bg-[#FEF9C3] border-2 border-[#0F172A] text-[#0F172A]'
+                                  }`}
+                                >
+                                  <div className="min-w-0">
+                                    <p className="font-black text-[11px] truncate">
+                                      ✨ {msg.bonusVocab.word}{' '}
+                                      {msg.bonusVocab.phonetic && (
+                                        <span className="font-mono font-normal opacity-75">{msg.bonusVocab.phonetic}</span>
+                                      )}
+                                    </p>
+                                    <p className="text-[10.5px] font-semibold opacity-90 truncate">{msg.bonusVocab.meaning}</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveBonusVocabFromTutor(msg.bonusVocab!)}
+                                    className="px-2.5 py-1 rounded-lg bg-[#E11D48] hover:bg-[#BE123C] text-white border border-[#0F172A] shadow-[2px_2px_0px_#0F172A] text-[10px] font-black shrink-0 cursor-pointer"
+                                  >
+                                    + Lưu
+                                  </button>
+                                </div>
+                              )}
+
+                              {/* Save Explanation & Highlight CTA */}
+                              {msg.id !== 'welcome-tutor' && (msg.explanationVi || msg.text) && (
+                                <div className="pt-1 flex items-center justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveTutorExplanation(msg, msgIdx)}
+                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] font-black cursor-pointer transition-all ${
+                                      isSavedMsg
+                                        ? 'bg-[#DCFCE7] text-[#15803D] border border-[#0F172A]'
+                                        : isDark
+                                        ? 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
+                                        : 'bg-[#FFFDF7] hover:bg-[#FEF08A] text-[#0F172A] border border-[#0F172A] shadow-[1px_1px_0px_#0F172A]'
+                                    }`}
+                                    title="Lưu lời giải thích để tô màu highlight cụm từ"
+                                  >
+                                    {isSavedMsg ? <Check className="w-3 h-3" /> : <Bookmark className="w-3 h-3 text-[#E11D48]" />}
+                                    <span>{isSavedMsg ? 'Đã lưu • Tô màu' : 'Lưu giải thích'}</span>
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {isTutorTyping && (
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                      <div className="w-6 h-6 rounded-xl bg-white border-2 border-[#0F172A] p-1">
+                        <img src="/images/logo-mark.png" alt="" className="w-full h-full object-contain" />
+                      </div>
+                      <div className={`px-3 py-2 rounded-2xl flex items-center gap-1.5 ${
+                        isDark
+                          ? 'bg-[#181C28] border border-white/10'
+                          : 'bg-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                      }`}>
+                        <Loader2 className="w-3 h-3 animate-spin text-[#E11D48]" />
+                        <span className="text-[11px] font-semibold">Gia sư đang soạn câu trả lời...</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tutorViewMode === 'chat' && (
+                <>
+                  {/* Quick Starter Chips */}
+                  <div className="px-3 pb-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+                    {[
+                      ...(isStudyPopupOpen && filteredWords[deckIndex]
+                        ? [`Giải thích thêm từ "${filteredWords[deckIndex].word}" & cho ví dụ Band 8.0`]
+                        : []),
+                      'Phân biệt must & have to',
+                      'Luyện chat giao tiếp công sở',
+                      '3 Idioms hay cho IELTS Speaking',
+                    ].map((q) => (
+                      <button
+                        key={q}
+                        type="button"
+                        onClick={() => handleSendTutorMessage(q)}
+                        className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold shrink-0 cursor-pointer transition-colors ${
+                          isDark
+                            ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
+                            : 'bg-[#FEF9C3] hover:bg-[#FDE047] border border-[#0F172A] text-[#0F172A]'
+                        }`}
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Input Bar */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSendTutorMessage();
+                    }}
+                    className={`p-3 flex items-center gap-2 shrink-0 ${
+                      isDark ? 'border-t border-white/[0.08] bg-[#181C28]/60' : 'border-t-2 border-[#0F172A] bg-[#FFF1F2]'
                     }`}
                   >
-                    {q}
-                  </button>
-                ))}
-              </div>
-
-              {/* Input Bar */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSendTutorMessage();
-                }}
-                className={`p-3 flex items-center gap-2 shrink-0 ${
-                  isDark ? 'border-t border-white/[0.08] bg-[#181C28]/60' : 'border-t-2 border-[#0F172A] bg-[#FFF1F2]'
-                }`}
-              >
-                <input
-                  type="text"
-                  value={tutorInput}
-                  onChange={(e) => setTutorInput(e.target.value)}
-                  placeholder="Hỏi ngữ pháp, từ vựng hoặc chat tiếng Anh..."
-                  className={`flex-1 px-3.5 py-2 rounded-xl text-xs font-semibold outline-none ${
-                    isDark
-                      ? 'bg-[#12151E] border border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
-                      : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
-                  }`}
-                />
-                <button
-                  type="submit"
-                  disabled={isTutorTyping || !tutorInput.trim()}
-                  className={`p-2 rounded-xl cursor-pointer disabled:opacity-45 shrink-0 ${
-                    isDark
-                      ? 'bg-[#1DB954] text-[#090A0F] hover:brightness-110'
-                      : 'bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
-                  }`}
-                  title="Gửi"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
+                    <input
+                      type="text"
+                      value={tutorInput}
+                      onChange={(e) => setTutorInput(e.target.value)}
+                      placeholder="Hỏi ngữ pháp, từ vựng hoặc chat tiếng Anh..."
+                      className={`flex-1 px-3.5 py-2 rounded-xl text-xs font-semibold outline-none ${
+                        isDark
+                          ? 'bg-[#12151E] border border-white/10 text-white placeholder:text-slate-500 focus:border-[#1DB954]'
+                          : 'bg-white border-2 border-[#0F172A] text-[#0F172A] focus:bg-[#FFF1F2] focus:outline-none'
+                      }`}
+                    />
+                    <button
+                      type="submit"
+                      disabled={isTutorTyping || !tutorInput.trim()}
+                      className={`p-2 rounded-xl cursor-pointer disabled:opacity-45 shrink-0 ${
+                        isDark
+                          ? 'bg-[#1DB954] text-[#090A0F] hover:brightness-110'
+                          : 'bg-[#E11D48] hover:bg-[#BE123C] text-white border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]'
+                      }`}
+                      title="Gửi"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </form>
+                </>
+              )}
             </div>
           )}
         </>,

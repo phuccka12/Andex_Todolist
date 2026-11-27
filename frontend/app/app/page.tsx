@@ -200,25 +200,46 @@ export default function WorkspaceApp() {
 
     setUserProfile(getStoredUserProfile());
 
-    authService.getMe().then((cloudUser) => {
-      if (cloudUser) {
-        setAuthUser(cloudUser);
-        setUserProfile((prev) => {
-          const merged = {
-            ...prev,
-            name: cloudUser.name || prev.name,
-            avatar: cloudUser.avatar || prev.avatar,
-            title: cloudUser.title || prev.title,
-            bio: cloudUser.bio || prev.bio,
-            background: cloudUser.wallpaper || prev.background,
-            cover: cloudUser.coverImage || prev.cover,
-          };
-          saveStoredUserProfile(merged);
-          return merged;
-        });
-      }
-      loadTasks();
-    });
+    // Instant cached auth hydration + parallel tasks & session sync (eliminates sequential waterfall)
+    const cachedUser = authService.getCachedUser();
+    if (cachedUser) {
+      setAuthUser(cachedUser);
+      setUserProfile((prev) => ({
+        ...prev,
+        name: cachedUser.name || prev.name,
+        avatar: cachedUser.avatar || prev.avatar,
+        title: cachedUser.title || prev.title,
+        bio: cachedUser.bio || prev.bio,
+        background: cachedUser.wallpaper || prev.background,
+        cover: cachedUser.coverImage || prev.cover,
+      }));
+    }
+
+    loadTasks();
+
+    if (authService.getToken()) {
+      authService.getMe().then((cloudUser) => {
+        if (cloudUser) {
+          setAuthUser(cloudUser);
+          setUserProfile((prev) => {
+            const merged = {
+              ...prev,
+              name: cloudUser.name || prev.name,
+              avatar: cloudUser.avatar || prev.avatar,
+              title: cloudUser.title || prev.title,
+              bio: cloudUser.bio || prev.bio,
+              background: cloudUser.wallpaper || prev.background,
+              cover: cloudUser.coverImage || prev.cover,
+            };
+            saveStoredUserProfile(merged);
+            return merged;
+          });
+        } else if (!authService.getToken()) {
+          setAuthUser(null);
+          loadTasks();
+        }
+      });
+    }
   }, [loadTasks]);
 
   // Event Bus: Instant Zero-Reload sync when AI Concierge creates or reschedules tasks

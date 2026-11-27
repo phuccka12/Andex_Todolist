@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   X,
   Mail,
@@ -20,6 +21,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { authService, AuthUser } from '../lib/authService';
+import { API_BASE } from '../lib/config';
 import { soundEngine } from '../lib/audio';
 
 interface AuthModalProps {
@@ -35,6 +37,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onAuthSuccess,
   initialTab = 'login',
 }) => {
+  const router = useRouter();
   const [tab, setTab] = useState<'login' | 'register' | 'forgot' | 'reset'>(initialTab);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -55,8 +58,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setTab(initialTab);
       setErrorMsg('');
       setSuccessMsg('');
+      // Prefetch /app bundle & pre-warm backend/DB connection while user enters credentials
+      try {
+        router.prefetch('/app');
+        fetch(`${API_BASE}/health`, { method: 'GET' }).catch(() => {});
+      } catch {}
     }
-  }, [isOpen, initialTab]);
+  }, [isOpen, initialTab, router]);
 
   if (!isOpen) return null;
 
@@ -91,11 +99,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       if (res.success && res.user) {
         soundEngine.playPentatonicChime(4);
-        setSuccessMsg('Đăng ký tài khoản thành công! Đang thiết lập không gian làm việc...');
+        setSuccessMsg('Đăng ký thành công! Đang vào không gian làm việc...');
         setTimeout(() => {
           onAuthSuccess(res.user!);
           onClose();
-        }, 800);
+        }, 120);
       } else {
         setErrorMsg(res.message || 'Đăng ký thất bại. Vui lòng thử lại.');
       }
@@ -152,7 +160,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setTimeout(() => {
           onAuthSuccess(res.user!);
           onClose();
-        }, 900);
+        }, 150);
       } else {
         setErrorMsg(res.message || 'Mã xác nhận không hợp lệ hoặc đã hết hạn.');
       }
@@ -179,7 +187,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setTimeout(() => {
         onAuthSuccess(res.user!);
         onClose();
-      }, 700);
+      }, 100);
     } else {
       setErrorMsg(res.message || 'Email hoặc mật khẩu không chính xác.');
     }
