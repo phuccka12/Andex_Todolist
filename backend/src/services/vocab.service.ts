@@ -625,15 +625,115 @@ class VocabService {
     return BANK[k] || null;
   }
 
+  private buildNotFoundDictionaryEntry(query: string, reasonVi: string, suggestions: string[] = []) {
+    const cleanQuery = query.trim();
+    const normalizedLower = cleanQuery.toLowerCase();
+    const cleanSuggestions = Array.from(
+      new Set(
+        suggestions
+          .map((s) => String(s || '').trim())
+          .filter((s) => s.length > 0 && s.toLowerCase() !== normalizedLower)
+      )
+    ).slice(0, 6);
+
+    return {
+      found: false,
+      term: cleanQuery,
+      category: 'word' as DictionaryCategory,
+      phonetic: '',
+      partOfSpeech: '',
+      shortMeaningVi: '',
+      detailedExplanationVi: '',
+      grammarFormula: '',
+      usageNotesVi: '',
+      synonyms: [] as string[],
+      antonyms: [] as string[],
+      examples: [] as Array<{ en: string; vi: string }>,
+      suggestedTopic: 'Đời sống',
+      notFoundReasonVi:
+        reasonVi.trim() ||
+        `Không tìm thấy "${cleanQuery}" trong từ điển tiếng Anh chuẩn. Bạn hãy kiểm tra lại chính tả hoặc thử từ khác nhé.`,
+      suggestions: cleanSuggestions,
+    };
+  }
+
+  private async probeFreeDictionary(term: string): Promise<{
+    status: 'found' | 'not_found' | 'error';
+    canonicalWord?: string;
+    phonetic?: string;
+    partOfSpeech?: string;
+    firstDefinition?: string;
+    synonyms: string[];
+    antonyms: string[];
+    example?: string;
+  }> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
+    try {
+      const res = await fetch(
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(term.toLowerCase())}`,
+        { signal: controller.signal }
+      );
+      if (res.status === 404) {
+        return { status: 'not_found', synonyms: [], antonyms: [] };
+      }
+      if (!res.ok) {
+        return { status: 'error', synonyms: [], antonyms: [] };
+      }
+      const entries: any = await res.json();
+      const first = Array.isArray(entries) ? entries[0] : null;
+      if (!first) {
+        return { status: 'not_found', synonyms: [], antonyms: [] };
+      }
+      const phonetic =
+        String(first.phonetic || first.phonetics?.find((p: any) => p?.text)?.text || '').trim();
+      const firstMeaning = first.meanings?.[0];
+      const partOfSpeech = String(firstMeaning?.partOfSpeech || '').trim();
+      const defs = Array.isArray(firstMeaning?.definitions) ? firstMeaning.definitions : [];
+      const firstDefinition = String(defs[0]?.definition || '').trim();
+      const synonyms: string[] = [];
+      const antonyms: string[] = [];
+      let example = '';
+
+      for (const m of first.meanings || []) {
+        if (Array.isArray(m.synonyms)) synonyms.push(...m.synonyms);
+        if (Array.isArray(m.antonyms)) antonyms.push(...m.antonyms);
+        for (const d of m.definitions || []) {
+          if (Array.isArray(d.synonyms)) synonyms.push(...d.synonyms);
+          if (Array.isArray(d.antonyms)) antonyms.push(...d.antonyms);
+          if (!example && d.example) {
+            example = String(d.example).trim();
+          }
+        }
+      }
+
+      return {
+        status: 'found',
+        canonicalWord: String(first.word || term).trim(),
+        phonetic,
+        partOfSpeech,
+        firstDefinition,
+        synonyms: Array.from(new Set(synonyms)).slice(0, 5),
+        antonyms: Array.from(new Set(antonyms)).slice(0, 5),
+        example,
+      };
+    } catch {
+      return { status: 'error', synonyms: [], antonyms: [] };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   private async lookupDictionaryFallback(query: string, category: DictionaryCategory): Promise<any> {
     const builtIn = this.getBuiltInDictionaryEntry(query);
     if (builtIn) {
-      return builtIn;
+      return { found: true, ...builtIn };
     }
 
     const hasVietnamese = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(
       query
     );
+    const isSingleEnglishWord = !hasVietnamese && /^[a-zA-Z]+(?:-[a-zA-Z]+)*$/.test(query);
 
     let englishTerm = query;
     let shortMeaningVi = '';
@@ -648,7 +748,7 @@ class VocabService {
       shortMeaningVi = await this.translateQuickText(query, 'en', 'vi');
     }
 
-    // Fetch FreeDictionaryAPI for real phonetics, part of speech, synonyms, and examples
+    // Fetch FreeDictionaryAPI for real verification, phonetics, part of speech, synonyms, and examples
     let phonetic = '';
     let partOfSpeech = category !== 'auto' ? category.replace('_', ' ') : 'word';
     let detailedExplanationVi = '';
@@ -656,52 +756,44 @@ class VocabService {
     const antonyms: string[] = [];
     const examples: Array<{ en: string; vi: string }> = [];
 
-    const dictController = new AbortController();
-    const dictTimer = setTimeout(() => dictController.abort(), 6000);
-    try {
-      const dictRes = await fetch(
-        `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(englishTerm.toLowerCase())}`,
-        { signal: dictController.signal }
-      );
-      if (dictRes.ok) {
-        const entries: any = await dictRes.json();
-        const first = Array.isArray(entries) ? entries[0] : null;
-        if (first) {
-          englishTerm = String(first.word || englishTerm).trim();
-          phonetic =
-            first.phonetic ||
-            first.phonetics?.find((p: any) => p?.text)?.text ||
-            '';
-          const firstMeaning = first.meanings?.[0];
-          if (firstMeaning?.partOfSpeech) {
-            partOfSpeech = firstMeaning.partOfSpeech;
-          }
-          const defs = Array.isArray(firstMeaning?.definitions) ? firstMeaning.definitions : [];
-          if (defs[0]?.definition) {
-            const defVi = await this.translateQuickText(defs[0].definition, 'en', 'vi');
-            detailedExplanationVi = defVi || defs[0].definition;
-          }
-          for (const m of first.meanings || []) {
-            if (Array.isArray(m.synonyms)) synonyms.push(...m.synonyms);
-            if (Array.isArray(m.antonyms)) antonyms.push(...m.antonyms);
-            for (const d of m.definitions || []) {
-              if (Array.isArray(d.synonyms)) synonyms.push(...d.synonyms);
-              if (Array.isArray(d.antonyms)) antonyms.push(...d.antonyms);
-              if (d.example && examples.length < 2) {
-                const exVi = await this.translateQuickText(d.example, 'en', 'vi');
-                examples.push({ en: String(d.example).trim(), vi: exVi });
-              }
-            }
-          }
-        }
+    const freeDict = await this.probeFreeDictionary(englishTerm);
+    if (freeDict.status === 'found') {
+      englishTerm = freeDict.canonicalWord || englishTerm;
+      phonetic = freeDict.phonetic || '';
+      if (freeDict.partOfSpeech) {
+        partOfSpeech = freeDict.partOfSpeech;
       }
-    } catch {
-      // Ignore FreeDictionaryAPI errors and continue with translation result
-    } finally {
-      clearTimeout(dictTimer);
+      if (freeDict.firstDefinition) {
+        const defVi = await this.translateQuickText(freeDict.firstDefinition, 'en', 'vi');
+        detailedExplanationVi = defVi || freeDict.firstDefinition;
+      }
+      synonyms.push(...freeDict.synonyms);
+      antonyms.push(...freeDict.antonyms);
+      if (freeDict.example) {
+        const exVi = await this.translateQuickText(freeDict.example, 'en', 'vi');
+        examples.push({ en: freeDict.example, vi: exVi });
+      }
     }
 
-    if (!shortMeaningVi && !detailedExplanationVi && examples.length === 0) {
+    if (isSingleEnglishWord && freeDict.status === 'not_found') {
+      return this.buildNotFoundDictionaryEntry(
+        query,
+        `Từ "${query}" không có trong từ điển tiếng Anh chuẩn. Bạn hãy kiểm tra lại chính tả hoặc tránh ghép hậu tố không tồn tại.`,
+        []
+      );
+    }
+
+    const meaningfulViDiffers =
+      Boolean(shortMeaningVi) && shortMeaningVi.trim().toLowerCase() !== query.trim().toLowerCase();
+
+    if (!meaningfulViDiffers && !detailedExplanationVi && examples.length === 0) {
+      if (freeDict.status === 'not_found') {
+        return this.buildNotFoundDictionaryEntry(
+          query,
+          `Không tìm thấy "${query}" trong từ điển tiếng Anh chuẩn.`,
+          []
+        );
+      }
       throw new Error('Máy chủ AI đang quá tải tạm thời. Bạn thử tra lại sau vài giây nhé!');
     }
 
@@ -713,6 +805,7 @@ class VocabService {
         : 'word';
 
     return {
+      found: true,
       term: englishTerm,
       category: resolvedCat,
       phonetic,
@@ -1316,53 +1409,98 @@ Return ONLY a valid JSON array of objects with exact keys:
     category?: 'auto' | 'word' | 'modal_verb' | 'idiom' | 'phrasal_verb';
     customApiKey?: string;
   }) {
-    const query = input.query.trim();
+    const query = input.query.trim().replace(/\s+/g, ' ');
     if (!query) {
       throw new Error('Vui lòng nhập từ, modal verb, idiom hoặc phrasal verb cần tra.');
     }
 
     const cat = input.category || 'auto';
-    const cacheKey = `${cat}|${query.toLowerCase()}`;
+    const cacheKey = `v2|${cat}|${query.toLowerCase()}`;
     const cachedEntry = this.dictionaryCache.get(cacheKey);
     if (cachedEntry) {
       return cachedEntry;
     }
 
+    const hasLetters = /[a-zA-Zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(query);
+    const looksLikeGibberish =
+      !hasLetters ||
+      (!query.includes(' ') && query.length > 42) ||
+      (!query.includes(' ') && /(.)\1{4,}/i.test(query));
+
+    if (looksLikeGibberish) {
+      return this.buildNotFoundDictionaryEntry(
+        query,
+        `Chuỗi "${query}" không giống một từ hay cụm từ hợp lệ trong tiếng Anh hoặc tiếng Việt.`,
+        []
+      );
+    }
+
     const builtInEntry = this.getBuiltInDictionaryEntry(query);
     if (builtInEntry && (cat === 'auto' || builtInEntry.category === cat)) {
-      this.dictionaryCache.set(cacheKey, builtInEntry);
-      return builtInEntry;
+      const result = { found: true, ...builtInEntry };
+      this.dictionaryCache.set(cacheKey, result);
+      return result;
     }
+
+    const hasVietnamese = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(
+      query
+    );
+    const isSingleEnglishWord = !hasVietnamese && /^[a-zA-Z]+(?:-[a-zA-Z]+)*$/.test(query);
+
+    // Pre-verify single English words against FreeDictionary/Wiktionary (~150-350ms) so Gemini gets grounded signal
+    const freeDictCheck = isSingleEnglishWord
+      ? await this.probeFreeDictionary(query)
+      : ({ status: 'error', synonyms: [], antonyms: [] } as const);
+
+    const groundingSignal = isSingleEnglishWord
+      ? freeDictCheck.status === 'found'
+        ? `TÍN HIỆU TỪ ĐIỂN CHUẨN: Đã xác nhận từ "${freeDictCheck.canonicalWord || query}" TỒN TẠI trên FreeDictionary/Wiktionary${
+            freeDictCheck.phonetic ? ` (IPA tham khảo: ${freeDictCheck.phonetic})` : ''
+          }.`
+        : freeDictCheck.status === 'not_found'
+        ? `CẢNH BÁO XÁC THỰC TỪ ĐIỂN: Hệ thống tra cứu từ điển chuẩn (FreeDictionary/Wiktionary) trả về KHÔNG TÌM THẤY mục từ "${query}". Hãy kiểm tra CỰC KỲ KHẮT KHE: nếu "${query}" là từ bịa đặt / tự ghép tiền tố-hậu tố không có thật (vd: danh từ + -ally như "concentrationally", "beautifullness", "fastly", "unpossible"), từ sai chính tả hoặc vô nghĩa → BẮT BUỘC đặt "existsInDictionary": false và gợi ý 3-5 từ THẬT đúng chính tả/tự nhiên hơn. CHỈ đặt true nếu 100% chắc chắn đây là biến thể chia động từ/số nhiều hợp lệ của một từ chuẩn hoặc thuật ngữ/từ mới thực sự có trong Oxford/Cambridge.`
+        : ''
+      : '';
 
     const catHint =
       cat === 'modal_verb'
-        ? 'CHẾ ĐỘ CHUYÊN GIA MODAL VERBS: Hãy phân tích đầy đủ công thức hiện tại/tương lai (S + modal + V0), dạng suy đoán quá khứ (S + modal + have + V3 nếu có), mức độ chắc chắn/bắt buộc/lịch sự, và phân biệt với các modal verb dễ nhầm lẫn (vd: must vs have to, may vs might).'
+        ? 'CHẾ ĐỘ CHUYÊN GIA MODAL VERBS: Nếu hợp lệ, hãy phân tích đầy đủ công thức hiện tại/tương lai (S + modal + V0), dạng suy đoán quá khứ (S + modal + have + V3 nếu có), mức độ chắc chắn/bắt buộc/lịch sự, và phân biệt với các modal verb dễ nhầm lẫn.'
         : cat === 'idiom'
-        ? 'CHẾ ĐỘ CHUYÊN GIA IDIOMS (THÀNH NGỮ): Hãy giải thích sắc nét nghĩa bóng thực tế, nghĩa đen/nguồn gốc ngắn giúp nhớ lâu, hoàn cảnh giao tiếp phù hợp (trang trọng hay đời thường), và cảnh báo nếu dễ dùng sai ngữ cảnh.'
+        ? 'CHẾ ĐỘ CHUYÊN GIA IDIOMS (THÀNH NGỮ): Nếu hợp lệ, hãy giải thích sắc nét nghĩa bóng thực tế, nghĩa đen/nguồn gốc ngắn giúp nhớ lâu, hoàn cảnh giao tiếp phù hợp và cảnh báo nếu dễ dùng sai ngữ cảnh.'
         : cat === 'phrasal_verb'
-        ? 'CHẾ ĐỘ CHUYÊN GIA PHRASAL VERBS: Hãy liệt kê các tầng nghĩa thông dụng nhất (nghĩa đen & nghĩa bóng), ghi rõ Separable (tách được: V + O + prep / V + prep + O) hay Inseparable (không tách được), kèm giới từ bắt buộc đi sau.'
+        ? 'CHẾ ĐỘ CHUYÊN GIA PHRASAL VERBS: Nếu hợp lệ, hãy liệt kê các tầng nghĩa thông dụng nhất, ghi rõ Separable hay Inseparable, kèm giới từ bắt buộc đi sau.'
         : cat === 'word'
-        ? 'CHẾ ĐỘ TỪ ĐIỂN CHUẨN: Nêu chính xác IPA, từ loại, các nét nghĩa thông dụng nhất, collocations hay đi kèm và lỗi người Việt hay mắc phải.'
-        : 'Hãy tự nhận diện chính xác xem đây là word, modal_verb, idiom hay phrasal_verb, rồi phân tích sâu đúng theo chuẩn chuyên gia TESOL.';
+        ? 'CHẾ ĐỘ TỪ ĐIỂN CHUẨN: Nếu từ thực sự tồn tại trong từ điển chuẩn, nêu chính xác IPA, từ loại, các nét nghĩa thông dụng nhất, collocations hay đi kèm và lỗi người Việt hay mắc phải.'
+        : 'Hãy tự nhận diện chính xác xem đây là word, modal_verb, idiom hay phrasal_verb (sau khi đã xác nhận nó thực sự tồn tại), rồi phân tích sâu đúng theo chuẩn chuyên gia TESOL.';
 
     const prompt = [
-      `Bạn là Chuyên gia Ngôn ngữ học Song ngữ Anh-Việt & Giảng viên TESOL/IELTS 8.5+ của hệ thống Genncore.`,
+      `Bạn là Chuyên gia Từ điển học Song ngữ Anh-Việt & Giảng viên TESOL/IELTS 8.5+ của hệ thống Genncore.`,
       `Mục cần tra cứu (có thể là Tiếng Anh HOẶC Tiếng Việt): "${query}"`,
+      groundingSignal,
       catHint,
-      `QUY TẮC TRA 2 CHIỀU:`,
-      `- Nếu đầu vào là TIẾNG VIỆT (tra Việt → Anh): hãy chọn từ, Modal Verb, Idiom hoặc Phrasal Verb TIẾNG ANH chuẩn xác & tự nhiên nhất làm "term" (bằng tiếng Anh), điền IPA chuẩn của "term" tiếng Anh đó, giải thích thêm các cách diễn đạt tiếng Anh khác nhau trong "detailedExplanationVi", đưa các lựa chọn tiếng Anh khác vào "synonyms", và viết "examples" dùng "term" tiếng Anh đó.`,
-      `- Nếu đầu vào là TIẾNG ANH (tra Anh → Việt): "term" là từ/cụm tiếng Anh chuẩn chính tả, giải thích chi tiết bằng tiếng Việt.`,
       ``,
-      `Trả về DUY NHẤT một JSON object hợp lệ (KHÔNG bọc markdown \`\`\`) với cấu trúc:`,
+      `QUY TẮC BẮT BUỘC VỀ TÍNH TRUNG THỰC (KHÔNG GƯỢNG ÉP / KHÔNG BỊA ĐẶT):`,
+      `1. BƯỚC 1 (XÁC THỰC TỒN TẠI TRƯỚC TIÊN):`,
+      `   - Nếu đầu vào là TIẾNG ANH (hoặc chữ Latin không dấu): kiểm tra xem "${query}" có THỰC SỰ TỒN TẠI như một mục từ/cụm từ chính thống trong các từ điển chuẩn (Oxford, Cambridge, Merriam-Webster, Collins) hoặc là modal verb / idiom / phrasal verb được bản ngữ công nhận hay không.`,
+      `   - TUYỆT ĐỐI CẤM: KHÔNG tự suy diễn hay bịa nghĩa cho từ ghép sai hậu tố/tiền tố không có thật (vd: "concentrationally", "beautifullness", "fastly", "unpossible"), KHÔNG gượng ép tạo IPA giả, KHÔNG viết kiểu "trạng từ hiếm gặp được cấu thành từ..." để lấp liếm cho từ sai/không tồn tại.`,
+      `   - Nếu là từ KHÔNG tồn tại, từ tự chế, sai chính tả hoặc vô nghĩa: BẮT BUỘC đặt "existsInDictionary": false, giải thích rõ lý do trong "existenceCheckNoteVi", đưa tối đa 5 từ/cụm tiếng Anh THẬT sát nghĩa hoặc đúng chính tả vào "suggestions", và để trống ("") hoặc [] các trường còn lại.`,
+      `2. BƯỚC 2 (CHỈ KHI "existsInDictionary": true):`,
+      `   - Nếu đầu vào là TIẾNG VIỆT (tra Việt → Anh): chọn từ, Modal Verb, Idiom hoặc Phrasal Verb TIẾNG ANH chuẩn xác & tự nhiên nhất làm "term" (bằng tiếng Anh), điền IPA chuẩn, giải thích các cách diễn đạt trong "detailedExplanationVi", đưa lựa chọn khác vào "synonyms", và viết "examples".`,
+      `   - Nếu đầu vào là TIẾNG ANH (tra Anh → Việt): "term" giữ chuẩn chính tả tiếng Anh, giải thích chi tiết bằng tiếng Việt.`,
+      ``,
+      `Trả về DUY NHẤT một JSON object hợp lệ (KHÔNG bọc markdown \`\`\`) với đúng thứ tự trường sau:`,
       `{`,
-      `  "term": "Từ hoặc cụm từ TIẾNG ANH chuẩn chính tả",`,
+      `  "existsInDictionary": true,`,
+      `  "existenceCheckNoteVi": "Giải thích ngắn gọn căn cứ xác thực; nếu false thì nêu rõ vì sao không có trong từ điển chuẩn",`,
+      `  "suggestions": ["chỉ điền các từ/cụm tiếng Anh THẬT gợi ý thay thế nếu existsInDictionary là false"],`,
+      `  "term": "Từ hoặc cụm từ TIẾNG ANH chuẩn chính tả (để trống nếu false)",`,
       `  "category": "word" | "modal_verb" | "idiom" | "phrasal_verb",`,
-      `  "phonetic": "Phiên âm IPA chuẩn của term tiếng Anh (ví dụ /ˈɡɪv ʌp/)",`,
+      `  "phonetic": "Phiên âm IPA chuẩn (để trống nếu false)",`,
       `  "partOfSpeech": "Loại từ ngắn gọn (noun, verb, modal verb, idiom, phrasal verb...)",`,
-      `  "shortMeaningVi": "Nghĩa tiếng Việt súc tích, chuẩn xác nhất (dùng lưu flashcard)",`,
-      `  "detailedExplanationVi": "Giải thích chuyên sâu các tầng nghĩa (hoặc các từ tiếng Anh tương đương theo sắc thái nếu tra Việt → Anh) bằng tiếng Việt mạch lạc",`,
-      `  "grammarFormula": "Công thức / cấu trúc sử dụng chi tiết (vd: S + must + V0 | S + must + have + V3 | Separable: give sth up)",`,
-      `  "usageNotesVi": "Mẹo ghi nhớ, sắc thái trang trọng/thân mật, collocations hay dùng và lỗi người Việt hay sai",`,
+      `  "shortMeaningVi": "Nghĩa tiếng Việt súc tích, chuẩn xác nhất (để trống nếu false)",`,
+      `  "detailedExplanationVi": "Giải thích chuyên sâu các tầng nghĩa bằng tiếng Việt mạch lạc",`,
+      `  "grammarFormula": "Công thức / cấu trúc sử dụng chi tiết",`,
+      `  "usageNotesVi": "Mẹo ghi nhớ, sắc thái, collocations hay dùng và lỗi người Việt hay sai",`,
       `  "synonyms": ["từ/cụm tiếng Anh đồng nghĩa tự nhiên 1", "2", "3"],`,
       `  "antonyms": ["từ/cụm tiếng Anh trái nghĩa 1", "2"],`,
       `  "examples": [`,
@@ -1371,7 +1509,9 @@ Return ONLY a valid JSON array of objects with exact keys:
       `  ],`,
       `  "suggestedTopic": "Modal Verbs" | "Idioms" | "Phrasal Verbs" | "IT & Tech" | "Kinh doanh" | "IELTS & Học thuật" | "Giao tiếp" | "Đời sống"`,
       `}`,
-    ].join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
 
     let finalEntry: any = null;
     try {
@@ -1379,7 +1519,7 @@ Return ONLY a valid JSON array of objects with exact keys:
         {
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: 0.25,
+            temperature: 0.1,
             maxOutputTokens: 2048,
             responseMimeType: 'application/json',
           },
@@ -1393,50 +1533,83 @@ Return ONLY a valid JSON array of objects with exact keys:
         rawText,
         'Không tra được định dạng từ điển hợp lệ, bạn bấm "Tra ngay" lại nhé.'
       );
-      const resolvedCategory = ['word', 'modal_verb', 'idiom', 'phrasal_verb'].includes(parsed.category)
-        ? parsed.category
-        : cat === 'auto'
-        ? 'word'
-        : cat;
 
-      const fallbackTopic =
-        resolvedCategory === 'modal_verb'
-          ? 'Modal Verbs'
-          : resolvedCategory === 'idiom'
-          ? 'Idioms'
-          : resolvedCategory === 'phrasal_verb'
-          ? 'Phrasal Verbs'
-          : classifyTopicByKeywords(query, String(parsed.shortMeaningVi || ''), '');
+      const rawExistsFlag = parsed.existsInDictionary;
+      const explicitNotFound = rawExistsFlag === false || rawExistsFlag === 'false';
+      const checkNote = String(parsed.existenceCheckNoteVi || '').trim();
+      const shortMeaningVi = String(parsed.shortMeaningVi || '').trim();
+      const detailedExplanationVi = String(parsed.detailedExplanationVi || '').trim();
+      const grammarFormula = String(parsed.grammarFormula || '').trim();
+      const usageNotesVi = String(parsed.usageNotesVi || '').trim();
+      const suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions.map(String) : [];
 
-      finalEntry = {
-        term: String(parsed.term || query).trim(),
-        category: resolvedCategory,
-        phonetic: String(parsed.phonetic || '').trim(),
-        partOfSpeech: String(parsed.partOfSpeech || '').trim(),
-        shortMeaningVi:
-          String(parsed.shortMeaningVi || '').trim() ||
-          String(parsed.detailedExplanationVi || '').trim() ||
-          'Chưa có nghĩa ngắn gọn',
-        detailedExplanationVi: String(parsed.detailedExplanationVi || '').trim(),
-        grammarFormula: String(parsed.grammarFormula || '').trim(),
-        usageNotesVi: String(parsed.usageNotesVi || '').trim(),
-        synonyms: Array.isArray(parsed.synonyms) ? parsed.synonyms.map(String).filter(Boolean).slice(0, 6) : [],
-        antonyms: Array.isArray(parsed.antonyms) ? parsed.antonyms.map(String).filter(Boolean).slice(0, 6) : [],
-        examples: Array.isArray(parsed.examples)
-          ? parsed.examples
-              .filter((ex: any) => ex && ex.en)
-              .slice(0, 3)
-              .map((ex: any) => ({ en: String(ex.en).trim(), vi: String(ex.vi || '').trim() }))
-          : [],
-        suggestedTopic: String(parsed.suggestedTopic || fallbackTopic).trim(),
-      };
+      // Safety net: catch cases where Gemini admits the word doesn't exist / isn't accepted even if it left existsInDictionary true
+      const combinedNotesLower = `${checkNote} ${detailedExplanationVi} ${grammarFormula} ${usageNotesVi}`.toLowerCase();
+      const admittedNonExistent =
+        /(không tồn tại|chưa tồn tại|từ tự chế|từ tự tạo|không có trong từ điển|không được chấp nhận trong từ điển|không khuyến khích sử dụng|không được công nhận|not a (real|valid|standard) (english )?word|does not exist in standard)/i.test(
+          combinedNotesLower
+        ) &&
+        (!isSingleEnglishWord || freeDictCheck.status !== 'found');
+
+      if (explicitNotFound || admittedNonExistent || !shortMeaningVi) {
+        finalEntry = this.buildNotFoundDictionaryEntry(
+          query,
+          checkNote ||
+            `Từ/cụm "${query}" không tồn tại hoặc không được công nhận trong từ điển tiếng Anh chuẩn. Bạn hãy kiểm tra lại chính tả hoặc dùng các gợi ý tự nhiên bên dưới.`,
+          suggestions
+        );
+      } else {
+        const resolvedCategory = ['word', 'modal_verb', 'idiom', 'phrasal_verb'].includes(parsed.category)
+          ? parsed.category
+          : cat === 'auto'
+          ? 'word'
+          : cat;
+
+        const fallbackTopic =
+          resolvedCategory === 'modal_verb'
+            ? 'Modal Verbs'
+            : resolvedCategory === 'idiom'
+            ? 'Idioms'
+            : resolvedCategory === 'phrasal_verb'
+            ? 'Phrasal Verbs'
+            : classifyTopicByKeywords(query, shortMeaningVi, '');
+
+        finalEntry = {
+          found: true,
+          term: String(
+            parsed.term || (freeDictCheck.status === 'found' ? freeDictCheck.canonicalWord : '') || query
+          ).trim(),
+          category: resolvedCategory,
+          phonetic: String(
+            parsed.phonetic || (freeDictCheck.status === 'found' ? freeDictCheck.phonetic : '') || ''
+          ).trim(),
+          partOfSpeech: String(
+            parsed.partOfSpeech || (freeDictCheck.status === 'found' ? freeDictCheck.partOfSpeech : '') || ''
+          ).trim(),
+          shortMeaningVi: shortMeaningVi || detailedExplanationVi,
+          detailedExplanationVi,
+          grammarFormula,
+          usageNotesVi,
+          synonyms: Array.isArray(parsed.synonyms) ? parsed.synonyms.map(String).filter(Boolean).slice(0, 6) : [],
+          antonyms: Array.isArray(parsed.antonyms) ? parsed.antonyms.map(String).filter(Boolean).slice(0, 6) : [],
+          examples: Array.isArray(parsed.examples)
+            ? parsed.examples
+                .filter((ex: any) => ex && ex.en)
+                .slice(0, 3)
+                .map((ex: any) => ({ en: String(ex.en).trim(), vi: String(ex.vi || '').trim() }))
+            : [],
+          suggestedTopic: String(parsed.suggestedTopic || fallbackTopic).trim(),
+          notFoundReasonVi: '',
+          suggestions: [] as string[],
+        };
+      }
     } catch (geminiErr: any) {
       // Seamless resilient fallback when Gemini API spikes with 503 high demand or rate limits
       console.warn('[Dictionary] Gemini unavailable, switching to bilingual fallback:', geminiErr?.message);
       finalEntry = await this.lookupDictionaryFallback(query, cat);
     }
 
-    if (finalEntry.term && finalEntry.shortMeaningVi) {
+    if (finalEntry && (finalEntry.found === false || (finalEntry.term && finalEntry.shortMeaningVi))) {
       if (this.dictionaryCache.size >= 300) {
         const oldest = this.dictionaryCache.keys().next().value;
         if (oldest) this.dictionaryCache.delete(oldest);

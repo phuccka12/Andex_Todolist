@@ -45,6 +45,7 @@ export interface SentenceCheckResult {
 export type DictionaryCategory = 'auto' | 'word' | 'modal_verb' | 'idiom' | 'phrasal_verb';
 
 export interface DictionaryEntry {
+  found?: boolean;
   term: string;
   category: 'word' | 'modal_verb' | 'idiom' | 'phrasal_verb';
   phonetic: string;
@@ -57,6 +58,8 @@ export interface DictionaryEntry {
   antonyms: string[];
   examples: Array<{ en: string; vi: string }>;
   suggestedTopic: string;
+  notFoundReasonVi?: string;
+  suggestions?: string[];
 }
 
 export interface TutorChatMessage {
@@ -531,7 +534,7 @@ export async function checkVocabSentence(payload: {
   };
 }
 
-const DICT_CACHE_KEY = 'genncore_dict_cache_v1';
+const DICT_CACHE_KEY = 'genncore_dict_cache_v2';
 
 export async function lookupDictionary(payload: {
   query: string;
@@ -544,12 +547,14 @@ export async function lookupDictionary(payload: {
       const raw = localStorage.getItem(DICT_CACHE_KEY);
       const map: Record<string, DictionaryEntry> = raw ? JSON.parse(raw) : {};
       const cached = map[cacheKey];
-      if (cached && cached.term && cached.shortMeaningVi) {
+      if (cached && cached.found !== false && cached.term && cached.shortMeaningVi) {
         return {
           ...cached,
+          found: true,
           synonyms: Array.isArray(cached.synonyms) ? cached.synonyms : [],
           antonyms: Array.isArray(cached.antonyms) ? cached.antonyms : [],
           examples: Array.isArray(cached.examples) ? cached.examples : [],
+          suggestions: Array.isArray(cached.suggestions) ? cached.suggestions : [],
         };
       }
     } catch {}
@@ -568,12 +573,16 @@ export async function lookupDictionary(payload: {
     throw new Error(data.error || 'Không thể tra cứu từ điển lúc này.');
   }
 
+  const isFound = data.entry.found !== false;
   const normalizedEntry: DictionaryEntry = {
+    found: isFound,
     term: String(data.entry.term || normalizedQuery).trim(),
     category: data.entry.category || payload.category || 'word',
     phonetic: String(data.entry.phonetic || '').trim(),
     partOfSpeech: String(data.entry.partOfSpeech || '').trim(),
-    shortMeaningVi: String(data.entry.shortMeaningVi || '').trim() || String(data.entry.detailedExplanationVi || '').trim(),
+    shortMeaningVi: isFound
+      ? String(data.entry.shortMeaningVi || '').trim() || String(data.entry.detailedExplanationVi || '').trim()
+      : '',
     detailedExplanationVi: String(data.entry.detailedExplanationVi || '').trim(),
     grammarFormula: String(data.entry.grammarFormula || '').trim(),
     usageNotesVi: String(data.entry.usageNotesVi || '').trim(),
@@ -581,9 +590,11 @@ export async function lookupDictionary(payload: {
     antonyms: Array.isArray(data.entry.antonyms) ? data.entry.antonyms : [],
     examples: Array.isArray(data.entry.examples) ? data.entry.examples : [],
     suggestedTopic: String(data.entry.suggestedTopic || 'Đời sống').trim(),
+    notFoundReasonVi: String(data.entry.notFoundReasonVi || '').trim(),
+    suggestions: Array.isArray(data.entry.suggestions) ? data.entry.suggestions : [],
   };
 
-  if (typeof window !== 'undefined' && normalizedEntry.term && normalizedEntry.shortMeaningVi) {
+  if (typeof window !== 'undefined' && isFound && normalizedEntry.term && normalizedEntry.shortMeaningVi) {
     try {
       const raw = localStorage.getItem(DICT_CACHE_KEY);
       const map: Record<string, DictionaryEntry> = raw ? JSON.parse(raw) : {};

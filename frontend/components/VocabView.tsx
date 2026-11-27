@@ -760,7 +760,9 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
       const entry = await lookupDictionary({ query: q, category: cat });
       if (seq !== dictRequestSeqRef.current) return;
       setDictResult(entry);
-      soundEngine.playPentatonicChime(4);
+      if (entry.found !== false) {
+        soundEngine.playPentatonicChime(4);
+      }
     } catch (err: any) {
       if (seq !== dictRequestSeqRef.current) return;
       const errMsg = err?.message || 'Chưa tra cứu được lúc này.';
@@ -774,7 +776,7 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
   };
 
   const handleSaveDictEntryToVocab = async () => {
-    if (!dictResult) return;
+    if (!dictResult || dictResult.found === false) return;
     setIsSavingDictWord(true);
     try {
       const existing = words.find((w) => w.word.toLowerCase() === dictResult.term.toLowerCase());
@@ -4591,7 +4593,58 @@ const TUTOR_HIGHLIGHT_PALETTE: Array<{
                 </div>
               )}
 
-              {!isLookingUpDict && dictResult && (
+              {!isLookingUpDict && dictResult && dictResult.found === false && (
+                <div
+                  className={`rounded-2xl p-4 sm:p-5 space-y-3.5 animate-in fade-in duration-150 ${
+                    isDark
+                      ? 'bg-amber-500/10 border border-amber-500/30 text-amber-100'
+                      : 'bg-[#FFFBEB] border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A]'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        isDark
+                          ? 'bg-amber-500/20 text-amber-300'
+                          : 'bg-[#FEF08A] border-2 border-[#0F172A] text-[#0F172A]'
+                      }`}
+                    >
+                      <HelpCircle className="w-5 h-5" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-sm sm:text-base font-black tracking-tight">
+                        Không tìm thấy &ldquo;{dictResult.term}&rdquo; trong từ điển chuẩn
+                      </h4>
+                      <p className={`text-xs leading-relaxed ${isDark ? 'text-amber-100/85' : 'text-[#0F172A]/80 font-medium'}`}>
+                        {dictResult.notFoundReasonVi ||
+                          'Từ hoặc cụm từ bạn nhập không có trong từ điển tiếng Anh chuẩn. Hãy kiểm tra lại chính tả hoặc thử các gợi ý tự nhiên bên dưới.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {Array.isArray(dictResult.suggestions) && dictResult.suggestions.length > 0 && (
+                    <div className="pt-1 flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] font-black text-slate-500 mr-1">Có phải bạn muốn tìm:</span>
+                      {dictResult.suggestions.map((sug) => (
+                        <button
+                          key={sug}
+                          type="button"
+                          onClick={() => handleLookupDictionary(sug, dictCategory)}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                            isDark
+                              ? 'bg-white/10 hover:bg-white/20 text-amber-200 border border-white/10'
+                              : 'bg-white hover:bg-[#FEF08A] text-[#0F172A] border border-[#0F172A]/30'
+                          }`}
+                        >
+                          {sug}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!isLookingUpDict && dictResult && dictResult.found !== false && (
                 <div
                   className={`rounded-2xl p-4 sm:p-5 space-y-4 animate-in fade-in duration-150 ${
                     isDark
