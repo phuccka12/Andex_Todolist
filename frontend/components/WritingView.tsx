@@ -590,6 +590,10 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
     ? 'bg-[#12151E] border border-white/[0.08] text-slate-100'
     : 'bg-white border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] text-[#0F172A]';
 
+  const quietPanelCls = isDark
+    ? 'bg-[#12151E] border border-white/[0.08] text-slate-100'
+    : 'bg-white border border-[#0F172A]/20 shadow-xs text-[#0F172A]';
+
   return (
     <div className="flex-1 min-h-0 flex flex-col space-y-3.5 pb-8">
       {/* Top Bar: Sub-view Switcher (Left) + Task Mode / Timer Controls (Right) */}
@@ -742,7 +746,7 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
           {/* Left 8 Columns: Prompt + Essay Writing Sheet */}
           <div className="lg:col-span-8 space-y-3.5">
             {/* Prompt Box */}
-            <div className={`rounded-2xl p-4 space-y-3 ${cardBaseCls}`}>
+            <div className={`rounded-2xl p-4 space-y-3 ${quietPanelCls}`}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-[#FFE4E6] text-[#E11D48] border border-[#E11D48]/30 shrink-0 whitespace-nowrap">
@@ -939,7 +943,7 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
           {/* Right 4 Columns: 0-Token Personal Vocab Injection + Weakness Radar + Overall Calc */}
           <div className="lg:col-span-4 space-y-3.5">
             {/* Personal Vocab Injector */}
-            <div className={`rounded-2xl p-4 space-y-2.5 ${cardBaseCls}`}>
+            <div className={`rounded-2xl p-4 space-y-2.5 ${quietPanelCls}`}>
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-xs font-black flex items-center gap-1.5">
                   <BookOpen className="w-4 h-4 text-[#E11D48]" />
@@ -999,7 +1003,7 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
             </div>
 
             {/* Pre-write Weakness Radar */}
-            <div className={`rounded-2xl p-4 space-y-2.5 ${cardBaseCls}`}>
+            <div className={`rounded-2xl p-4 space-y-2.5 ${quietPanelCls}`}>
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-xs font-black flex items-center gap-1.5">
                   <ShieldAlert className="w-4 h-4 text-[#E11D48]" />
@@ -1034,7 +1038,7 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
             </div>
 
             {/* Official Task 1 + Task 2 Mock Overall Calculator */}
-            <div className={`rounded-2xl p-4 space-y-2.5 ${cardBaseCls}`}>
+            <div className={`rounded-2xl p-4 space-y-2.5 ${quietPanelCls}`}>
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black flex items-center gap-1.5">
                   <Calculator className="w-4 h-4 text-[#E11D48]" />
@@ -1328,7 +1332,7 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
                 )}
 
                 {/* Quick list of all annotations */}
-                <div className={`rounded-2xl p-3 space-y-1.5 max-h-72 overflow-y-auto ${cardBaseCls}`}>
+                <div className={`rounded-2xl p-3 space-y-1.5 max-h-72 overflow-y-auto ${quietPanelCls}`}>
                   {filteredAnnotations.map((ann) => {
                     const st = ANNOTATION_STYLE[ann.category];
                     const active = activeAnnotation?.id === ann.id;
@@ -1560,9 +1564,11 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
 
           {/* RESULT TAB 4: LAZY-GENERATED UPGRADE WITH INTERACTIVE HIGHLIGHTS */}
           {resultTab === 'upgrade' && (
-            <div className="space-y-4">
-              <div className={`rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-2 ${cardBaseCls}`}>
-                <div className="inline-flex items-center p-0.5 rounded-xl border border-[#0F172A]/20 bg-[#FFF8F1] text-xs font-bold">
+            <div className="space-y-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className={`inline-flex items-center p-0.5 rounded-xl border text-xs font-bold ${
+                  isDark ? 'bg-[#12151E] border-white/10' : 'bg-white border-[#0F172A]/20'
+                }`}>
                   <button
                     type="button"
                     onClick={() => handleTriggerUpgrade('preserve_voice')}
@@ -1804,7 +1810,7 @@ export const WritingView: React.FC<WritingViewProps> = ({ theme = 'slate', authU
                           )}
 
                           {highlights.length > 0 && (
-                            <div className={`rounded-2xl p-3 space-y-1.5 max-h-72 overflow-y-auto ${cardBaseCls}`}>
+                            <div className={`rounded-2xl p-3 space-y-1.5 max-h-72 overflow-y-auto ${quietPanelCls}`}>
                               {highlights.map((hl) => {
                                 const st = ANNOTATION_STYLE[hl.category] || ANNOTATION_STYLE.lexical;
                                 const active = activeHighlight?.id === hl.id;

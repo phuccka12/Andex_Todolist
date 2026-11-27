@@ -834,7 +834,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
               <div>
                 <h2 className="text-xl font-black text-[#0F172A] tracking-tight flex items-center gap-2.5 flex-wrap">
                   Bảng Ký Ức Theo Tháng
-                  <span className="text-[11px] font-sans font-black px-2.5 py-0.5 rounded-full bg-[#FFE4E6] text-[#E11D48] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]">
+                  <span className="text-[11px] font-sans font-black px-2.5 py-0.5 rounded-full bg-[#FFE4E6] text-[#E11D48] border border-[#E11D48]/30">
                     {totalCount || journals.length} trang kỷ niệm
                   </span>
                 </h2>
@@ -845,9 +845,9 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
             </div>
 
               {/* Controls Toolbar */}
-              <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex flex-wrap items-center gap-2">
                 {/* Search */}
-                <div className="flex items-center gap-2 bg-[#FFFDF7] border-2 border-[#0F172A] px-3.5 py-1.5 rounded-xl shadow-[2px_2px_0px_#0F172A] text-xs font-bold text-[#0F172A] w-44 sm:w-52 focus-within:bg-[#FFF1F2] transition-all">
+                <div className="flex items-center gap-2 bg-white border border-[#0F172A]/20 px-3 py-1.5 rounded-xl text-xs font-bold text-[#0F172A] w-44 sm:w-52 focus-within:border-[#0F172A] focus-within:bg-[#FFF1F2] transition-all">
                   <Search className="w-3.5 h-3.5 text-[#E11D48] shrink-0" />
                   <input
                     type="text"
@@ -864,13 +864,13 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                 </div>
 
                 {/* Filter */}
-                <div className="flex items-center gap-1 bg-[#FFF1F2] border-2 border-[#0F172A] p-1 rounded-xl shadow-[2px_2px_0px_#0F172A] text-xs font-black">
+                <div className="flex items-center gap-1 bg-white border border-[#0F172A]/20 p-0.5 rounded-xl text-xs font-bold">
                   <button
                     onClick={() => setFilterType('all')}
                     className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                       filterType === 'all'
-                        ? 'bg-[#E11D48] text-white border border-[#0F172A]'
-                        : 'text-[#0F172A] hover:bg-white/70'
+                        ? 'bg-[#E11D48] text-white font-black'
+                        : 'text-[#0F172A] hover:bg-[#FFF1F2]'
                     }`}
                   >
                     Tất cả
@@ -879,8 +879,8 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                     onClick={() => setFilterType('with_photo')}
                     className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                       filterType === 'with_photo'
-                        ? 'bg-[#E11D48] text-white border border-[#0F172A]'
-                        : 'text-[#0F172A] hover:bg-white/70'
+                        ? 'bg-[#E11D48] text-white font-black'
+                        : 'text-[#0F172A] hover:bg-[#FFF1F2]'
                     }`}
                   >
                     <Camera className={`w-3 h-3 ${filterType === 'with_photo' ? 'text-white' : 'text-[#E11D48]'}`} />
@@ -895,10 +895,10 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                     if (isSelectMode) setSelectedIds([]);
                     soundEngine.playPentatonicChime(3);
                   }}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] transition-all cursor-pointer ${
+                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-black border transition-all cursor-pointer ${
                     isSelectMode
-                      ? 'bg-[#E11D48] text-white'
-                      : 'bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A]'
+                      ? 'bg-[#E11D48] text-white border-[#0F172A]'
+                      : 'bg-[#FEF9C3] hover:bg-[#FEF08A] border-[#0F172A]/30 hover:border-[#0F172A] text-[#0F172A]'
                   }`}
                   title="Chọn các trang nhật ký để chụp thành ảnh paper"
                 >
@@ -1111,7 +1111,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                               <div>
                                 {/* Photo or Note area */}
                                 {hasPhoto ? (
-                                  <div className="w-full h-38 sm:h-40 rounded-xl overflow-hidden bg-[#FFF8F1] border-2 border-[#0F172A] mb-2.5 relative">
+                                  <div className="w-full h-38 sm:h-40 rounded-xl overflow-hidden bg-[#FFF8F1] border border-[#0F172A]/20 mb-2.5 relative">
                                     {inlineCover ? (
                                       <img
                                         src={inlineCover}
@@ -1135,7 +1135,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ authUser, onOpenAuth }
                                   </div>
                                 ) : (
                                   <div
-                                    className="w-full h-38 sm:h-40 rounded-xl bg-[#FFFDF7] border-2 border-[#0F172A] p-3 flex flex-col justify-between mb-2.5 relative"
+                                    className="w-full h-38 sm:h-40 rounded-xl bg-[#FFFDF7] border border-[#0F172A]/20 p-3 flex flex-col justify-between mb-2.5 relative"
                                     style={{
                                       backgroundImage: `linear-gradient(transparent, transparent 23px, #F1E5D6 23px, #F1E5D6 24px)`,
                                       backgroundSize: '100% 24px',

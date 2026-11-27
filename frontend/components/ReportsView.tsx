@@ -43,23 +43,15 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ tasks, onBackToTracker
   const p3Tasks = tasks.filter((t) => t.priority?.includes('3'));
 
   return (
-    <div className="space-y-6 animate-in fade-in-50 duration-200">
-      {/* 1. UNIFIED HEADER */}
-      <div className="flex items-center justify-between pb-4 border-b-2 border-[#0F172A] flex-wrap gap-3">
-        <div className="space-y-1">
-          <div className="text-[10px] font-black text-[#E11D48] uppercase tracking-widest">
-            Không Gian Làm Việc / Báo Cáo
-          </div>
-          <h2 className="text-lg font-black text-[#0F172A] tracking-tight">
-            Báo Cáo Năng Suất & Nhịp Làm Việc
-          </h2>
-          <p className="text-xs text-slate-600 font-medium">
-            Tổng hợp thời lượng Deep Work, phân bổ độ ưu tiên và nhịp độ hoàn tất mục tiêu
-          </p>
-        </div>
+    <div className="space-y-5 animate-in fade-in-50 duration-200">
+      {/* 1. COMPACT CONTEXT & QUICK ACTIONS BAR (Avoids duplicating top Header) */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-xs text-slate-600 font-semibold">
+          Tổng hợp thời lượng Deep Work, phân bổ độ ưu tiên và nhịp độ hoàn tất mục tiêu
+        </p>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FFF1F2] text-[#0F172A] text-xs font-extrabold rounded-xl border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]">
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#0F172A] text-xs font-bold rounded-xl border border-[#0F172A]/20">
             <Calendar className="w-3.5 h-3.5 text-[#E11D48]" />
             <span>7 ngày qua</span>
           </div>
@@ -69,7 +61,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ tasks, onBackToTracker
               soundEngine.playSoftClick();
               onBackToTracker();
             }}
-            className="px-3.5 py-1.5 bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] text-xs font-black rounded-xl border-2 border-[#0F172A] transition-all flex items-center gap-1.5 shadow-[2px_2px_0px_#0F172A] cursor-pointer"
+            className="px-3.5 py-1.5 bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] text-xs font-black rounded-xl border border-[#0F172A]/30 hover:border-[#0F172A] transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Lịch biểu</span>
@@ -186,7 +178,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ tasks, onBackToTracker
                     </span>
                   </div>
 
-                  <div className="w-full h-2.5 bg-[#FFFDF7] border border-[#0F172A] rounded-full overflow-hidden">
+                  <div className="w-full h-2.5 bg-[#FFF8F1] border border-[#0F172A]/15 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${pct}%`, backgroundColor: p.color }}
@@ -201,12 +193,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ tasks, onBackToTracker
 
         {/* Workflow Status Distribution */}
         <div className="bg-white border-2 border-[#0F172A] p-5 rounded-2xl shadow-[4px_4px_0px_#0F172A] space-y-4">
-          <div className="flex items-center justify-between pb-2.5 border-b-2 border-[#0F172A]/15">
+          <div className="flex items-center justify-between pb-2.5 border-b border-[#0F172A]/12">
             <div>
               <h3 className="font-black text-sm text-[#0F172A]">Quy Trình & Trạng Thái</h3>
               <p className="text-[11px] text-slate-600 font-medium">Tiến độ lưu chuyển công việc qua các giai đoạn</p>
             </div>
-            <span className="text-xs font-black text-[#E11D48] bg-[#FFE4E6] px-2.5 py-0.5 rounded-full border border-[#0F172A]">
+            <span className="text-xs font-black text-[#E11D48] bg-[#FFE4E6] px-2.5 py-0.5 rounded-full border border-[#E11D48]/30">
               4 cột Kanban
             </span>
           </div>
@@ -245,7 +237,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ tasks, onBackToTracker
                     <div className="flex items-center gap-2">
                       <span
                         style={{ backgroundColor: col.color }}
-                        className="w-2.5 h-2.5 rounded-full border border-[#0F172A] inline-block"
+                        className="w-2.5 h-2.5 rounded-full border border-[#0F172A]/40 inline-block"
                       />
                       <span>{col.label}</span>
                     </div>
@@ -254,7 +246,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ tasks, onBackToTracker
                     </span>
                   </div>
 
-                  <div className="w-full h-2.5 bg-[#FFFDF7] border border-[#0F172A] rounded-full overflow-hidden">
+                  <div className="w-full h-2.5 bg-[#FFF8F1] border border-[#0F172A]/15 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${pct}%`, backgroundColor: col.color }}
@@ -269,18 +261,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ tasks, onBackToTracker
 
       {/* 4. WEEKLY RHYTHM BAR CHART */}
       <div className="bg-white border-2 border-[#0F172A] p-5 rounded-2xl shadow-[4px_4px_0px_#0F172A] space-y-4">
-        <div className="flex items-center justify-between pb-2.5 border-b-2 border-[#0F172A]/15 flex-wrap gap-2">
+        <div className="flex items-center justify-between pb-2.5 border-b border-[#0F172A]/12 flex-wrap gap-2">
           <div>
             <h3 className="font-black text-sm text-[#0F172A]">Nhịp Độ Công Việc Trong Tuần</h3>
             <p className="text-[11px] text-slate-600 font-medium">Số lượng nhiệm vụ được phân bổ và hoàn thành theo từng ngày</p>
           </div>
           <div className="flex items-center gap-3 text-xs font-black text-[#0F172A]">
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#FEF08A] border border-[#0F172A] inline-block" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#FEF08A] border border-[#0F172A]/50 inline-block" />
               Tổng việc
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#E11D48] border border-[#0F172A] inline-block" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#E11D48] border border-[#0F172A]/50 inline-block" />
               Đã chốt xong
             </span>
           </div>
@@ -290,19 +282,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ tasks, onBackToTracker
           {dayStats.map((d) => (
             <div
               key={d.name}
-              className="space-y-2 bg-[#FFFDF7] p-3 rounded-xl border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A]"
+              className="space-y-2 bg-[#FFFDF7] p-3 rounded-xl border border-[#0F172A]/20"
             >
               <div className="text-[11px] font-black text-[#0F172A]">{d.name}</div>
               <div className="h-20 flex items-end justify-center gap-1.5 py-1">
                 {/* Total bar */}
                 <div
-                  className="w-3.5 bg-[#FEF08A] border border-[#0F172A] rounded-t-md transition-all"
+                  className="w-3.5 bg-[#FEF08A] border border-[#0F172A]/50 rounded-t-md transition-all"
                   style={{ height: `${Math.min(100, Math.max(14, d.total * 20))}%` }}
                   title={`Tổng số: ${d.total} việc`}
                 />
                 {/* Done bar */}
                 <div
-                  className="w-3.5 bg-[#E11D48] border border-[#0F172A] rounded-t-md transition-all"
+                  className="w-3.5 bg-[#E11D48] border border-[#0F172A]/50 rounded-t-md transition-all"
                   style={{ height: `${Math.min(100, Math.max(14, d.done * 20))}%` }}
                   title={`Hoàn thành: ${d.done} việc`}
                 />

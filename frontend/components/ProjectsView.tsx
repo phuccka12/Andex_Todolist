@@ -148,28 +148,20 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     totalAssignedTasks > 0 ? Math.round((totalCompletedProjectTasks / totalAssignedTasks) * 100) : 0;
 
   return (
-    <div className="space-y-6 animate-in fade-in-50 duration-200">
-      {/* 1. UNIFIED HEADER */}
-      <div className="flex items-center justify-between pb-4 border-b-2 border-[#0F172A] flex-wrap gap-3">
-        <div className="space-y-1">
-          <div className="text-[10px] font-black text-[#E11D48] uppercase tracking-widest">
-            Không Gian Làm Việc / Dự Án Trọng Tâm
-          </div>
-          <h2 className="text-lg font-black text-[#0F172A] tracking-tight">
-            Dự Án Trọng Tâm (Active Projects)
-          </h2>
-          <p className="text-xs text-slate-600 font-medium">
-            Quản lý mục tiêu chiến lược, phân rã đầu việc và đo lường tiến độ thực thi
-          </p>
-        </div>
+    <div className="space-y-5 animate-in fade-in-50 duration-200">
+      {/* 1. COMPACT SUB-HEADER BAR (No duplicate title/CTA already in top Header) */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-xs text-slate-600 font-semibold">
+          Quản lý mục tiêu chiến lược, phân rã đầu việc và đo lường tiến độ thực thi
+        </p>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => {
               soundEngine.playSoftClick();
               setIsCreatingProject(!isCreatingProject);
             }}
-            className="px-3.5 py-1.5 bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] text-xs font-black rounded-xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-1.5 bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] text-xs font-black rounded-xl border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5] text-[#E11D48]" />
             <span>Tạo Dự Án Mới</span>
@@ -177,9 +169,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
 
           <button
             onClick={onOpenTaskModal}
-            className="px-3.5 py-1.5 bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs font-black rounded-xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-1.5 bg-white hover:bg-[#FFF1F2] text-[#0F172A] text-xs font-extrabold rounded-xl border border-[#0F172A]/25 hover:border-[#0F172A] transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <Plus className="w-3.5 h-3.5 stroke-[2.5] text-[#E11D48]" />
             <span>Thêm Task Mới</span>
           </button>
         </div>
@@ -357,13 +349,13 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 <div className="space-y-2">
                   <div
                     style={{ backgroundColor: proj.colorHex }}
-                    className="h-1.5 w-12 rounded-full border border-[#0F172A]"
+                    className="h-1.5 w-12 rounded-full"
                   />
                   <div className="flex items-center justify-between">
-                    <div className="px-2 py-0.5 rounded-md bg-[#FFFDF7] border border-[#0F172A] flex items-center gap-1.5">
+                    <div className="px-2 py-0.5 rounded-md bg-[#FFFDF7] border border-[#0F172A]/20 flex items-center gap-1.5">
                       <span
                         style={{ backgroundColor: proj.colorHex }}
-                        className="w-2 h-2 rounded-full inline-block border border-[#0F172A]"
+                        className="w-2 h-2 rounded-full inline-block"
                       />
                       <span className="text-[10px] font-mono font-black text-[#0F172A] uppercase tracking-wider">
                         {proj.category}
@@ -398,7 +390,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     </span>
                   </div>
 
-                  <div className="w-full h-2.5 bg-[#FFFDF7] border-2 border-[#0F172A] rounded-full overflow-hidden">
+                  <div className="w-full h-2.5 bg-[#FFF8F1] border border-[#0F172A]/15 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${pct}%`, backgroundColor: proj.colorHex }}
@@ -409,7 +401,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 {/* Task preview items */}
                 <div className="space-y-2 pt-1">
                   {projTasks.length === 0 ? (
-                    <p className="text-[11px] text-slate-500 font-semibold italic bg-[#FFFDF7] border-2 border-dashed border-[#0F172A]/20 rounded-xl py-2 px-3 text-center">
+                    <p className="text-[11px] text-slate-500 font-semibold italic bg-[#FFFDF7] border border-dashed border-[#0F172A]/20 rounded-xl py-2 px-3 text-center">
                       Chưa có công việc được gán
                     </p>
                   ) : (
@@ -420,7 +412,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                           e.stopPropagation();
                           if (onTaskClick) onTaskClick(t);
                         }}
-                        className="text-xs text-[#0F172A] hover:text-[#E11D48] bg-[#FFFDF7] hover:bg-[#FEF9C3] border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] flex items-center justify-between gap-1.5 truncate p-2 rounded-xl transition-all cursor-pointer"
+                        className="text-xs text-[#0F172A] hover:text-[#E11D48] bg-[#FFFDF7] hover:bg-[#FEF9C3] border border-[#0F172A]/20 hover:border-[#0F172A] flex items-center justify-between gap-1.5 truncate p-2 rounded-xl transition-all cursor-pointer"
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           <span

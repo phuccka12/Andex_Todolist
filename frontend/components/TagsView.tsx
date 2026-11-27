@@ -152,28 +152,20 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
   const totalTagged = tasks.filter((t) => t.priority || t.category).length;
 
   return (
-    <div className="space-y-6 animate-in fade-in-50 duration-200">
-      {/* 1. UNIFIED HEADER */}
-      <div className="flex items-center justify-between pb-4 border-b-2 border-[#0F172A] flex-wrap gap-3">
-        <div className="space-y-1">
-          <div className="text-[10px] font-black text-[#E11D48] uppercase tracking-widest">
-            Không Gian Làm Việc / Nhãn & Danh Mục
-          </div>
-          <h2 className="text-lg font-black text-[#0F172A] tracking-tight">
-            Phân Loại Nhãn & Danh Mục
-          </h2>
-          <p className="text-xs text-slate-600 font-medium">
-            Hệ thống phân loại công việc theo mức độ ưu tiên, danh mục và chủ đề cốt lõi
-          </p>
-        </div>
+    <div className="space-y-5 animate-in fade-in-50 duration-200">
+      {/* 1. COMPACT SUB-HEADER BAR */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-xs text-slate-600 font-semibold">
+          Hệ thống phân loại công việc theo mức độ ưu tiên, danh mục và chủ đề cốt lõi
+        </p>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => {
               soundEngine.playSoftClick();
               setIsCreatingTag(!isCreatingTag);
             }}
-            className="px-3.5 py-1.5 bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] text-xs font-black rounded-xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-1.5 bg-[#FEF9C3] hover:bg-[#FDE047] text-[#0F172A] text-xs font-black rounded-xl border-2 border-[#0F172A] shadow-[2px_2px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5] text-[#E11D48]" />
             <span>Tạo Nhãn Mới</span>
@@ -181,9 +173,9 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
 
           <button
             onClick={onOpenTaskModal}
-            className="px-3.5 py-1.5 bg-[#E11D48] hover:bg-[#BE123C] text-white text-xs font-black rounded-xl border-2 border-[#0F172A] shadow-[3px_3px_0px_#0F172A] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#0F172A] transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-1.5 bg-white hover:bg-[#FFF1F2] text-[#0F172A] text-xs font-extrabold rounded-xl border border-[#0F172A]/25 hover:border-[#0F172A] transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <Plus className="w-3.5 h-3.5 stroke-[2.5] text-[#E11D48]" />
             <span>Thêm Việc Mới</span>
           </button>
         </div>
@@ -315,7 +307,7 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
       )}
 
       {/* 4. TAG FILTER TOOLBAR */}
-      <div className="flex items-center justify-between gap-3 flex-wrap bg-white border-2 border-[#0F172A] p-3 rounded-2xl shadow-[3px_3px_0px_#0F172A]">
+      <div className="flex items-center justify-between gap-3 flex-wrap bg-white border border-[#0F172A]/20 p-3 rounded-2xl shadow-xs">
         <div className="flex items-center gap-1.5 flex-wrap">
           {/* All Button */}
           <button
@@ -323,10 +315,10 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
               soundEngine.playSoftClick();
               setSelectedTagId('all');
             }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all border-2 border-[#0F172A] cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all border cursor-pointer ${
               selectedTagId === 'all'
-                ? 'bg-[#E11D48] text-white shadow-[2px_2px_0px_#0F172A]'
-                : 'bg-[#FFFDF7] text-[#0F172A] hover:bg-[#FEF9C3]'
+                ? 'bg-[#E11D48] text-white border-[#0F172A]'
+                : 'bg-[#FFFDF7] text-[#0F172A] border-[#0F172A]/20 hover:bg-[#FEF9C3]'
             }`}
           >
             <span>Tất cả</span>
@@ -345,15 +337,15 @@ export const TagsView: React.FC<TagsViewProps> = ({ tasks, onTaskClick, onOpenTa
                   soundEngine.playSoftClick();
                   setSelectedTagId(tag.id);
                 }}
-                className={`group px-3 py-1.5 rounded-xl text-xs font-black transition-all border-2 border-[#0F172A] flex items-center gap-1.5 cursor-pointer ${
+                className={`group px-3 py-1.5 rounded-xl text-xs font-black transition-all border flex items-center gap-1.5 cursor-pointer ${
                   isSelected
-                    ? 'bg-[#E11D48] text-white shadow-[2px_2px_0px_#0F172A]'
-                    : 'bg-white text-[#0F172A] hover:bg-[#FEF9C3]'
+                    ? 'bg-[#E11D48] text-white border-[#0F172A]'
+                    : 'bg-white text-[#0F172A] border-[#0F172A]/20 hover:bg-[#FEF9C3]'
                 }`}
               >
                 <span
                   style={{ backgroundColor: tag.color }}
-                  className="w-2 h-2 rounded-full inline-block border border-[#0F172A] shrink-0"
+                  className="w-2 h-2 rounded-full inline-block shrink-0"
                 />
                 <span>{tag.name}</span>
                 <span
